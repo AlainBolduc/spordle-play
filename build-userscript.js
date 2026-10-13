@@ -35,7 +35,7 @@ const USER_SCRIPT_HEADER = `// ==UserScript==
 // @match        *://*.hisports.app/*
 // @grant        none
 // @run-at       document-idle
-// @updateURL    https://raw.githubusercontent.com/AlainBolduc/spordle-play/main/dist/spordle-annonceur.user.js
+// @updateURL    https://raw.githubusercontent.com/AlainBolduc/spordle-play/main/dist/spordle-annonceur.meta.js
 // @downloadURL  https://raw.githubusercontent.com/AlainBolduc/spordle-play/main/dist/spordle-annonceur.user.js
 // ==/UserScript==
 `;
@@ -84,8 +84,14 @@ ${contentJsContent}
 const outputFile = path.join(DIST_DIR, 'spordle-annonceur.user.js');
 fs.writeFileSync(outputFile, bundled, 'utf8');
 
+// Écrit également le fichier léger .meta.js requis pour les vérifications de versions Safari/Userscripts
+const metaFile = path.join(DIST_DIR, 'spordle-annonceur.meta.js');
+fs.writeFileSync(metaFile, USER_SCRIPT_HEADER, 'utf8');
+
 // Écrit également spordle-bundle.js pour compatibilité si nécessaire
 fs.writeFileSync(path.join(DIST_DIR, 'spordle-bundle.js'), bundled, 'utf8');
 
 console.log(`✅ Fichier Userscript autonome généré avec succès : dist/spordle-annonceur.user.js`);
+console.log(`✅ Fichier Metadata généré avec succès : dist/spordle-annonceur.meta.js`);
 console.log(`📦 Taille : ${(Buffer.byteLength(bundled, 'utf8') / 1024).toFixed(1)} KB`);
+
