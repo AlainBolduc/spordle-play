@@ -1,0 +1,1416 @@
+{
+  "game": {
+    "number": "1001",
+    "date": "2026-10-12",
+    "startTime": "2026-10-12T14:00:00.000Z",
+    "endTime": "2026-10-12T15:30:00.000Z",
+    "timezone": "America/Toronto",
+    "division": "U12",
+    "gender": "Female",
+    "categoryId": "00000000-0000-0000-0000-000000000001",
+    "seasonId": "2026-27",
+    "arenaId": 10001,
+    "scheduleId": 100001,
+    "groupId": null,
+    "crossGroupId": null,
+    "crossScheduleId": null,
+    "officeId": 1001,
+    "homeTeamId": 1001,
+    "awayTeamId": 1002,
+    "homeTeamComment": null,
+    "awayTeamComment": null,
+    "homeTeamStats": true,
+    "awayTeamStats": true,
+    "status": "Active",
+    "comments": null,
+    "isApproved": false,
+    "isCertified": false,
+    "spectators": null,
+    "actualStartTime": null,
+    "actualEndTime": null,
+    "homeDefaultColor": true,
+    "awayDefaultColor": true,
+    "id": 100001,
+    "updatedAt": "2026-09-28T19:20:57.567Z",
+    "category": "AA"
+  },
+  "homeTeam": {
+    "HCRId": "000000000000001001",
+    "name": "ÉQUIPE LOCALE EXEMPLE",
+    "shortName": "ÉQUIPE LOCALE EXEMPLE",
+    "division": "U12",
+    "gender": "Female",
+    "categoryId": "ff6437de-8fee-4641-b672-ecb91859aa0f",
+    "seasonId": "2026-27",
+    "logoId": null,
+    "externalId": "00000000-0000-0000-0000-00000000001001",
+    "isPublic": true,
+    "isSanctioned": true,
+    "homeColor": "BLEU",
+    "awayColor": "BLANC",
+    "id": 1001,
+    "createdAt": "2026-06-01T19:18:56.000Z",
+    "updatedAt": "2026-09-30T04:27:51.281Z",
+    "officeId": 1001,
+    "logoUrl": null,
+    "category": {
+      "id": "ff6437de-8fee-4641-b672-ecb91859aa0f",
+      "name": "U12 AA",
+      "divisionId": "0552f2fc-43d6-4055-b71b-4c9d85a0ed79",
+      "gender": "Female",
+      "classId": "70022e57-5b7d-4565-835a-9c9d63128fe7",
+      "order": 1702,
+      "i18n": {
+        "fr": {
+          "name": "M12 AA"
+        }
+      },
+      "nameFr": "M12 AA",
+      "externalId": "1eebf979-e3d7-624c-afb4-024902f1a418",
+      "division": {
+        "id": "0552f2fc-43d6-4055-b71b-4c9d85a0ed79",
+        "name": "U12",
+        "shortName": "U12",
+        "order": 9,
+        "i18n": {
+          "fr": {
+            "name": "M12",
+            "shortName": "M12"
+          }
+        }
+      },
+      "class": {
+        "id": "70022e57-5b7d-4565-835a-9c9d63128fe7",
+        "name": "AA",
+        "shortName": "AA",
+        "order": 2,
+        "i18n": {
+          "fr": {
+            "name": "AA",
+            "shortName": "AA"
+          }
+        }
+      }
+    },
+    "office": {
+      "name": "ASSOCIATION HOCKEY EXEMPLE",
+      "shortName": null,
+      "type": "Association",
+      "parentId": 6157,
+      "path": "1.2.3.4",
+      "logoId": null,
+      "HCRId": "00001",
+      "externalId": "00000000-0000-0000-0000-000000000010",
+      "timezone": "America/Toronto",
+      "isExternalTeam": false,
+      "color": "#f6a801",
+      "slug": "association-hockey-exemple",
+      "i18n": null,
+      "id": 1001,
+      "createdAt": "2024-10-17T15:31:32.235Z",
+      "updatedAt": "2025-10-06T21:07:10.975Z",
+      "logoUrl": null
+    },
+    "members": [
+      {
+        "teamId": 1001,
+        "participantId": 1001000,
+        "positions": [
+          "F"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000000",
+        "id": 10010000,
+        "participant": {
+          "HCRId": "202610010000000",
+          "firstName": "JOUEUR",
+          "lastName": "LOCALE 1",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000000",
+          "payReferenceId": null,
+          "id": 1001000,
+          "fullName": "JOUEUR LOCALE 1"
+        }
+      },
+      {
+        "teamId": 1001,
+        "participantId": 1001001,
+        "positions": [
+          "F"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000001",
+        "id": 10010001,
+        "participant": {
+          "HCRId": "202610010000001",
+          "firstName": "JOUEUR",
+          "lastName": "LOCALE 2",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000001",
+          "payReferenceId": null,
+          "id": 1001001,
+          "fullName": "JOUEUR LOCALE 2"
+        }
+      },
+      {
+        "teamId": 1001,
+        "participantId": 1001002,
+        "positions": [
+          "C"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000002",
+        "id": 10010002,
+        "participant": {
+          "HCRId": "202610010000002",
+          "firstName": "JOUEUR",
+          "lastName": "LOCALE 3",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000002",
+          "payReferenceId": null,
+          "id": 1001002,
+          "fullName": "JOUEUR LOCALE 3"
+        }
+      },
+      {
+        "teamId": 1001,
+        "participantId": 1001003,
+        "positions": [
+          "F"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000003",
+        "id": 10010003,
+        "participant": {
+          "HCRId": "202610010000003",
+          "firstName": "JOUEUR",
+          "lastName": "LOCALE 4",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000003",
+          "payReferenceId": null,
+          "id": 1001003,
+          "fullName": "JOUEUR LOCALE 4"
+        }
+      },
+      {
+        "teamId": 1001,
+        "participantId": 1001004,
+        "positions": [
+          "D"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000004",
+        "id": 10010004,
+        "participant": {
+          "HCRId": "202610010000004",
+          "firstName": "JOUEUR",
+          "lastName": "LOCALE 5",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000004",
+          "payReferenceId": null,
+          "id": 1001004,
+          "fullName": "JOUEUR LOCALE 5"
+        }
+      },
+      {
+        "teamId": 1001,
+        "participantId": 1001005,
+        "positions": [
+          "F"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000005",
+        "id": 10010005,
+        "participant": {
+          "HCRId": "202610010000005",
+          "firstName": "JOUEUR",
+          "lastName": "LOCALE 6",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000005",
+          "payReferenceId": null,
+          "id": 1001005,
+          "fullName": "JOUEUR LOCALE 6"
+        }
+      },
+      {
+        "teamId": 1001,
+        "participantId": 1001006,
+        "positions": [
+          "C"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000006",
+        "id": 10010006,
+        "participant": {
+          "HCRId": "202610010000006",
+          "firstName": "JOUEUR",
+          "lastName": "LOCALE 7",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000006",
+          "payReferenceId": null,
+          "id": 1001006,
+          "fullName": "JOUEUR LOCALE 7"
+        }
+      },
+      {
+        "teamId": 1001,
+        "participantId": 1001007,
+        "positions": [
+          "F"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000007",
+        "id": 10010007,
+        "participant": {
+          "HCRId": "202610010000007",
+          "firstName": "JOUEUR",
+          "lastName": "LOCALE 8",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000007",
+          "payReferenceId": null,
+          "id": 1001007,
+          "fullName": "JOUEUR LOCALE 8"
+        }
+      },
+      {
+        "teamId": 1001,
+        "participantId": 1001008,
+        "positions": [
+          "D"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000008",
+        "id": 10010008,
+        "participant": {
+          "HCRId": "202610010000008",
+          "firstName": "JOUEUR",
+          "lastName": "LOCALE 9",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000008",
+          "payReferenceId": null,
+          "id": 1001008,
+          "fullName": "JOUEUR LOCALE 9"
+        }
+      },
+      {
+        "teamId": 1001,
+        "participantId": 1001009,
+        "positions": [
+          "F"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000009",
+        "id": 10010009,
+        "participant": {
+          "HCRId": "202610010000009",
+          "firstName": "JOUEUR",
+          "lastName": "LOCALE 10",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000009",
+          "payReferenceId": null,
+          "id": 1001009,
+          "fullName": "JOUEUR LOCALE 10"
+        }
+      },
+      {
+        "teamId": 1001,
+        "participantId": 1001010,
+        "positions": [
+          "D"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000010",
+        "id": 10010010,
+        "participant": {
+          "HCRId": "202610010000010",
+          "firstName": "JOUEUR",
+          "lastName": "LOCALE 11",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000010",
+          "payReferenceId": null,
+          "id": 1001010,
+          "fullName": "JOUEUR LOCALE 11"
+        }
+      },
+      {
+        "teamId": 1001,
+        "participantId": 1001011,
+        "positions": [
+          "Head Coach"
+        ],
+        "number": null,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000011",
+        "id": 10010011,
+        "participant": {
+          "HCRId": "202610010000011",
+          "firstName": "ENTRAÎNEUR",
+          "lastName": "LOCALE",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000011",
+          "payReferenceId": null,
+          "id": 1001011,
+          "fullName": "ENTRAÎNEUR LOCALE"
+        }
+      },
+      {
+        "teamId": 1001,
+        "participantId": 1001012,
+        "positions": [
+          "F"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000012",
+        "id": 10010012,
+        "participant": {
+          "HCRId": "202610010000012",
+          "firstName": "JOUEUR",
+          "lastName": "LOCALE 13",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000012",
+          "payReferenceId": null,
+          "id": 1001012,
+          "fullName": "JOUEUR LOCALE 13"
+        }
+      },
+      {
+        "teamId": 1001,
+        "participantId": 1001013,
+        "positions": [
+          "G"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000013",
+        "id": 10010013,
+        "participant": {
+          "HCRId": "202610010000013",
+          "firstName": "JOUEUR",
+          "lastName": "LOCALE 14",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000013",
+          "payReferenceId": null,
+          "id": 1001013,
+          "fullName": "JOUEUR LOCALE 14"
+        }
+      },
+      {
+        "teamId": 1001,
+        "participantId": 1001014,
+        "positions": [
+          "F"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000014",
+        "id": 10010014,
+        "participant": {
+          "HCRId": "202610010000014",
+          "firstName": "JOUEUR",
+          "lastName": "LOCALE 15",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000014",
+          "payReferenceId": null,
+          "id": 1001014,
+          "fullName": "JOUEUR LOCALE 15"
+        }
+      },
+      {
+        "teamId": 1001,
+        "participantId": 1001015,
+        "positions": [
+          "G"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1001-000000000015",
+        "id": 10010015,
+        "participant": {
+          "HCRId": "202610010000015",
+          "firstName": "JOUEUR",
+          "lastName": "LOCALE 16",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1001-000000000015",
+          "payReferenceId": null,
+          "id": 1001015,
+          "fullName": "JOUEUR LOCALE 16"
+        }
+      }
+    ],
+    "affiliates": [],
+    "suspendedExtras": [],
+    "earliestLineupAccessTime": "2026-10-10T21:15:00.000Z",
+    "validations": [
+      {
+        "participantId": 1001000,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1001001,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1001002,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1001003,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1001004,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1001005,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1001006,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1001007,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1001008,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1001009,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1001010,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1001011,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1001012,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1001013,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1001014,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1001015,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      }
+    ]
+  },
+  "awayTeam": {
+    "HCRId": "000000000000001002",
+    "name": "ÉQUIPE VISITEUR EXEMPLE",
+    "shortName": "ÉQUIPE VISITEUR EXEMPLE",
+    "division": "U12",
+    "gender": "Female",
+    "categoryId": "ff6437de-8fee-4641-b672-ecb91859aa0f",
+    "seasonId": "2026-27",
+    "logoId": null,
+    "externalId": "00000000-0000-0000-0000-00000000001002",
+    "isPublic": true,
+    "isSanctioned": true,
+    "homeColor": "BLEU",
+    "awayColor": "BLANC",
+    "id": 1002,
+    "createdAt": "2026-06-01T19:18:56.000Z",
+    "updatedAt": "2026-09-23T02:29:59.539Z",
+    "officeId": 1001,
+    "logoUrl": null,
+    "category": {
+      "id": "ff6437de-8fee-4641-b672-ecb91859aa0f",
+      "name": "U12 AA",
+      "divisionId": "0552f2fc-43d6-4055-b71b-4c9d85a0ed79",
+      "gender": "Female",
+      "classId": "70022e57-5b7d-4565-835a-9c9d63128fe7",
+      "order": 1702,
+      "i18n": {
+        "fr": {
+          "name": "M12 AA"
+        }
+      },
+      "nameFr": "M12 AA",
+      "externalId": "1eebf979-e3d7-624c-afb4-024902f1a418",
+      "division": {
+        "id": "0552f2fc-43d6-4055-b71b-4c9d85a0ed79",
+        "name": "U12",
+        "shortName": "U12",
+        "order": 9,
+        "i18n": {
+          "fr": {
+            "name": "M12",
+            "shortName": "M12"
+          }
+        }
+      },
+      "class": {
+        "id": "70022e57-5b7d-4565-835a-9c9d63128fe7",
+        "name": "AA",
+        "shortName": "AA",
+        "order": 2,
+        "i18n": {
+          "fr": {
+            "name": "AA",
+            "shortName": "AA"
+          }
+        }
+      }
+    },
+    "office": {
+      "name": "ASSOCIATION HOCKEY EXEMPLE",
+      "shortName": null,
+      "type": "Association",
+      "parentId": 6157,
+      "path": "1.2.3.4",
+      "logoId": null,
+      "HCRId": "00001",
+      "externalId": "00000000-0000-0000-0000-000000000010",
+      "timezone": "America/Toronto",
+      "isExternalTeam": false,
+      "color": "#f6a801",
+      "slug": "association-hockey-exemple",
+      "i18n": null,
+      "id": 1001,
+      "createdAt": "2024-10-17T15:31:32.235Z",
+      "updatedAt": "2025-10-06T21:07:10.975Z",
+      "logoUrl": null
+    },
+    "members": [
+      {
+        "teamId": 1002,
+        "participantId": 1002000,
+        "positions": [
+          "G"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1002-000000000000",
+        "id": 10020000,
+        "participant": {
+          "HCRId": "202610020000000",
+          "firstName": "JOUEUR",
+          "lastName": "VISITEUR 1",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1002-000000000000",
+          "payReferenceId": null,
+          "id": 1002000,
+          "fullName": "JOUEUR VISITEUR 1"
+        }
+      },
+      {
+        "teamId": 1002,
+        "participantId": 1002001,
+        "positions": [
+          "C"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1002-000000000001",
+        "id": 10020001,
+        "participant": {
+          "HCRId": "202610020000001",
+          "firstName": "JOUEUR",
+          "lastName": "VISITEUR 2",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1002-000000000001",
+          "payReferenceId": null,
+          "id": 1002001,
+          "fullName": "JOUEUR VISITEUR 2"
+        }
+      },
+      {
+        "teamId": 1002,
+        "participantId": 1002002,
+        "positions": [
+          "C"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1002-000000000002",
+        "id": 10020002,
+        "participant": {
+          "HCRId": "202610020000002",
+          "firstName": "JOUEUR",
+          "lastName": "VISITEUR 3",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1002-000000000002",
+          "payReferenceId": null,
+          "id": 1002002,
+          "fullName": "JOUEUR VISITEUR 3"
+        }
+      },
+      {
+        "teamId": 1002,
+        "participantId": 1002003,
+        "positions": [
+          "C"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1002-000000000003",
+        "id": 10020003,
+        "participant": {
+          "HCRId": "202610020000003",
+          "firstName": "JOUEUR",
+          "lastName": "VISITEUR 4",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1002-000000000003",
+          "payReferenceId": null,
+          "id": 1002003,
+          "fullName": "JOUEUR VISITEUR 4"
+        }
+      },
+      {
+        "teamId": 1002,
+        "participantId": 1002004,
+        "positions": [
+          "F"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1002-000000000004",
+        "id": 10020004,
+        "participant": {
+          "HCRId": "202610020000004",
+          "firstName": "JOUEUR",
+          "lastName": "VISITEUR 5",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1002-000000000004",
+          "payReferenceId": null,
+          "id": 1002004,
+          "fullName": "JOUEUR VISITEUR 5"
+        }
+      },
+      {
+        "teamId": 1002,
+        "participantId": 1002005,
+        "positions": [
+          "D"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1002-000000000005",
+        "id": 10020005,
+        "participant": {
+          "HCRId": "202610020000005",
+          "firstName": "JOUEUR",
+          "lastName": "VISITEUR 6",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1002-000000000005",
+          "payReferenceId": null,
+          "id": 1002005,
+          "fullName": "JOUEUR VISITEUR 6"
+        }
+      },
+      {
+        "teamId": 1002,
+        "participantId": 1002006,
+        "positions": [
+          "D"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1002-000000000006",
+        "id": 10020006,
+        "participant": {
+          "HCRId": "202610020000006",
+          "firstName": "JOUEUR",
+          "lastName": "VISITEUR 7",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1002-000000000006",
+          "payReferenceId": null,
+          "id": 1002006,
+          "fullName": "JOUEUR VISITEUR 7"
+        }
+      },
+      {
+        "teamId": 1002,
+        "participantId": 1002007,
+        "positions": [
+          "F"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1002-000000000007",
+        "id": 10020007,
+        "participant": {
+          "HCRId": "202610020000007",
+          "firstName": "JOUEUR",
+          "lastName": "VISITEUR 8",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1002-000000000007",
+          "payReferenceId": null,
+          "id": 1002007,
+          "fullName": "JOUEUR VISITEUR 8"
+        }
+      },
+      {
+        "teamId": 1002,
+        "participantId": 1002008,
+        "positions": [
+          "C"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1002-000000000008",
+        "id": 10020008,
+        "participant": {
+          "HCRId": "202610020000008",
+          "firstName": "JOUEUR",
+          "lastName": "VISITEUR 9",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1002-000000000008",
+          "payReferenceId": null,
+          "id": 1002008,
+          "fullName": "JOUEUR VISITEUR 9"
+        }
+      },
+      {
+        "teamId": 1002,
+        "participantId": 1002009,
+        "positions": [
+          "C"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1002-000000000009",
+        "id": 10020009,
+        "participant": {
+          "HCRId": "202610020000009",
+          "firstName": "JOUEUR",
+          "lastName": "VISITEUR 10",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1002-000000000009",
+          "payReferenceId": null,
+          "id": 1002009,
+          "fullName": "JOUEUR VISITEUR 10"
+        }
+      },
+      {
+        "teamId": 1002,
+        "participantId": 1002010,
+        "positions": [
+          "G"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1002-000000000010",
+        "id": 10020010,
+        "participant": {
+          "HCRId": "202610020000010",
+          "firstName": "JOUEUR",
+          "lastName": "VISITEUR 11",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1002-000000000010",
+          "payReferenceId": null,
+          "id": 1002010,
+          "fullName": "JOUEUR VISITEUR 11"
+        }
+      },
+      {
+        "teamId": 1002,
+        "participantId": 1002011,
+        "positions": [
+          "F"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1002-000000000011",
+        "id": 10020011,
+        "participant": {
+          "HCRId": "202610020000011",
+          "firstName": "JOUEUR",
+          "lastName": "VISITEUR 12",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1002-000000000011",
+          "payReferenceId": null,
+          "id": 1002011,
+          "fullName": "JOUEUR VISITEUR 12"
+        }
+      },
+      {
+        "teamId": 1002,
+        "participantId": 1002012,
+        "positions": [
+          "C"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1002-000000000012",
+        "id": 10020012,
+        "participant": {
+          "HCRId": "202610020000012",
+          "firstName": "JOUEUR",
+          "lastName": "VISITEUR 13",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1002-000000000012",
+          "payReferenceId": null,
+          "id": 1002012,
+          "fullName": "JOUEUR VISITEUR 13"
+        }
+      },
+      {
+        "teamId": 1002,
+        "participantId": 1002013,
+        "positions": [
+          "D"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1002-000000000013",
+        "id": 10020013,
+        "participant": {
+          "HCRId": "202610020000013",
+          "firstName": "JOUEUR",
+          "lastName": "VISITEUR 14",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1002-000000000013",
+          "payReferenceId": null,
+          "id": 1002013,
+          "fullName": "JOUEUR VISITEUR 14"
+        }
+      },
+      {
+        "teamId": 1002,
+        "participantId": 1002014,
+        "positions": [
+          "C"
+        ],
+        "number": 0,
+        "isCaptain": false,
+        "isAlternate": false,
+        "isAffiliate": false,
+        "isOverage": false,
+        "isUnderage": false,
+        "isReleased": false,
+        "seasonId": "2026-27",
+        "officeId": 1001,
+        "externalId": "00000000-0000-0000-1002-000000000014",
+        "id": 10020014,
+        "participant": {
+          "HCRId": "202610020000014",
+          "firstName": "JOUEUR",
+          "lastName": "VISITEUR 15",
+          "alternateName": null,
+          "pictureUrl": null,
+          "externalId": "00000000-0000-0001-1002-000000000014",
+          "payReferenceId": null,
+          "id": 1002014,
+          "fullName": "JOUEUR VISITEUR 15"
+        }
+      }
+    ],
+    "affiliates": [],
+    "suspendedExtras": [],
+    "earliestLineupAccessTime": "2026-10-11T18:15:00.000Z",
+    "validations": [
+      {
+        "participantId": 1002000,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1002001,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1002002,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1002003,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1002004,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1002005,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1002006,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1002007,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1002008,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1002009,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1002010,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1002011,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1002012,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1002013,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      },
+      {
+        "participantId": 1002014,
+        "suspensions": [],
+        "invalidMemberTypes": [],
+        "isMutated": false,
+        "isTransferred": false,
+        "isSecondaryTeam": false,
+        "isIneligible": false,
+        "mutatedYear": null
+      }
+    ]
+  }
+}

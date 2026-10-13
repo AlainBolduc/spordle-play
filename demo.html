@@ -1,479 +1,85 @@
-<!DOCTYPE html>
-<html>
-<head>
-<style type="text/css">
-@charset "UTF-8";
-[ng\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}
-ng\:form{display:block;}
-.ng-animate-shim{visibility:hidden;}
-.ng-anchor{position:absolute;}
-</style>
-<title>Spordle Play - Aperçu Local</title>
-<meta charset="UTF-8">
-<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no,width=device-width">
-
-<!-- CSS extrait de Spordle Play pour le rendu exact hors-ligne sans appel distant -->
-<style>
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background-color: #373b40;
-  color: #fff;
-  user-select: none;
-}
-.bar-header {
-  height: 44px;
-  background-color: #2b2e33;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 10px;
-  border-bottom: 1px solid #1a1c1e;
-}
-.bar-header .button {
-  background: transparent;
-  border: none;
-  color: #fff;
-  font-size: 14px;
-  cursor: pointer;
-  padding: 6px 12px;
-}
-.scoresheet-view {
-  padding: 10px;
-  max-width: 1024px;
-  margin: 0 auto;
-}
-.game-number {
-  font-size: 16px;
-  font-weight: bold;
-  text-align: center;
-  margin: 6px 0 2px;
-  color: #e0e0e0;
-}
-.game-category {
-  font-size: 13px;
-  text-align: center;
-  margin: 0 0 12px;
-  color: #aaa;
-}
-.score-view {
-  display: grid;
-  grid-template-columns: 80px 1fr 90px 90px 1fr 80px;
-  align-items: center;
-  background: #25282c;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-  margin-bottom: 15px;
-  gap: 10px;
-}
-.score-name {
-  font-size: 18px;
-  font-weight: bold;
-}
-.score-name.score-away { text-align: left; }
-.score-name.score-home { text-align: right; }
-.score-score {
-  text-align: center;
-}
-.score-score .type {
-  font-size: 11px;
-  color: #999;
-  letter-spacing: 0.5px;
-}
-.score-score .score {
-  font-size: 42px;
-  font-weight: 800;
-  color: #ffc900;
-  line-height: 1;
-}
-.score-score .sportsmanship {
-  font-size: 11px;
-  color: #888;
-}
-.score-logo .hi-logo {
-  width: 60px;
-  height: 60px;
-  background: #3a3f45;
-  border-radius: 50%;
-  background-size: cover;
-  background-position: center;
-}
-.score-buttons {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
-  border-top: 1px solid #373b40;
-  padding-top: 10px;
-}
-.score-buttons .button {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  color: #fff;
-}
-.button-balanced { background: #33cd5f; }
-.button-assertive { background: #ef473a; }
-
-/* Active penalties */
-.scoresheet-penalties {
-  background: #25282c;
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 15px;
-}
-.active-penalties {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.active-label {
-  font-size: 11px;
-  font-weight: bold;
-  text-align: center;
-  color: #ffc900;
-  white-space: pre-line;
-  padding: 0 10px;
-}
-.away-penalties, .home-penalties {
-  display: flex;
-  gap: 10px;
-  flex: 1;
-}
-.home-penalties { justify-content: flex-end; }
-.jersey-select {
-  background: #1e2023;
-  padding: 6px 12px;
-  border-radius: 6px;
-  text-align: center;
-  border: 1px solid #3a3f45;
-}
-.jersey-name { font-size: 12px; font-weight: bold; }
-.jersey-label { font-size: 20px; margin: 2px 0; color: #ffc900; }
-.jersey-details { font-size: 11px; color: #aaa; }
-
-/* Summary */
-.scoresheet-summary {
-  background: #25282c;
-  border-radius: 8px;
-  padding: 15px;
-}
-.summary-period-header {
-  background: #1a1c1e;
-  padding: 8px 12px;
-  font-size: 13px;
-  font-weight: bold;
-  color: #ffc900;
-  border-radius: 4px;
-  margin: 15px 0 8px;
-}
-.summary-period-header:first-child { margin-top: 0; }
-.summary-item {
-  display: flex;
-  align-items: center;
-  background: #2e3237;
-  padding: 10px 12px;
-  border-radius: 6px;
-  margin-bottom: 6px;
-  gap: 12px;
-}
-.summary-item .time {
-  font-weight: bold;
-  font-size: 14px;
-  color: #fff;
-  min-width: 48px;
-}
-.summary-item .action {
-  font-size: 12px;
-  font-weight: bold;
-  padding: 3px 8px;
-  border-radius: 4px;
-  white-space: nowrap;
-}
-.summary-item .action.goal.away { background: #1b5e20; color: #81c784; }
-.summary-item .action.goal.home { background: #2e7d32; color: #a5d6a7; }
-.summary-item .action.penalty.away { background: #b71c1c; color: #ef9a9a; }
-.summary-item .action.penalty.home { background: #c62828; color: #ffcdd2; }
-.summary-item .details {
-  flex: 1;
-  font-size: 13px;
-  color: #e0e0e0;
-}
-.summary-item .modify {
-  display: flex;
-  gap: 6px;
-}
-.summary-item .modify button {
-  background: transparent;
-  border: 1px solid #4a5058;
-  color: #aaa;
-  border-radius: 4px;
-  padding: 4px 8px;
-  cursor: pointer;
-}
-.summary-filters {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
-  padding-top: 10px;
-  border-top: 1px solid #373b40;
-}
-.summary-filters button {
-  background: #373b40;
-  border: 1px solid #4a5058;
-  color: #fff;
-  padding: 6px 14px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-}
-.summary-filters button.selected {
-  background: #ffc900;
-  color: #000;
-  font-weight: bold;
-}
-</style>
-
-<!-- Fichier CSS de l'extension -->
-<link rel="stylesheet" href="content.css">
-</head>
-
-<body ng-app="hiSports" class="grade-a platform-browser platform-macintel platform-ready">
-<noscript>You need to enable JavaScript in your browser to view Spordle Play.</noscript>
-
-<!-- DOM EXACT DE TON HTML -->
-<ui-view class="view-container">
-  <ui-view>
-    <hi-scoresheet $game="::$resolve.$game">
-      <div class="bar-header bar bar-dark">
-        <div class="buttons">
-          <button class="button button-stable button-clear icon-left hi hi-arrow-left">
-            <div class="hide-md ng-binding">Avant-match</div>
-          </button>
-        </div>
-        <div class="buttons pull-right">
-          <button class="button button-stable button-clear icon-right ion-help-circled">
-            <span class="hide-md ng-binding">Aide</span>
-          </button>
-          <button class="button button-stable button-clear icon-right ion-android-document">
-            <span class="hide-md ng-binding">Feuille de match</span>
-          </button>
-          <button class="button button-stable button-clear icon-right ion-android-settings">
-            <span class="hide-md ng-binding">Options</span>
-          </button>
-          <button class="button button-stable button-clear icon-right hi hi-stop">
-            <div class="hide-md ng-binding">Finir le match</div>
-          </button>
-        </div>
-      </div>
-
-      <div class="scoresheet-view">
-        <h5 class="game-number text-center ng-binding">MATCH 2007</h5>
-        <h5 class="game-category text-center ng-binding">U11 BB</h5>
-
-        <hi-score class="scoresheet-scores" $game="$ctrl.$game">
-          <div class="score-view">
-            <hi-logo class="score-away score-logo" team="$ctrl.awayTeam">
-              <div class="hi-logo" style="background-color: #4a5058;"></div>
-            </hi-logo>
-            <div class="score-away score-name"><span class="ng-binding">EXPRESS RIVE-SUD 9</span></div>
-            <div class="score-away score-score">
-              <div class="type ng-binding">VISITEUR</div>
-              <div class="score ng-binding">4</div>
-              <div class="sportsmanship ng-binding" data-title="Points franc jeu">(1)</div>
-            </div>
-            <div class="score-home score-score">
-              <div class="type ng-binding">LOCAL</div>
-              <div class="score ng-binding">5</div>
-              <div class="sportsmanship ng-binding" data-title="Points franc jeu">(1)</div>
-            </div>
-            <div class="score-home score-name"><span class="ng-binding">EXPRESS RIVE-SUD 7</span></div>
-            <hi-logo class="score-home score-logo" team="$ctrl.homeTeam">
-              <div class="hi-logo" style="background-color: #4a5058;"></div>
-            </hi-logo>
-            <div class="score-buttons">
-              <button class="score-away score-goal button button-balanced padding-half"><span class="bold ng-binding">But</span></button>
-              <button class="score-away score-penalty button button-assertive padding-half"><span class="bold ng-binding">Punitions</span></button>
-              <button class="score-away score-swap button button-assertive padding-half"><span class="bold ng-binding">Gardien</span></button>
-              <button class="score-home score-swap button button-assertive padding-half"><span class="bold ng-binding">Gardien</span></button>
-              <button class="score-home score-penalty button button-assertive padding-half"><span class="bold ng-binding">Punitions</span></button>
-              <button class="score-home score-goal button button-balanced padding-half"><span class="bold ng-binding">But</span></button>
-            </div>
-          </div>
-        </hi-score>
-
-        <hi-active-penalties class="scoresheet-penalties" $game="$ctrl.$game">
-          <div class="active-penalties">
-            <hi-penalty-list class="away-penalties">
-              <hi-jersey-select>
-                <hi-jersey class="jersey-select">
-                  <div class="jersey jersey-player">
-                    <div class="jersey-info">
-                      <div class="jersey-name"><span>HARVIE</span></div>
-                      <h2 class="bold light jersey-label">97</h2>
-                    </div>
-                  </div>
-                  <div class="jersey-details">Fini --:--</div>
-                </hi-jersey>
-              </hi-jersey-select>
-            </hi-penalty-list>
-            <div class="active-label">PUNITIONS<br>EN<br>COURS</div>
-            <hi-penalty-list class="home-penalties">
-              <hi-jersey-select>
-                <hi-jersey class="jersey-select">
-                  <div class="jersey jersey-player">
-                    <div class="jersey-info">
-                      <div class="jersey-name"><span>SIROIS</span></div>
-                      <h2 class="bold light jersey-label">40</h2>
-                    </div>
-                  </div>
-                  <div class="jersey-details">Fini --:--</div>
-                </hi-jersey>
-              </hi-jersey-select>
-            </hi-penalty-list>
-          </div>
-        </hi-active-penalties>
-
-        <hi-summary class="scoresheet-summary hi-summary" $game="$ctrl.$game" show-period-shortcut="true">
-          <hi-summary-list class="summary-list">
-            <div class="summary-items">
-              
-              <!-- 3E PÉRIODE -->
-              <div class="summary-period-header" style="">3E PÉRIODE - 12:00<button class="button no-border ion-edit" style="display:none;"></button></div>
-              
-              <hi-summary-item>
-                <div class="summary-item">
-                  <div class="time ng-binding">05:17</div>
-                  <div class="action ng-binding home goal">But - Local</div>
-                  <div class="details ng-binding">MILAN MAROIS (43) </div>
-                  <div class="modify"><button class="button">Modifier</button></div>
-                </div>
-              </hi-summary-item>
-
-              <hi-summary-item>
-                <div class="summary-item">
-                  <div class="time ng-binding">02:49</div>
-                  <div class="action ng-binding home goal">But - Local</div>
-                  <div class="details ng-binding">VICTOR LOUIS (61) </div>
-                  <div class="modify"><button class="button">Modifier</button></div>
-                </div>
-              </hi-summary-item>
-
-              <hi-summary-item>
-                <div class="summary-item">
-                  <div class="time ng-binding">01:27</div>
-                  <div class="action ng-binding away goal">But - Visiteur</div>
-                  <div class="details ng-binding">JACKSON AUDET (61)  - PASSES: JAYKE HARVIE (97)</div>
-                  <div class="modify"><button class="button">Modifier</button></div>
-                </div>
-              </hi-summary-item>
-
-              <!-- 2E PÉRIODE -->
-              <div class="summary-period-header" style="">2E PÉRIODE - 10:00</div>
-
-              <hi-summary-item>
-                <div class="summary-item">
-                  <div class="time ng-binding">05:59</div>
-                  <div class="action ng-binding away goal">But - Visiteur</div>
-                  <div class="details ng-binding">ALEXIS PELLETIER (81) </div>
-                  <div class="modify"><button class="button">Modifier</button></div>
-                </div>
-              </hi-summary-item>
-
-              <hi-summary-item>
-                <div class="summary-item">
-                  <div class="time ng-binding">05:22</div>
-                  <div class="action ng-binding home goal">But - Local</div>
-                  <div class="details ng-binding">THOMAS MARCHAND (2)  - PASSES: NATHAN SOUCY (63)</div>
-                  <div class="modify"><button class="button">Modifier</button></div>
-                </div>
-              </hi-summary-item>
-
-              <hi-summary-item>
-                <div class="summary-item">
-                  <div class="time ng-binding">04:40</div>
-                  <div class="action ng-binding away goal">But - Visiteur</div>
-                  <div class="details ng-binding">ALEXIS PELLETIER (81) </div>
-                  <div class="modify"><button class="button">Modifier</button></div>
-                </div>
-              </hi-summary-item>
-
-              <hi-summary-item>
-                <div class="summary-item">
-                  <div class="time ng-binding">04:11</div>
-                  <div class="action ng-binding home goal">But - Local</div>
-                  <div class="details ng-binding">LOÏC POULIN (74)  - PASSES: NATHAN SOUCY (63)</div>
-                  <div class="modify"><button class="button">Modifier</button></div>
-                </div>
-              </hi-summary-item>
-
-              <hi-summary-item>
-                <div class="summary-item">
-                  <div class="time ng-binding">01:34</div>
-                  <div class="action ng-binding away penalty">Punition - Visiteur</div>
-                  <div class="details ng-binding">JAYKE HARVIE (97) - A22 - Coup de bâton (Mineure)</div>
-                  <div class="modify"><button class="button">Modifier</button></div>
-                </div>
-              </hi-summary-item>
-
-              <hi-summary-item>
-                <div class="summary-item">
-                  <div class="time ng-binding">01:34</div>
-                  <div class="action ng-binding home penalty">Punition - Local</div>
-                  <div class="details ng-binding">TRISTAN SIROIS (40) - A39 - Mise en échec corporelle (Mineure)</div>
-                  <div class="modify"><button class="button">Modifier</button></div>
-                </div>
-              </hi-summary-item>
-
-              <!-- 1RE PÉRIODE -->
-              <div class="summary-period-header" style="">1RE PÉRIODE - 10:00</div>
-
-              <hi-summary-item>
-                <div class="summary-item">
-                  <div class="time ng-binding">09:34</div>
-                  <div class="action ng-binding home goal">But - Local</div>
-                  <div class="details ng-binding">LOÏC POULIN (74)  - PASSES: JACOB LAPIERRE (4)</div>
-                  <div class="modify"><button class="button">Modifier</button></div>
-                </div>
-              </hi-summary-item>
-
-              <hi-summary-item>
-                <div class="summary-item">
-                  <div class="time ng-binding">05:44</div>
-                  <div class="action ng-binding away goal">But - Visiteur</div>
-                  <div class="details ng-binding">MAYSON GOSSELIN (77)  - PASSES: ARNO ALLAIRE (21)</div>
-                  <div class="modify"><button class="button">Modifier</button></div>
-                </div>
-              </hi-summary-item>
-
-            </div>
-          </hi-summary-list>
-
-          <div class="summary-filters">
-            <div class="filters">
-              <button class="filter">VISITEUR</button>
-              <button class="filter">LOCAL</button>
-            </div>
-            <div class="filters">
-              <button class="filter">BUTS</button>
-              <button class="filter">PUNITIONS</button>
-            </div>
-          </div>
-        </hi-summary>
-
-      </div>
-    </hi-scoresheet>
-  </ui-view>
-</ui-view>
-
-<!-- Injection du script de ton extension chrome -->
-<script src="content.js"></script>
-
-</body>
-</html>
+<html><head>
+  <meta charset="UTF-8">
+  <title>Spordle Play - Aperçu Local</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no,width=device-width">
+  <meta name="theme-color" content="#373b40">
+  <style type="text/css">
+    @charset "UTF-8";
+    [ng\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}
+    ng\:form{display:block;}
+    .ng-animate-shim{visibility:hidden;}
+    .ng-anchor{position:absolute;}
+  </style>
+  <link rel="stylesheet" href="spordle.css">
+  <link rel="stylesheet" href="content.css">
+</head><body class="grade-a platform-browser platform-macintel platform-ready"><noscript>You need to enable JavaScript in your browser to view Spordle Play.</noscript><!-- uiView: --><ui-view class="view-container" style=""><!-- uiView: --><ui-view><hi-scoresheet $game="::$resolve.$game"><div class="bar-header bar bar-dark"><div class="buttons"><button class="button button-stable button-clear icon-left hi hi-arrow-left" ui-sref="game.pregame" href="/scoresheets/933175/pregame"><div class="hide-md ng-binding" ng-bind="'common.lang.pregame' | translate">Avant-match</div></button></div><div class="buttons pull-right"><hi-help-menu><hi-contextual-menu label="'common.lang.aide' | translate" logo="'ion-help-circled'"><div class="contextual-menu-parent"><button class="button button-stable button-clear icon-right ion-help-circled" ng-class="$ctrl.classNameButton" ng-click="$ctrl.toggleMenu($event)"><span class="hide-md ng-binding" ng-bind="$ctrl.label">Aide</span></button><div class="contextual-menu-container"><!-- ngIf: $ctrl.isOpen --></div></div></hi-contextual-menu></hi-help-menu><button class="button button-stable button-clear icon-right ion-android-document" ng-click="$ctrl.openGameReport()"><span class="hide-md ng-binding" ng-bind="'common.lang.scoresheet' | translate">Feuille de match</span></button><hi-contextual-menu label="'common.actions.options' | translate" logo="'ion-android-settings'"><div class="contextual-menu-parent"><button class="button button-stable button-clear icon-right ion-android-settings" ng-class="$ctrl.classNameButton" ng-click="$ctrl.toggleMenu($event)"><span class="hide-md ng-binding" ng-bind="$ctrl.label">Options</span></button><div class="contextual-menu-container"><!-- ngIf: $ctrl.isOpen --></div></div></hi-contextual-menu><button class="button button-stable button-clear icon-right hi hi-stop" ng-class="$ctrl.nextIcon" ui-sref="game.postgame.review" href="/scoresheets/933175/postgame/review"><div class="hide-md ng-binding" ng-bind="$ctrl.nextLabel">Finir le match</div></button></div></div><div class="scoresheet-view"><h5 class="game-number text-center ng-binding" ng-bind="$ctrl.gameLabel($ctrl.$game.game.number)">MATCH 1021</h5><h5 class="game-category text-center ng-binding" ng-bind="$ctrl.gameDivisionCategoryLabel($ctrl.$game.game)">U12 AA</h5><hi-score class="scoresheet-scores" $game="$ctrl.$game"><div class="score-view"><hi-logo class="score-away score-logo" team="$ctrl.awayTeam"><div class="hi-logo" ng-style="{'background-image': $ctrl.path}" alt="REMPARTS EST RICHELIEU" style="background-image: url(&quot;assets/logos/remparts-est.png&quot;);"></div></hi-logo><div class="score-away score-name"><span ng-bind="$ctrl.awayTeam.name" class="ng-binding">REMPARTS EST RICHELIEU</span></div><div class="score-away score-score"><div class="type ng-binding" ng-bind="'common.enum.team.type.away' | translate | uppercase">VISITEUR</div><div class="score ng-binding" ng-bind="$ctrl.awayScore">4</div><!-- ngIf: $ctrl.awaySportsmanship != undefined --><div class="sportsmanship ng-binding" ng-bind="$ctrl.getSportsmanshipPointsLabel($ctrl.awayTeam.id)" ng-if="$ctrl.awaySportsmanship != undefined" data-title="Points franc jeu">(1)</div><!-- end ngIf: $ctrl.awaySportsmanship != undefined --></div><hi-logo class="score-home score-logo" team="$ctrl.homeTeam"><div class="hi-logo" ng-style="{'background-image': $ctrl.path}" alt="REMPARTS OUEST RICHELIEU" style="background-image: url(&quot;assets/logos/remparts-ouest.png&quot;);"></div></hi-logo><div class="score-home score-name"><span ng-bind="$ctrl.homeTeam.name" class="ng-binding">REMPARTS OUEST RICHELIEU</span></div><div class="score-home score-score"><div class="type ng-binding" ng-bind="'common.enum.team.type.home' | translate | uppercase">LOCAL</div><div class="score ng-binding" ng-bind="$ctrl.homeScore">5</div><!-- ngIf: $ctrl.homeSportsmanship != undefined --><div class="sportsmanship ng-binding" ng-bind="$ctrl.getSportsmanshipPointsLabel($ctrl.homeTeam.id)" ng-if="$ctrl.homeSportsmanship != undefined" data-title="Points franc jeu">(0)</div><!-- end ngIf: $ctrl.homeSportsmanship != undefined --></div><div class="score-buttons"><button class="score-away score-goal button button-balanced icon icon-right hi hi-plus padding-half" ng-click="$ctrl.addGoal($event, $ctrl.awayTeam.id)"><span class="bold ng-binding" ng-bind="'components.score.away.goal' | translate">But</span></button><button class="score-away score-penalty button button-assertive icon icon-right hi hi-plus padding-half" ng-click="$ctrl.addPenalty($event, $ctrl.awayTeam.id)"><span class="bold ng-binding" ng-bind="'common.lang.penalty' | translate">Punitions</span></button><button class="score-away score-swap button button-assertive icon icon-right ion-arrow-swap padding-half" ng-click="$ctrl.changeGoalie($event, $ctrl.awayTeam.id)" ng-disabled="$ctrl.isAwayNDT"><span class="bold ng-binding" ng-bind="'common.lang.goalie' | translate">Gardien</span></button><button class="score-home score-swap button button-assertive icon icon-right ion-arrow-swap padding-half" ng-click="$ctrl.changeGoalie($event, $ctrl.homeTeam.id)" ng-disabled="$ctrl.isHomeNDT"><span class="bold ng-binding" ng-bind="'common.lang.goalie' | translate">Gardien</span></button><button class="score-home score-penalty button button-assertive icon icon-right hi hi-plus padding-half" ng-click="$ctrl.addPenalty($event, $ctrl.homeTeam.id)"><span class="bold ng-binding" ng-bind="'common.lang.penalty' | translate">Punitions</span></button><button class="score-home score-goal button button-balanced icon icon-right hi hi-plus padding-half" ng-click="$ctrl.addGoal($event, $ctrl.homeTeam.id)"><span class="bold ng-binding" ng-bind="'components.score.home.goal' | translate">But</span></button></div></div></hi-score><hi-active-penalties class="scoresheet-penalties" $game="$ctrl.$game"><div class="active-penalties"><hi-penalty-list class="away-penalties" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.awayPenalties" select-penalty="$ctrl.endPenalty"><!-- ngRepeat: penalty in $ctrl.penalties | orderBy:'startTime':false:$ctrl.orderTime track by penalty.id --><hi-jersey-select ng-repeat="penalty in $ctrl.penalties | orderBy:'startTime':false:$ctrl.orderTime track by penalty.id" member="$ctrl.getMember(penalty)" type="$ctrl.isSelected(penalty.id)" details="$ctrl.getPenaltyEnd(penalty)" ng-click="$ctrl.select(penalty, $event)"><hi-jersey class="jersey-select" member="$ctrl.member" type="$ctrl.type" details="$ctrl.details"><div class="jersey jersey-player" ng-class="[$ctrl.jerseyClass, $ctrl.typeClass]"><!-- ngIf: $ctrl.position === 'player' --><hi-jersey-player ng-if="$ctrl.position === 'player'"><!--?xml version="1.0" encoding="UTF-8"?-->
+<svg width="416px" height="456px" viewBox="0 0 416 456" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="player" transform="translate(-48.000000, -28.000000)" stroke-width="9">
+      <g id="jersey" transform="translate(53.000000, 33.000000)">
+        <path class="jersey-body" d="M203.008511,445.943264 L203.00851,445.943039 C68.0091492,445.904823 62.8305606,416.65695 62.8305606,416.65695 C62.8305606,416.65695 62.8305606,423.425484 49.1273712,423.42547 C32.072209,423.425455 3.21476577,413.483498 3.21476577,413.483498 C3.21476577,413.483498 0.0146318142,326.788502 0.0146318142,300.644665 C0.0146318142,274.500972 -0.547253979,264.537125 5.29288178,208.299833 C7.61845221,185.905715 13.3876948,163.89139 21.323067,126.927121 C29.1923246,90.2706868 31.721537,54.8992746 44.3200434,44.9079397 C69.6229661,24.8412233 119.680545,21.1759829 131.972062,10.1152118 C144.263636,-0.945415339 156.360726,0.0214091138 156.360726,0.0214091138 L249.922308,0.0214091138 C249.922308,0.0214091138 262.019599,-0.945415339 274.311116,10.1152118 C286.602633,21.1759829 336.660212,24.8412233 361.963135,44.9079397 C374.561612,54.8992746 377.090868,90.2706868 384.960111,126.927121 C392.89544,163.89139 398.664769,185.905715 400.990296,208.299833 C406.830462,264.537125 406.268517,274.500972 406.268517,300.644665 C406.268517,326.788358 403.06847,413.483498 403.06847,413.483498 C403.06847,413.483498 374.211027,423.425455 357.155864,423.42547 C343.452646,423.425484 343.452646,416.65695 343.452646,416.65695 C343.452646,416.65695 338.274101,445.904757 203.274696,445.943039 L203.274696,445.943264 L203.141517,445.943151 L203.008337,445.943264 L203.008511,445.943264 Z" id="Shape" stroke="#C1C6C9" fill-opacity="0.049999997" fill="#FFFFFF" fill-rule="evenodd"></path>
+        <path class="jersey-outline" d="M64.0250676,418.206691 C64.0250676,418.206691 81.2489581,294.014907 81.2489581,280.129308 C81.2489581,266.243709 89.9719799,176.670353 83.9176066,150.872372" id="Path-90" stroke="#DCE2E3" opacity="0.201667444"></path>
+        <path class="jersey-outline" d="M320.30531,418.206691 C320.30531,418.206691 337.529201,294.014907 337.529201,280.129308 C337.529201,266.243709 346.252222,176.670353 340.197849,150.872372" id="Path-90" stroke="#DCE2E3" opacity="0.201667444" transform="translate(331.320952, 284.539532) scale(-1, 1) translate(-331.320952, -284.539532) "></path>
+      </g>
+    </g>
+  </g>
+</svg></hi-jersey-player><!-- end ngIf: $ctrl.position === 'player' --><!-- ngIf: $ctrl.position === 'goalie' --><!-- ngIf: $ctrl.position === 'coach' --><!-- ngIf: $ctrl.position === 'bench' || $ctrl.position === 'suspended' --><div class="jersey-info"><div class="jersey-name"><span ng-bind="$ctrl.name" class="ng-binding">TOUSIGNANT</span></div><h2 class="bold light jersey-label ng-binding" ng-bind="$ctrl.label">21</h2></div></div><div class="jersey-details ng-binding" ng-bind="$ctrl.details">Fini --:--</div></hi-jersey></hi-jersey-select><!-- end ngRepeat: penalty in $ctrl.penalties | orderBy:'startTime':false:$ctrl.orderTime track by penalty.id --><hi-jersey-select ng-repeat="penalty in $ctrl.penalties | orderBy:'startTime':false:$ctrl.orderTime track by penalty.id" member="$ctrl.getMember(penalty)" type="$ctrl.isSelected(penalty.id)" details="$ctrl.getPenaltyEnd(penalty)" ng-click="$ctrl.select(penalty, $event)"><hi-jersey class="jersey-select" member="$ctrl.member" type="$ctrl.type" details="$ctrl.details"><div class="jersey jersey-player" ng-class="[$ctrl.jerseyClass, $ctrl.typeClass]"><!-- ngIf: $ctrl.position === 'player' --><hi-jersey-player ng-if="$ctrl.position === 'player'"><!--?xml version="1.0" encoding="UTF-8"?-->
+<svg width="416px" height="456px" viewBox="0 0 416 456" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="player" transform="translate(-48.000000, -28.000000)" stroke-width="9">
+      <g id="jersey" transform="translate(53.000000, 33.000000)">
+        <path class="jersey-body" d="M203.008511,445.943264 L203.00851,445.943039 C68.0091492,445.904823 62.8305606,416.65695 62.8305606,416.65695 C62.8305606,416.65695 62.8305606,423.425484 49.1273712,423.42547 C32.072209,423.425455 3.21476577,413.483498 3.21476577,413.483498 C3.21476577,413.483498 0.0146318142,326.788502 0.0146318142,300.644665 C0.0146318142,274.500972 -0.547253979,264.537125 5.29288178,208.299833 C7.61845221,185.905715 13.3876948,163.89139 21.323067,126.927121 C29.1923246,90.2706868 31.721537,54.8992746 44.3200434,44.9079397 C69.6229661,24.8412233 119.680545,21.1759829 131.972062,10.1152118 C144.263636,-0.945415339 156.360726,0.0214091138 156.360726,0.0214091138 L249.922308,0.0214091138 C249.922308,0.0214091138 262.019599,-0.945415339 274.311116,10.1152118 C286.602633,21.1759829 336.660212,24.8412233 361.963135,44.9079397 C374.561612,54.8992746 377.090868,90.2706868 384.960111,126.927121 C392.89544,163.89139 398.664769,185.905715 400.990296,208.299833 C406.830462,264.537125 406.268517,274.500972 406.268517,300.644665 C406.268517,326.788358 403.06847,413.483498 403.06847,413.483498 C403.06847,413.483498 374.211027,423.425455 357.155864,423.42547 C343.452646,423.425484 343.452646,416.65695 343.452646,416.65695 C343.452646,416.65695 338.274101,445.904757 203.274696,445.943039 L203.274696,445.943264 L203.141517,445.943151 L203.008337,445.943264 L203.008511,445.943264 Z" id="Shape" stroke="#C1C6C9" fill-opacity="0.049999997" fill="#FFFFFF" fill-rule="evenodd"></path>
+        <path class="jersey-outline" d="M64.0250676,418.206691 C64.0250676,418.206691 81.2489581,294.014907 81.2489581,280.129308 C81.2489581,266.243709 89.9719799,176.670353 83.9176066,150.872372" id="Path-90" stroke="#DCE2E3" opacity="0.201667444"></path>
+        <path class="jersey-outline" d="M320.30531,418.206691 C320.30531,418.206691 337.529201,294.014907 337.529201,280.129308 C337.529201,266.243709 346.252222,176.670353 340.197849,150.872372" id="Path-90" stroke="#DCE2E3" opacity="0.201667444" transform="translate(331.320952, 284.539532) scale(-1, 1) translate(-331.320952, -284.539532) "></path>
+      </g>
+    </g>
+  </g>
+</svg></hi-jersey-player><!-- end ngIf: $ctrl.position === 'player' --><!-- ngIf: $ctrl.position === 'goalie' --><!-- ngIf: $ctrl.position === 'coach' --><!-- ngIf: $ctrl.position === 'bench' || $ctrl.position === 'suspended' --><div class="jersey-info"><div class="jersey-name"><span ng-bind="$ctrl.name" class="ng-binding">BEAUREGARD</span></div><h2 class="bold light jersey-label ng-binding" ng-bind="$ctrl.label">15</h2></div></div><div class="jersey-details ng-binding" ng-bind="$ctrl.details">Fini --:--</div></hi-jersey></hi-jersey-select><!-- end ngRepeat: penalty in $ctrl.penalties | orderBy:'startTime':false:$ctrl.orderTime track by penalty.id --></hi-penalty-list><div class="active-label ng-binding" ng-bind="$ctrl.activePenaltiesLabel() | uppercase">PUNITIONS
+EN
+COURS</div><hi-penalty-list class="home-penalties" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.homePenalties" select-penalty="$ctrl.endPenalty"><!-- ngRepeat: penalty in $ctrl.penalties | orderBy:'startTime':false:$ctrl.orderTime track by penalty.id --><hi-jersey-select ng-repeat="penalty in $ctrl.penalties | orderBy:'startTime':false:$ctrl.orderTime track by penalty.id" member="$ctrl.getMember(penalty)" type="$ctrl.isSelected(penalty.id)" details="$ctrl.getPenaltyEnd(penalty)" ng-click="$ctrl.select(penalty, $event)"><hi-jersey class="jersey-select" member="$ctrl.member" type="$ctrl.type" details="$ctrl.details"><div class="jersey jersey-player" ng-class="[$ctrl.jerseyClass, $ctrl.typeClass]"><!-- ngIf: $ctrl.position === 'player' --><hi-jersey-player ng-if="$ctrl.position === 'player'"><!--?xml version="1.0" encoding="UTF-8"?-->
+<svg width="416px" height="456px" viewBox="0 0 416 456" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="player" transform="translate(-48.000000, -28.000000)" stroke-width="9">
+      <g id="jersey" transform="translate(53.000000, 33.000000)">
+        <path class="jersey-body" d="M203.008511,445.943264 L203.00851,445.943039 C68.0091492,445.904823 62.8305606,416.65695 62.8305606,416.65695 C62.8305606,416.65695 62.8305606,423.425484 49.1273712,423.42547 C32.072209,423.425455 3.21476577,413.483498 3.21476577,413.483498 C3.21476577,413.483498 0.0146318142,326.788502 0.0146318142,300.644665 C0.0146318142,274.500972 -0.547253979,264.537125 5.29288178,208.299833 C7.61845221,185.905715 13.3876948,163.89139 21.323067,126.927121 C29.1923246,90.2706868 31.721537,54.8992746 44.3200434,44.9079397 C69.6229661,24.8412233 119.680545,21.1759829 131.972062,10.1152118 C144.263636,-0.945415339 156.360726,0.0214091138 156.360726,0.0214091138 L249.922308,0.0214091138 C249.922308,0.0214091138 262.019599,-0.945415339 274.311116,10.1152118 C286.602633,21.1759829 336.660212,24.8412233 361.963135,44.9079397 C374.561612,54.8992746 377.090868,90.2706868 384.960111,126.927121 C392.89544,163.89139 398.664769,185.905715 400.990296,208.299833 C406.830462,264.537125 406.268517,274.500972 406.268517,300.644665 C406.268517,326.788358 403.06847,413.483498 403.06847,413.483498 C403.06847,413.483498 374.211027,423.425455 357.155864,423.42547 C343.452646,423.425484 343.452646,416.65695 343.452646,416.65695 C343.452646,416.65695 338.274101,445.904757 203.274696,445.943039 L203.274696,445.943264 L203.141517,445.943151 L203.008337,445.943264 L203.008511,445.943264 Z" id="Shape" stroke="#C1C6C9" fill-opacity="0.049999997" fill="#FFFFFF" fill-rule="evenodd"></path>
+        <path class="jersey-outline" d="M64.0250676,418.206691 C64.0250676,418.206691 81.2489581,294.014907 81.2489581,280.129308 C81.2489581,266.243709 89.9719799,176.670353 83.9176066,150.872372" id="Path-90" stroke="#DCE2E3" opacity="0.201667444"></path>
+        <path class="jersey-outline" d="M320.30531,418.206691 C320.30531,418.206691 337.529201,294.014907 337.529201,280.129308 C337.529201,266.243709 346.252222,176.670353 340.197849,150.872372" id="Path-90" stroke="#DCE2E3" opacity="0.201667444" transform="translate(331.320952, 284.539532) scale(-1, 1) translate(-331.320952, -284.539532) "></path>
+      </g>
+    </g>
+  </g>
+</svg></hi-jersey-player><!-- end ngIf: $ctrl.position === 'player' --><!-- ngIf: $ctrl.position === 'goalie' --><!-- ngIf: $ctrl.position === 'coach' --><!-- ngIf: $ctrl.position === 'bench' || $ctrl.position === 'suspended' --><div class="jersey-info"><div class="jersey-name"><span ng-bind="$ctrl.name" class="ng-binding">ROUSSON</span></div><h2 class="bold light jersey-label ng-binding" ng-bind="$ctrl.label">99</h2></div></div><div class="jersey-details ng-binding" ng-bind="$ctrl.details">Fini --:--</div></hi-jersey></hi-jersey-select><!-- end ngRepeat: penalty in $ctrl.penalties | orderBy:'startTime':false:$ctrl.orderTime track by penalty.id --><hi-jersey-select ng-repeat="penalty in $ctrl.penalties | orderBy:'startTime':false:$ctrl.orderTime track by penalty.id" member="$ctrl.getMember(penalty)" type="$ctrl.isSelected(penalty.id)" details="$ctrl.getPenaltyEnd(penalty)" ng-click="$ctrl.select(penalty, $event)"><hi-jersey class="jersey-select" member="$ctrl.member" type="$ctrl.type" details="$ctrl.details"><div class="jersey jersey-player" ng-class="[$ctrl.jerseyClass, $ctrl.typeClass]"><!-- ngIf: $ctrl.position === 'player' --><hi-jersey-player ng-if="$ctrl.position === 'player'"><!--?xml version="1.0" encoding="UTF-8"?-->
+<svg width="416px" height="456px" viewBox="0 0 416 456" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="player" transform="translate(-48.000000, -28.000000)" stroke-width="9">
+      <g id="jersey" transform="translate(53.000000, 33.000000)">
+        <path class="jersey-body" d="M203.008511,445.943264 L203.00851,445.943039 C68.0091492,445.904823 62.8305606,416.65695 62.8305606,416.65695 C62.8305606,416.65695 62.8305606,423.425484 49.1273712,423.42547 C32.072209,423.425455 3.21476577,413.483498 3.21476577,413.483498 C3.21476577,413.483498 0.0146318142,326.788502 0.0146318142,300.644665 C0.0146318142,274.500972 -0.547253979,264.537125 5.29288178,208.299833 C7.61845221,185.905715 13.3876948,163.89139 21.323067,126.927121 C29.1923246,90.2706868 31.721537,54.8992746 44.3200434,44.9079397 C69.6229661,24.8412233 119.680545,21.1759829 131.972062,10.1152118 C144.263636,-0.945415339 156.360726,0.0214091138 156.360726,0.0214091138 L249.922308,0.0214091138 C249.922308,0.0214091138 262.019599,-0.945415339 274.311116,10.1152118 C286.602633,21.1759829 336.660212,24.8412233 361.963135,44.9079397 C374.561612,54.8992746 377.090868,90.2706868 384.960111,126.927121 C392.89544,163.89139 398.664769,185.905715 400.990296,208.299833 C406.830462,264.537125 406.268517,274.500972 406.268517,300.644665 C406.268517,326.788358 403.06847,413.483498 403.06847,413.483498 C403.06847,413.483498 374.211027,423.425455 357.155864,423.42547 C343.452646,423.425484 343.452646,416.65695 343.452646,416.65695 C343.452646,416.65695 338.274101,445.904757 203.274696,445.943039 L203.274696,445.943264 L203.141517,445.943151 L203.008337,445.943264 L203.008511,445.943264 Z" id="Shape" stroke="#C1C6C9" fill-opacity="0.049999997" fill="#FFFFFF" fill-rule="evenodd"></path>
+        <path class="jersey-outline" d="M64.0250676,418.206691 C64.0250676,418.206691 81.2489581,294.014907 81.2489581,280.129308 C81.2489581,266.243709 89.9719799,176.670353 83.9176066,150.872372" id="Path-90" stroke="#DCE2E3" opacity="0.201667444"></path>
+        <path class="jersey-outline" d="M320.30531,418.206691 C320.30531,418.206691 337.529201,294.014907 337.529201,280.129308 C337.529201,266.243709 346.252222,176.670353 340.197849,150.872372" id="Path-90" stroke="#DCE2E3" opacity="0.201667444" transform="translate(331.320952, 284.539532) scale(-1, 1) translate(-331.320952, -284.539532) "></path>
+      </g>
+    </g>
+  </g>
+</svg></hi-jersey-player><!-- end ngIf: $ctrl.position === 'player' --><!-- ngIf: $ctrl.position === 'goalie' --><!-- ngIf: $ctrl.position === 'coach' --><!-- ngIf: $ctrl.position === 'bench' || $ctrl.position === 'suspended' --><div class="jersey-info"><div class="jersey-name"><span ng-bind="$ctrl.name" class="ng-binding">BOUTHILLIER</span></div><h2 class="bold light jersey-label ng-binding" ng-bind="$ctrl.label">26</h2></div></div><div class="jersey-details ng-binding" ng-bind="$ctrl.details">Fini --:--</div></hi-jersey></hi-jersey-select><!-- end ngRepeat: penalty in $ctrl.penalties | orderBy:'startTime':false:$ctrl.orderTime track by penalty.id --><hi-jersey-select ng-repeat="penalty in $ctrl.penalties | orderBy:'startTime':false:$ctrl.orderTime track by penalty.id" member="$ctrl.getMember(penalty)" type="$ctrl.isSelected(penalty.id)" details="$ctrl.getPenaltyEnd(penalty)" ng-click="$ctrl.select(penalty, $event)"><hi-jersey class="jersey-select" member="$ctrl.member" type="$ctrl.type" details="$ctrl.details"><div class="jersey jersey-player" ng-class="[$ctrl.jerseyClass, $ctrl.typeClass]"><!-- ngIf: $ctrl.position === 'player' --><hi-jersey-player ng-if="$ctrl.position === 'player'"><!--?xml version="1.0" encoding="UTF-8"?-->
+<svg width="416px" height="456px" viewBox="0 0 416 456" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="player" transform="translate(-48.000000, -28.000000)" stroke-width="9">
+      <g id="jersey" transform="translate(53.000000, 33.000000)">
+        <path class="jersey-body" d="M203.008511,445.943264 L203.00851,445.943039 C68.0091492,445.904823 62.8305606,416.65695 62.8305606,416.65695 C62.8305606,416.65695 62.8305606,423.425484 49.1273712,423.42547 C32.072209,423.425455 3.21476577,413.483498 3.21476577,413.483498 C3.21476577,413.483498 0.0146318142,326.788502 0.0146318142,300.644665 C0.0146318142,274.500972 -0.547253979,264.537125 5.29288178,208.299833 C7.61845221,185.905715 13.3876948,163.89139 21.323067,126.927121 C29.1923246,90.2706868 31.721537,54.8992746 44.3200434,44.9079397 C69.6229661,24.8412233 119.680545,21.1759829 131.972062,10.1152118 C144.263636,-0.945415339 156.360726,0.0214091138 156.360726,0.0214091138 L249.922308,0.0214091138 C249.922308,0.0214091138 262.019599,-0.945415339 274.311116,10.1152118 C286.602633,21.1759829 336.660212,24.8412233 361.963135,44.9079397 C374.561612,54.8992746 377.090868,90.2706868 384.960111,126.927121 C392.89544,163.89139 398.664769,185.905715 400.990296,208.299833 C406.830462,264.537125 406.268517,274.500972 406.268517,300.644665 C406.268517,326.788358 403.06847,413.483498 403.06847,413.483498 C403.06847,413.483498 374.211027,423.425455 357.155864,423.42547 C343.452646,423.425484 343.452646,416.65695 343.452646,416.65695 C343.452646,416.65695 338.274101,445.904757 203.274696,445.943039 L203.274696,445.943264 L203.141517,445.943151 L203.008337,445.943264 L203.008511,445.943264 Z" id="Shape" stroke="#C1C6C9" fill-opacity="0.049999997" fill="#FFFFFF" fill-rule="evenodd"></path>
+        <path class="jersey-outline" d="M64.0250676,418.206691 C64.0250676,418.206691 81.2489581,294.014907 81.2489581,280.129308 C81.2489581,266.243709 89.9719799,176.670353 83.9176066,150.872372" id="Path-90" stroke="#DCE2E3" opacity="0.201667444"></path>
+        <path class="jersey-outline" d="M320.30531,418.206691 C320.30531,418.206691 337.529201,294.014907 337.529201,280.129308 C337.529201,266.243709 346.252222,176.670353 340.197849,150.872372" id="Path-90" stroke="#DCE2E3" opacity="0.201667444" transform="translate(331.320952, 284.539532) scale(-1, 1) translate(-331.320952, -284.539532) "></path>
+      </g>
+    </g>
+  </g>
+</svg></hi-jersey-player><!-- end ngIf: $ctrl.position === 'player' --><!-- ngIf: $ctrl.position === 'goalie' --><!-- ngIf: $ctrl.position === 'coach' --><!-- ngIf: $ctrl.position === 'bench' || $ctrl.position === 'suspended' --><div class="jersey-info"><div class="jersey-name"><span ng-bind="$ctrl.name" class="ng-binding">ROUSSON</span></div><h2 class="bold light jersey-label ng-binding" ng-bind="$ctrl.label">99</h2></div></div><div class="jersey-details ng-binding" ng-bind="$ctrl.details">Fini --:--</div></hi-jersey></hi-jersey-select><!-- end ngRepeat: penalty in $ctrl.penalties | orderBy:'startTime':false:$ctrl.orderTime track by penalty.id --><hi-jersey-select ng-repeat="penalty in $ctrl.penalties | orderBy:'startTime':false:$ctrl.orderTime track by penalty.id" member="$ctrl.getMember(penalty)" type="$ctrl.isSelected(penalty.id)" details="$ctrl.getPenaltyEnd(penalty)" ng-click="$ctrl.select(penalty, $event)"><hi-jersey class="jersey-select" member="$ctrl.member" type="$ctrl.type" details="$ctrl.details"><div class="jersey jersey-player" ng-class="[$ctrl.jerseyClass, $ctrl.typeClass]"><!-- ngIf: $ctrl.position === 'player' --><hi-jersey-player ng-if="$ctrl.position === 'player'"><!--?xml version="1.0" encoding="UTF-8"?-->
+<svg width="416px" height="456px" viewBox="0 0 416 456" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="player" transform="translate(-48.000000, -28.000000)" stroke-width="9">
+      <g id="jersey" transform="translate(53.000000, 33.000000)">
+        <path class="jersey-body" d="M203.008511,445.943264 L203.00851,445.943039 C68.0091492,445.904823 62.8305606,416.65695 62.8305606,416.65695 C62.8305606,416.65695 62.8305606,423.425484 49.1273712,423.42547 C32.072209,423.425455 3.21476577,413.483498 3.21476577,413.483498 C3.21476577,413.483498 0.0146318142,326.788502 0.0146318142,300.644665 C0.0146318142,274.500972 -0.547253979,264.537125 5.29288178,208.299833 C7.61845221,185.905715 13.3876948,163.89139 21.323067,126.927121 C29.1923246,90.2706868 31.721537,54.8992746 44.3200434,44.9079397 C69.6229661,24.8412233 119.680545,21.1759829 131.972062,10.1152118 C144.263636,-0.945415339 156.360726,0.0214091138 156.360726,0.0214091138 L249.922308,0.0214091138 C249.922308,0.0214091138 262.019599,-0.945415339 274.311116,10.1152118 C286.602633,21.1759829 336.660212,24.8412233 361.963135,44.9079397 C374.561612,54.8992746 377.090868,90.2706868 384.960111,126.927121 C392.89544,163.89139 398.664769,185.905715 400.990296,208.299833 C406.830462,264.537125 406.268517,274.500972 406.268517,300.644665 C406.268517,326.788358 403.06847,413.483498 403.06847,413.483498 C403.06847,413.483498 374.211027,423.425455 357.155864,423.42547 C343.452646,423.425484 343.452646,416.65695 343.452646,416.65695 C343.452646,416.65695 338.274101,445.904757 203.274696,445.943039 L203.274696,445.943264 L203.141517,445.943151 L203.008337,445.943264 L203.008511,445.943264 Z" id="Shape" stroke="#C1C6C9" fill-opacity="0.049999997" fill="#FFFFFF" fill-rule="evenodd"></path>
+        <path class="jersey-outline" d="M64.0250676,418.206691 C64.0250676,418.206691 81.2489581,294.014907 81.2489581,280.129308 C81.2489581,266.243709 89.9719799,176.670353 83.9176066,150.872372" id="Path-90" stroke="#DCE2E3" opacity="0.201667444"></path>
+        <path class="jersey-outline" d="M320.30531,418.206691 C320.30531,418.206691 337.529201,294.014907 337.529201,280.129308 C337.529201,266.243709 346.252222,176.670353 340.197849,150.872372" id="Path-90" stroke="#DCE2E3" opacity="0.201667444" transform="translate(331.320952, 284.539532) scale(-1, 1) translate(-331.320952, -284.539532) "></path>
+      </g>
+    </g>
+  </g>
+</svg></hi-jersey-player><!-- end ngIf: $ctrl.position === 'player' --><!-- ngIf: $ctrl.position === 'goalie' --><!-- ngIf: $ctrl.position === 'coach' --><!-- ngIf: $ctrl.position === 'bench' || $ctrl.position === 'suspended' --><div class="jersey-info"><div class="jersey-name"><span ng-bind="$ctrl.name" class="ng-binding">KANASH</span></div><h2 class="bold light jersey-label ng-binding" ng-bind="$ctrl.label">24</h2></div></div><div class="jersey-details ng-binding" ng-bind="$ctrl.details">Fini --:--</div></hi-jersey></hi-jersey-select><!-- end ngRepeat: penalty in $ctrl.penalties | orderBy:'startTime':false:$ctrl.orderTime track by penalty.id --></hi-penalty-list></div></hi-active-penalties><hi-summary class="scoresheet-summary hi-summary" $game="$ctrl.$game" show-period-shortcut="true"><hi-summary-list class="summary-list" $game="$ctrl.$game" type-filter="$ctrl.filters.type" team-filter="$ctrl.filters.team" option-filter="$ctrl.filters.option" show-period-shortcut="$ctrl.showPeriodShortcut"><div class="summary-items"><div class="summary-period-header ng-binding ng-hide" ng-show="$ctrl.gameSummary.SO.length" ng-bind="'common.enum.periods.SO.full' | translate | uppercase">FUSILLADE</div><!-- ngRepeat: event in $ctrl.summaries.SO | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><div class="summary-period-footer ng-binding ng-hide" ng-show="$ctrl.gameSummary['SO'].length &gt; $ctrl.summaries['SO'].length" ng-bind="$ctrl.hiddenLabel('SO')">Tous les événements cachés par le filtre actuel</div><!-- ngRepeat: periodOT in $ctrl.getOvertimePeriods() --><div class="summary-period-header ng-binding" ng-show="$ctrl.gameSummary[3].length">3E PÉRIODE - 20:00<button class="button no-border ion-edit" ng-show="$ctrl.showPeriodShortcut" ng-click="$ctrl.editPeriods()"></button></div><!-- ngRepeat: event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class="" style=""><div class="summary-item " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">17:37</div><div class="action ng-binding away penalty" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">Punition - Visiteur</div><div class="details ng-binding" ng-bind-html="$ctrl.details">LILY-ROSE BOILEAU (30) - SERVI: MILA BEAUREGARD (15) - A22 - Coup de bâton (Mineure)<span class="powerplay-opportunities-chip" data-title="Opportunités en avantage numérique">1 OAN</span></div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item" ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">13:37</div><div class="action ng-binding home goalie" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">Gardien - Local</div><div class="details ng-binding" ng-bind-html="$ctrl.details">ANAELLE LEMIEUX (33) - Mis dans le filet</div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">13:37</div><div class="action ng-binding home goal" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">But - Local</div><div class="details ng-binding" ng-bind-html="$ctrl.details">SARAH ZHANG (25) [IN] - PASSES: ALEXE ROUSSON (99), VICTORIA JOSEPH (32)</div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">12:59</div><div class="action ng-binding home goal" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">But - Local</div><div class="details ng-binding" ng-bind-html="$ctrl.details">SARAH ZHANG (25) [IN] - PASSES: VICTORIA JOSEPH (32)</div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">11:16</div><div class="action ng-binding home goal" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">But - Local</div><div class="details ng-binding" ng-bind-html="$ctrl.details">EVA RODRIGUES (21)  - PASSES: KAMÉLY CORRIVEAU (22), LUNA ZHANG (23)</div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">10:31</div><div class="action ng-binding away goal" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">But - Visiteur</div><div class="details ng-binding" ng-bind-html="$ctrl.details">EMME GUERIN-CARANGI (13)  - PASSES: JULIETTE LAMBERT (14), ANNABELLA VERBUK (16)</div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">07:48</div><div class="action ng-binding away goal" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">But - Visiteur</div><div class="details ng-binding" ng-bind-html="$ctrl.details">LILIANE TOUSIGNANT (21) [Tir de punition]</div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">07:48</div><div class="action ng-binding home goal" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">But - Local</div><div class="details ng-binding" ng-bind-html="$ctrl.details">ZELDA BOUTHILLIER (26) [FD]</div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[3] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><div class="summary-period-footer ng-binding ng-hide" ng-show="$ctrl.gameSummary[3].length &gt; $ctrl.summaries[3].length" ng-bind="$ctrl.hiddenLabel(3)" style="">0 événements cachés par le filtre actuel</div><div class="summary-period-header ng-binding" ng-show="$ctrl.gameSummary[2].length">2E PÉRIODE - 20:00<button class="button no-border ion-edit" ng-show="$ctrl.showPeriodShortcut" ng-click="$ctrl.editPeriods()"></button></div><!-- ngRepeat: event in $ctrl.summaries[2] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[2] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">15:16</div><div class="action ng-binding home penalty" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">Punition - Local</div><div class="details ng-binding" ng-bind-html="$ctrl.details">Punition de banc: RAPHAELLE KANASH (24) - A80 - Trop de joueurs sur la patinoire (Mineure)</div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[2] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[2] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item" ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">08:00</div><div class="action ng-binding away goalie" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">Gardien - Visiteur</div><div class="details ng-binding" ng-bind-html="$ctrl.details">CHARLIE HEBERT (1) - Mis dans le filet</div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[2] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[2] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item  " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">05:00</div><div class="action ng-binding home penalty" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">Punition - Local</div><div class="details ng-binding" ng-bind-html="$ctrl.details">ALEXE ROUSSON (99) - A48 - Contact avec la tête (Mineure 4/4)
+Début: 07:00</div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[2] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[2] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item  " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">05:00</div><div class="action ng-binding home penalty" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">Punition - Local</div><div class="details ng-binding" ng-bind-html="$ctrl.details">ALEXE ROUSSON (99) - A48 - Contact avec la tête (Mineure 2/4)<span class="powerplay-opportunities-chip" data-title="Opportunités en avantage numérique">2 OAN</span></div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[2] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[2] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item  " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">05:00</div><div class="action ng-binding home penalty" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">Punition - Local</div><div class="details ng-binding" ng-bind-html="$ctrl.details">ZELDA BOUTHILLIER (26) - B40 - Mise en échec par derrière (Majeure)<span class="powerplay-opportunities-chip" data-title="Opportunités en avantage numérique">1 OAN</span></div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[2] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[2] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item  " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">05:00</div><div class="action ng-binding home penalty" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">Punition - Local</div><div class="details ng-binding" ng-bind-html="$ctrl.details">ZELDA BOUTHILLIER (26) - D40 - Mise en échec par derrière (Extrême inconduite)</div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[2] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><div class="summary-period-footer ng-binding ng-hide" ng-show="$ctrl.gameSummary[2].length &gt; $ctrl.summaries[2].length" ng-bind="$ctrl.hiddenLabel(2)">0 événements cachés par le filtre actuel</div><div class="summary-period-header ng-binding" ng-show="$ctrl.gameSummary[1].length">1RE PÉRIODE - 20:00<button class="button no-border ion-edit" ng-show="$ctrl.showPeriodShortcut" ng-click="$ctrl.editPeriods()"></button></div><!-- ngRepeat: event in $ctrl.summaries[1] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[1] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">02:36</div><div class="action ng-binding home goal" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">But - Local</div><div class="details ng-binding" ng-bind-html="$ctrl.details">LUNA ZHANG (23) [AN] - PASSES: RAPHAELLE KANASH (24)</div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[1] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[1] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">02:04</div><div class="action ng-binding away goal" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">But - Visiteur</div><div class="details ng-binding" ng-bind-html="$ctrl.details">JULIETTE LAMBERT (14) [IN]</div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[1] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[1] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">01:39</div><div class="action ng-binding away penalty" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">Punition - Visiteur</div><div class="details ng-binding" ng-bind-html="$ctrl.details">LILIANE TOUSIGNANT (21) - A22 - Coup de bâton (Mineure)<span class="powerplay-opportunities-chip" data-title="Opportunités en avantage numérique">1 OAN</span></div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[1] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><hi-summary-item ng-repeat="event in $ctrl.summaries[1] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id" event="event" $game="$ctrl.$game" members="$ctrl.members" penalties="$ctrl.penalties" highlight="$ctrl.IncidentReport(event)" class=""><div class="summary-item " ng-class="{'requires-incident': $ctrl.highlight}"><div class="time ng-binding" ng-bind="$ctrl.event.gameTime | gameTime:$ctrl.$game.branchOfficeSettings.gameTimeDisplay">00:00</div><div class="action ng-binding away goal" ng-class="[$ctrl.teamType, $ctrl.event.eventType]" ng-bind="$ctrl.actionLabel($ctrl.teamType, $ctrl.event.eventType)">But - Visiteur</div><div class="details ng-binding" ng-bind-html="$ctrl.details">ABIGAIL HANLEY (10) </div><div class="modify"><ng-transclude><button class="button button-balanced button-outline no-border ion-edit" ng-click="$ctrl.editEvent($event, event.eventType, event)"></button><button class="button button-energized button-outline no-border ion-close" ng-click="$ctrl.deleteEvent($event, event.eventType, event)"></button></ng-transclude></div></div></hi-summary-item><!-- end ngRepeat: event in $ctrl.summaries[1] | orderBy:['gameTime', 'startTime']:true:$ctrl.orderTime track by event.id --><div class="summary-period-footer ng-binding ng-hide" ng-show="$ctrl.gameSummary[1].length &gt; $ctrl.summaries[1].length" ng-bind="$ctrl.hiddenLabel(1)">0 événements cachés par le filtre actuel</div></div></hi-summary-list><div class="summary-filters"><div class="filters"><button class="filter ng-binding" ng-click="$ctrl.selectTeam('away')" ng-class="{'selected': $ctrl.isSelected('away', 'team')}" ng-bind="'common.enum.team.type.away' | translate | uppercase" style="">VISITEUR</button><button class="filter ng-binding" ng-click="$ctrl.selectTeam('home')" ng-class="{'selected': $ctrl.isSelected('home', 'team')}" ng-bind="'common.enum.team.type.home' | translate | uppercase" style="">LOCAL</button></div><div class="filters"><button class="filter ng-binding" ng-click="$ctrl.selectFilter('goal')" ng-class="{'selected': $ctrl.isSelected('goal', 'type')}" ng-bind="'common.lang.goals' | translate | uppercase" style="">BUTS</button><button class="filter ng-binding" ng-click="$ctrl.selectFilter('penalty')" ng-class="{'selected': $ctrl.isSelected('penalty', 'type')}" ng-bind="'common.lang.penalties' | translate | uppercase">PUNITIONS</button></div><div class="filters hidden" ng-class="{'hidden': !$ctrl.isSelected('penalty', 'type')}"><button class="filter ng-binding" ng-click="$ctrl.selectOption('minor')" ng-class="{'selected': $ctrl.isSelected('minor', 'option')}" ng-bind="'common.lang.minor' | translate | uppercase">MINEURE</button><button class="filter ng-binding" ng-click="$ctrl.selectOption('major')" ng-class="{'selected': $ctrl.isSelected('major', 'option')}" ng-bind="'common.lang.major' | translate | uppercase">MAJEURE</button></div></div></hi-summary></div></hi-scoresheet></ui-view></ui-view><div class="backdrop"></div><div class="click-block click-block-hide"></div>  <script src="content.js"></script>
+</body></html>

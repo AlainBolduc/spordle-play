@@ -40,20 +40,76 @@
   const playerHtml = (p) =>
     `numéro <strong>${escapeHtml(p.number)}</strong>, ${escapeHtml(p.name)}`;
 
+  const cleanPenaltyDetails = (text) =>
+    (text || "")
+      .replace(/\d+\s*(?:OAN|PPO)\b/gi, "")
+      .replace(/(?:D[eé]but|Start|Fin|End)\s*:\s*\d{1,2}:\d{2}/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
   // Durée annoncée selon la sévérité
   const DURATIONS = [
-    [/double\s*mineure/i, "4 minutes"],
-    [/mineure\s*de\s*banc/i, "2 minutes"],
-    [/mineure/i, "2 minutes"],
-    [/majeure/i, "5 minutes"],
-    [/inconduite\s*de\s*match|match/i, ""],
-    [/grossi[eè]re/i, ""],
-    [/inconduite/i, "10 minutes"],
+    [/double\s*mineure|double\s*minor/i, "4 minutes"],
+    [/mineure\s*de\s*banc|bench\s*minor/i, "2 minutes"],
+    [/mineure\s*\d\/\d|minor\s*\d\/\d/i, "2 minutes"],
+    [/mineure|minor/i, "2 minutes"],
+    [/majeure|major/i, "5 minutes"],
+    [/extr[eê]me\s*inconduite|game\s*misconduct/i, "extrême inconduite de partie"],
+    [/inconduite\s*de\s*match/i, "inconduite de match"],
+    [/p[eé]nalit[eé]\s*de\s*match|match\s*penalty/i, "5 minutes et pénalité de match"],
+    [/grossi[eè]re/i, "grossière inconduite"],
+    [/inconduite|misconduct/i, "10 minutes"],
   ];
 
-  // "- A22 - Coup de bâton (Mineure)" -> { code, infraction, severity, duration }
-  const parsePenalty = (text) => {
-    let s = clean(text).replace(/^[\-–—:,\s]+/, "");
+  // Extrait les informations de pénalité : joueur fautif, purgeur, sévérité, infraction
+  // Gère :
+  // - "LILY-ROSE BOILEAU (30) - SERVI: MILA BEAUREGARD (15) - A22 - Coup de bâton (Mineure)"
+  // - "Punition de banc: RAPHAELLE KANASH (24) - A80 - Trop de joueurs sur la patinoire (Mineure)"
+  // - "ALEXE ROUSSON (99) - A48 - Contact avec la tête (Mineure 4/4)"
+  const parsePenaltyEvent = (details) => {
+    const cleaned = cleanPenaltyDetails(details);
+    const isBench = /\b(?:banc|bench)\b/i.test(cleaned);
+
+    // Extraction d'un éventuel joueur purgeur via "- SERVI: NOM (NUM)" ou "SERVED / PURGÉ"
+    let servedBy = null;
+    const servedMatch = cleaned.match(/\b(?:SERVI|SERVED|PURG[EÉ])\s*:\s*([^()]+?\(\d+\))/i);
+    if (servedMatch) {
+      const parsedServer = parsePlayers(servedMatch[1]);
+      if (parsedServer.length) servedBy = parsedServer[0];
+    }
+
+    // Retirer le segment de purge pour le traitement de l'infraction
+    let s = cleaned.replace(/\s*-\s*(?:SERVI|SERVED|PURG[EÉ])\s*:\s*[^()]+?\(\d+\)/gi, "");
+
+    // Retirer le préfixe de banc éventuel
+    s = s.replace(/^(?:punition|p[eé]nalit[eé]|penalty)?\s*de\s*banc\s*[:\-–—]?\s*/i, "").trim();
+
+    // Trouver les joueurs restants dans la chaîne
+    const players = parsePlayers(s);
+    let player = null;
+
+    if (isBench) {
+      // Pour une pénalité de banc : s'il y a un joueur indiqué, c'est celui qui purge
+      if (!servedBy && players.length > 0) {
+        servedBy = players[0];
+      }
+    } else {
+      // Pour une pénalité normale : le premier joueur est le fautif
+      if (players.length > 0) {
+        player = players[0];
+      }
+    }
+
+    // On retire le joueur fautif ou purgeur du début pour ne garder que l'infraction et la sévérité
+    if (player) {
+      s = s.replace(new RegExp(`^[^()]+?\\(${player.number}\\)`), "").trim();
+    } else if (isBench && servedBy) {
+      s = s.replace(new RegExp(`^[^()]+?\\(${servedBy.number}\\)`), "").trim();
+    }
+
+    s = clean(s).replace(/^[\-–—:,\s]+/, "");
+    s = s.replace(/^(?:banc|bench|équipe|equipe)\s*[\-–—:]*\s*/i, "");
+
     let severity = "";
     const sevMatch = s.match(/\(([^()]+)\)\s*$/);
     if (sevMatch) {
@@ -65,7 +121,36 @@
     if (parts.length && /^[A-Z]{1,2}\d{1,3}[a-z]?$/i.test(parts[0])) code = parts.shift();
     const infraction = parts.join(" - ");
     const found = DURATIONS.find(([re]) => re.test(severity));
-    return { code, infraction, severity, duration: found ? found[1] : "" };
+    const duration = found ? found[1] : (severity ? "" : "2 minutes");
+
+    return {
+      isBench,
+      player,
+      servedBy,
+      code,
+      infraction,
+      severity,
+      duration,
+    };
+  };
+
+  // "- A22 - Coup de bâton (Mineure)" -> { code, infraction, severity, duration }
+  const parsePenalty = (text) => {
+    let s = clean(cleanPenaltyDetails(text)).replace(/^[\-–—:,\s]+/, "");
+    s = s.replace(/^(?:banc|bench|équipe|equipe)\s*[\-–—:]*\s*/i, "");
+
+    let severity = "";
+    const sevMatch = s.match(/\(([^()]+)\)\s*$/);
+    if (sevMatch) {
+      severity = clean(sevMatch[1]);
+      s = clean(s.slice(0, sevMatch.index));
+    }
+    const parts = s.split(/\s+[\-–—]\s+/).map(clean).filter(Boolean);
+    let code = "";
+    if (parts.length && /^[A-Z]{1,2}\d{1,3}[a-z]?$/i.test(parts[0])) code = parts.shift();
+    const infraction = parts.join(" - ");
+    const found = DURATIONS.find(([re]) => re.test(severity));
+    return { code, infraction, severity, duration: found ? found[1] : (severity ? "" : "2 minutes") };
   };
 
   // ---------- Lecture du DOM Spordle ----------
@@ -123,6 +208,34 @@
   ];
   const ordinal = (n) => ORDINALS[n] || `${n}e`;
 
+  const getScorerNumberFromItem = (item) => {
+    const rawDetails = item.querySelector(".details")?.textContent || "";
+    const cleanDetails = rawDetails
+      .replace(/\[(?:AN|PP|PPG|SN|DN|SH|SHG|IN|FD|EN|ENG|tir\s*de\s*(?:punition|p[eé]nalit[eé])|penalty\s*shot|TP|PS)\]/gi, "")
+      .trim();
+    const [scorerPart] = cleanDetails.split(/\b(?:PASSES?|ASSISTS?|AIDES?)\s*:/i);
+    const players = parsePlayers(scorerPart);
+    return players.length ? players[0].number : null;
+  };
+
+  // Calcule le n-ième but du même joueur dans le match pour son équipe
+  const playerGoalRank = (summaryItem, side, playerNumber) => {
+    if (!playerNumber) return 0;
+    if (document.querySelector(".summary-filters .filter.selected")) return 0;
+
+    const host = summaryItem.closest(".summary-items") || summaryItem.closest("hi-summary-list") || document.body;
+    const goals = [...host.querySelectorAll(".summary-item")].filter((item) => {
+      const a = item.querySelector(".action");
+      if (!a || !a.classList.contains("goal") || !a.classList.contains(side)) return false;
+      const periodHost = item.closest("hi-summary-item") || item;
+      if (/fusillade|shootout/i.test(getPeriodLabel(periodHost))) return false;
+      return getScorerNumberFromItem(item) === playerNumber;
+    });
+
+    const idx = goals.indexOf(summaryItem);
+    return idx === -1 ? 0 : goals.length - idx;
+  };
+
   const readEvent = (summaryItem) => {
     const actionEl = summaryItem.querySelector(".action");
     if (!actionEl) return null;
@@ -147,86 +260,208 @@
 
   // ---------- Construction du texte à annoncer ----------
 
-  const timeLine = (ev) => {
+  const timeSentence = (ev) => {
     if (!ev.time) return "";
     const period = ev.period ? ` de la ${escapeHtml(ev.period)}` : "";
     const label = ev.type === "penalty" ? "Le temps de la pénalité" : "Le temps du but";
-    return `<div class="sa-line">${label} : <strong>${escapeHtml(ev.time)}</strong>${period}.</div>`;
+    return `${label} : <strong>${escapeHtml(ev.time)}</strong>${period}.`;
   };
 
-  const SPECIAL_GOAL_FLAGS = [
-    { regex: /\[(?:AN|PP)\]/i, label: "en avantage numérique" },
-    { regex: /\[(?:DN|SH|IN)\]/i, label: "en infériorité numérique" },
-    { regex: /\[(?:FD|EN)\]/i, label: "dans un filet désert" },
-  ];
+  const buildGoal = (ev, summaryItem) => {
+    // Détecte les situations numériques et spéciales
+    const isShortHanded = /\[(?:DN|SH|SHG|IN)\]/i.test(ev.details);
+    const isPowerPlay = /\[(?:AN|PP|PPG|SN)\]/i.test(ev.details);
+    const isPenaltyShot = /\[(?:tir\s*de\s*(?:punition|p[eé]nalit[eé])|penalty\s*shot|TP|PS)\]/i.test(ev.details);
+    const isEmptyNet = /\[(?:FD|EN|ENG)\]/i.test(ev.details);
 
-  const buildGoal = (ev) => {
-    // Détecte les mentions spéciales [AN], [DN], [FD]
-    const specials = [];
-    for (const flag of SPECIAL_GOAL_FLAGS) {
-      if (flag.regex.test(ev.details)) {
-        specials.push(flag.label);
-      }
-    }
-
-    // Nettoie les balises [AN], [DN], [FD] des détails pour le parsing des noms
-    const cleanDetails = ev.details.replace(/\[(?:AN|PP|DN|SH|IN|FD|EN)\]/gi, "").trim();
+    // Nettoie les balises spéciales des détails pour le parsing des noms
+    const cleanDetails = ev.details
+      .replace(/\[(?:AN|PP|PPG|SN|DN|SH|SHG|IN|FD|EN|ENG|tir\s*de\s*(?:punition|p[eé]nalit[eé])|penalty\s*shot|TP|PS)\]/gi, "")
+      .trim();
 
     // Format observé : "MAYSON GOSSELIN (77)  - PASSES: ARNO ALLAIRE (21)"
     const [scorerPart, ...rest] = cleanDetails.split(/\b(?:PASSES?|ASSISTS?|AIDES?)\s*:/i);
     const scorer = parsePlayers(scorerPart)[0];
     const assists = parsePlayers(rest.join(" "));
 
+    // Calcule si c'est le 2e, 3e, etc. but de ce joueur dans le match
+    const pRank = summaryItem && scorer ? playerGoalRank(summaryItem, ev.side, scorer.number) : 0;
+    const playerRankSuffix = pRank >= 2 ? `, son <strong>${ordinal(pRank)}</strong> de la rencontre` : "";
+
     const opening = ev.rank
-      ? `Le <strong>${ordinal(ev.rank)}</strong> but des <strong>${escapeHtml(ev.team)}</strong>,`
-      : `But des <strong>${escapeHtml(ev.team)}</strong>,`;
+      ? `Le <strong>${ordinal(ev.rank)}</strong> but des <strong>${escapeHtml(ev.team)}</strong>${playerRankSuffix},`
+      : `Le but des <strong>${escapeHtml(ev.team)}</strong>${playerRankSuffix},`;
     const lines = [`<div class="sa-line">${opening}</div>`];
 
+    // Construction de la mention spéciale intégrée directement dans la phrase du but
+    const modifiers = [];
+    if (isShortHanded) {
+      modifiers.push("en infériorité numérique");
+    } else if (isPowerPlay) {
+      modifiers.push("en avantage numérique");
+    } else if (isPenaltyShot) {
+      modifiers.push("sur un tir de punition");
+    }
+
+    if (isEmptyNet) {
+      modifiers.push("dans un filet désert");
+    }
+
+    const modStr = modifiers.length ? ` ${modifiers.join(" ")}` : "";
+    const verb = `marqué${modStr} par le`;
+
     if (scorer) {
-      lines.push(`<div class="sa-line">marqué par le ${playerHtml(scorer)}.</div>`);
+      let scorerAndAssists = `${verb} ${playerHtml(scorer)}, `;
+      if (assists.length) {
+        const parts = assists.map((a) => `du ${playerHtml(a)}`);
+        scorerAndAssists += `assisté ${parts.join(", et ")}.`;
+      } else {
+        scorerAndAssists += `sans aide.`;
+      }
+      lines.push(`<div class="sa-line">${scorerAndAssists}</div>`);
     } else if (cleanDetails) {
-      lines.push(`<div class="sa-line">${escapeHtml(cleanDetails)}</div>`);
+      const extra = modStr ? ` (${modifiers.join(", ")})` : "";
+      lines.push(`<div class="sa-line">${escapeHtml(cleanDetails)}${extra}.</div>`);
     }
 
-    if (assists.length) {
-      const parts = assists.map((a) => `du ${playerHtml(a)}`);
-      lines.push(`<div class="sa-line">Aidé ${parts.join(", et ")}.</div>`);
-    } else if (scorer) {
-      lines.push(`<div class="sa-line">Sans aide.</div>`);
+    const timeStr = timeSentence(ev);
+    if (timeStr) {
+      lines.push(`<div class="sa-line">${timeStr}</div>`);
     }
 
-    // Ajoute la mention spéciale si présente (ex: "But marqué en avantage numérique")
-    if (specials.length) {
-      lines.push(`<div class="sa-line">Marqué <strong>${escapeHtml(specials.join(" et "))}</strong>.</div>`);
-    }
-
-    lines.push(timeLine(ev));
     return lines.join("");
   };
 
-  const buildPenalty = (ev) => {
-    // Nettoie les chips comme "1 OAN", "2 OAN" qui polluent le texte de Spordle
-    const cleanDetails = ev.details.replace(/\d+\s*OAN/gi, "").trim();
+  // Retrouve toutes les lignes de pénalité associées au même joueur au même temps de match
+  const findCompanionPenalties = (summaryItem, ev, player) => {
+    if (!player || !player.number) return [summaryItem];
 
-    const players = parsePlayers(cleanDetails);
-    const player = players[0];
+    const host = summaryItem.closest(".summary-items") || summaryItem.closest("hi-summary-list") || document.body;
+    const allItems = [...host.querySelectorAll(".summary-item")].filter((item) => {
+      const a = item.querySelector(".action");
+      return a && a.classList.contains("penalty");
+    });
 
-    const lines = [`<div class="sa-line">Pénalité aux <strong>${escapeHtml(ev.team)}</strong>,</div>`];
+    return allItems.filter((item) => {
+      const oEv = readEvent(item);
+      if (!oEv) return false;
+      if (oEv.period !== ev.period || oEv.time !== ev.time || oEv.side !== ev.side) return false;
+      const parsed = parsePenaltyEvent(oEv.details);
+      return parsed.player && parsed.player.number === player.number;
+    });
+  };
 
-    if (player) {
-      lines.push(`<div class="sa-line">au ${playerHtml(player)},</div>`);
-      // Format observé : "ANTOINE GAGNON (64) - A52 - Accrocher (Mineure)"
-      const idx = cleanDetails.indexOf(`(${player.number})`);
-      const rest = clean(cleanDetails.slice(idx + player.number.length + 2));
-      const pen = parsePenalty(rest);
-      const dur = pen.duration ? `<strong>${escapeHtml(pen.duration)}</strong>` : "<strong>2 minutes</strong>";
-      const inf = pen.infraction ? `pour ${escapeHtml(pen.infraction.toLowerCase())}` : "";
-      lines.push(`<div class="sa-line">${[dur, inf].filter(Boolean).join(" ")}.</div>`);
-    } else if (cleanDetails) {
-      lines.push(`<div class="sa-line">${escapeHtml(cleanDetails)}</div>`);
+  // Combine intelligemment les pénalités multiples d'un même joueur au même temps (ex: 2/4 + 4/4 ou Majeure + Extrême inconduite)
+  const combinePenalties = (group) => {
+    if (group.length <= 1) {
+      const p = group[0]?.pen || {};
+      const dur = p.duration ? `<strong>${escapeHtml(p.duration)}</strong>` : "<strong>2 minutes</strong>";
+      const infLower = p.infraction ? p.infraction.toLowerCase() : "";
+      const isRedundant = p.duration && infLower.includes(p.duration.toLowerCase());
+      const inf = (infLower && !isRedundant) ? `pour ${escapeHtml(infLower)}` : "";
+      return [dur, inf].filter(Boolean).join(" ");
     }
 
-    lines.push(timeLine(ev));
+    const severities = group.map((g) => (g.pen.severity || "").toLowerCase());
+    const infractions = [...new Set(group.map((g) => g.pen.infraction).filter(Boolean))];
+    const mainInfraction = (infractions[0] || "").toLowerCase();
+
+    // Cas 1: Double mineure (2/4 et 4/4, ou deux mineures pour la même infraction)
+    const isDoubleMinor =
+      (severities.some((s) => s.includes("2/4")) && severities.some((s) => s.includes("4/4"))) ||
+      (group.length === 2 && severities.every((s) => /mineure|minor/.test(s) && !/banc/.test(s)));
+
+    if (isDoubleMinor) {
+      const inf = mainInfraction ? `pour ${escapeHtml(mainInfraction)}` : "";
+      return [`<strong>4 minutes</strong>`, inf].filter(Boolean).join(" ");
+    }
+
+    // Cas 2: Majeure + Extrême inconduite (ou inconduite de partie / match)
+    const hasMajor = severities.some((s) => /majeure|major/.test(s));
+    const hasExtreme = severities.some((s) =>
+      /extr[eê]me\s*inconduite|inconduite\s*de\s*(?:partie|match)|game\s*misconduct/.test(s)
+    );
+
+    if (hasMajor && hasExtreme) {
+      const majorItem = group.find((g) => /majeure|major/.test((g.pen.severity || "").toLowerCase()));
+      const inf = (majorItem?.pen?.infraction || mainInfraction || "").toLowerCase();
+      const infStr = inf ? `pour ${escapeHtml(inf)}` : "";
+      return [`<strong>5 minutes et extrême inconduite de partie</strong>`, infStr].filter(Boolean).join(" ");
+    }
+
+    // Cas 3: Mineure + Inconduite (2 + 10)
+    const hasMinor = severities.some((s) => /mineure|minor/.test(s));
+    const has10 = severities.some((s) => /inconduite|misconduct/.test(s) && !/extr[eê]me|match|partie/.test(s));
+    if (hasMinor && has10) {
+      const infStr = mainInfraction ? `pour ${escapeHtml(mainInfraction)}` : "";
+      return [`<strong>2 minutes et 10 minutes d'inconduite</strong>`, infStr].filter(Boolean).join(" ");
+    }
+
+    // Fallback combiné pour plusieurs infractions
+    const parts = group.map((g) => {
+      const dur = g.pen.duration ? `<strong>${escapeHtml(g.pen.duration)}</strong>` : "<strong>2 minutes</strong>";
+      const inf = g.pen.infraction ? `pour ${escapeHtml(g.pen.infraction.toLowerCase())}` : "";
+      return [dur, inf].filter(Boolean).join(" ");
+    });
+    return parts.join(", et ");
+  };
+
+  const buildPenalty = (ev, summaryItem) => {
+    const penInfo = parsePenaltyEvent(ev.details);
+    const lines = [];
+
+    if (penInfo.isBench) {
+      // Pénalité de banc
+      lines.push(`<div class="sa-line">Pénalité de banc aux <strong>${escapeHtml(ev.team)}</strong>,</div>`);
+      const dur = penInfo.duration ? `<strong>${escapeHtml(penInfo.duration)}</strong>` : "<strong>2 minutes</strong>";
+      const infLower = penInfo.infraction ? penInfo.infraction.toLowerCase() : "";
+      const isRedundant = penInfo.duration && infLower.includes(penInfo.duration.toLowerCase());
+      const inf = (infLower && !isRedundant) ? `pour ${escapeHtml(infLower)}` : "";
+
+      if (inf || penInfo.duration) {
+        lines.push(`<div class="sa-line">${[dur, inf].filter(Boolean).join(" ")}.</div>`);
+      } else {
+        lines.push(`<div class="sa-line"><strong>2 minutes</strong>.</div>`);
+      }
+
+      if (penInfo.servedBy) {
+        lines.push(`<div class="sa-line">La pénalité sera purgée par le ${playerHtml(penInfo.servedBy)}.</div>`);
+      }
+    } else if (penInfo.player) {
+      // Pénalité à un joueur
+      lines.push(`<div class="sa-line">Pénalité aux <strong>${escapeHtml(ev.team)}</strong>,</div>`);
+      lines.push(`<div class="sa-line">au ${playerHtml(penInfo.player)},</div>`);
+
+      // Vérifie si le même joueur a d'autres pénalités au même temps de match
+      const companions = summaryItem ? findCompanionPenalties(summaryItem, ev, penInfo.player) : [];
+      const itemsToCombine = companions.length ? companions : [summaryItem];
+
+      const penaltyInfos = itemsToCombine.map((item) => {
+        const oEv = item === summaryItem ? ev : readEvent(item);
+        const parsed = parsePenaltyEvent(oEv.details);
+        return { item, ev: oEv, player: parsed.player || penInfo.player, pen: parsed };
+      });
+
+      const sentence = combinePenalties(penaltyInfos);
+      lines.push(`<div class="sa-line">${sentence}.</div>`);
+
+      if (penInfo.servedBy) {
+        lines.push(`<div class="sa-line">La pénalité sera purgée par le ${playerHtml(penInfo.servedBy)}.</div>`);
+      }
+    } else {
+      // Cas générique sans joueur
+      const dur = penInfo.duration ? `<strong>${escapeHtml(penInfo.duration)}</strong>` : "<strong>2 minutes</strong>";
+      const infLower = penInfo.infraction ? penInfo.infraction.toLowerCase() : "";
+      const isRedundant = penInfo.duration && infLower.includes(penInfo.duration.toLowerCase());
+      const inf = (infLower && !isRedundant) ? `pour ${escapeHtml(infLower)}` : "";
+      lines.push(`<div class="sa-line">Pénalité aux <strong>${escapeHtml(ev.team)}</strong>,</div>`);
+      if (inf || penInfo.duration) {
+        lines.push(`<div class="sa-line">${[dur, inf].filter(Boolean).join(" ")}.</div>`);
+      }
+    }
+
+    const pTime = timeSentence(ev);
+    if (pTime) lines.push(`<div class="sa-line">${pTime}</div>`);
     return lines.join("");
   };
 
@@ -257,7 +492,7 @@
     return {
       type: ev.type,
       title: `${title} — ${escapeHtml(ev.team)}`,
-      body: ev.type === "goal" ? buildGoal(ev) : buildPenalty(ev),
+      body: ev.type === "goal" ? buildGoal(ev, summaryItem) : buildPenalty(ev, summaryItem),
     };
   };
 
@@ -269,7 +504,7 @@
     pinned = isPinned;
     currentOpenItem = summaryItem;
 
-    popover.className = `sa-visible sa-${content.type}`;
+    popover.className = `sa-visible sa-${content.type}${isPinned ? " sa-pinned" : ""}`;
     popover.innerHTML =
       `<button type="button" class="sa-close-btn" aria-label="Fermer">&times;</button>` +
       `<div class="sa-title">${content.title}</div>` +
@@ -315,18 +550,26 @@
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = `${BTN_CLASS} ${extraClass}`.trim();
-    btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M21 4.01a1 1 0 0 0-1.05-.08L14 7.27V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h1v4a1 1 0 0 0 1.6.8l4.8-3.6H12a2 2 0 0 0 2-2v-2.27l5.95 3.34a1 1 0 0 0 1.05-.08A1 1 0 0 0 22 19V5a1 1 0 0 0-1-.99zM12 15H5V5h7v10zm8 1.93-6-3.37V6.44l6-3.37v13.86zM8 19v-2h2.67L8 19z"/></svg>`;
+    btn.innerHTML = `<svg viewBox="0 0 512 512" width="18" height="18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"><path d="M407.94 52.22S321.3 160 240 160H80a16 16 0 0 0-16 16v96a16 16 0 0 0 16 16h160c81.3 0 167.94 108.23 167.94 108.23 6.06 8 24.06 2.52 24.06-9.83V62C432 49.69 415 43.18 407.94 52.22Z"/><path d="M64 256s-16-6-16-32 16-32 16-32"/><path d="M448 246s16-4.33 16-22-16-22-16-22"/><line x1="256" y1="160" x2="256" y2="288"/><line x1="112" y1="160" x2="112" y2="288"/><path d="M144 288V456a8 8 0 0 0 8 8h53a16 16 0 0 0 15.29-20.73C211.91 416.39 192 386.08 192 336h16a16 16 0 0 0 16-16V304a16 16 0 0 0-16-16H192"/></svg>`;
     btn.title = "Afficher / masquer le texte de l'annonceur";
     btn.setAttribute("aria-label", "Annonce vocale");
 
-    // Survol : affiche si aucun popover n'est épinglé
+    let hoverTimer = null;
+
+    // Survol : affiche après un très court délai si aucun popover n'est épinglé
     btn.addEventListener("mouseenter", () => {
-      if (!pinned) {
-        showPopover(render, summaryItem, false);
-      }
+      if (pinned) return;
+      clearTimeout(hoverTimer);
+      hoverTimer = setTimeout(() => {
+        if (!pinned) {
+          showPopover(render, summaryItem, false);
+        }
+      }, 120);
     });
 
     btn.addEventListener("mouseleave", () => {
+      clearTimeout(hoverTimer);
+      hoverTimer = null;
       if (!pinned) {
         hidePopover(false);
       }
@@ -334,6 +577,8 @@
 
     // Clic : TOGGLE ON / OFF
     btn.addEventListener("click", (e) => {
+      clearTimeout(hoverTimer);
+      hoverTimer = null;
       e.stopPropagation();
       e.preventDefault();
 
@@ -353,10 +598,10 @@
     if (summaryItem.querySelector(`.${BTN_CLASS}`)) return;
     const btn = makeButton(summaryItem, renderEvent(summaryItem));
     
-    // Placé STRICTEMENT à gauche de la zone d'actions (.modify / crayon et X)
+    // Placé dans la zone d'actions (.modify) à gauche des boutons Spordle
     const modifyEl = summaryItem.querySelector(".modify");
     if (modifyEl) {
-      modifyEl.before(btn);
+      modifyEl.prepend(btn);
     } else {
       summaryItem.appendChild(btn);
     }
@@ -364,16 +609,128 @@
   };
 
   const scan = () => {
-    document.querySelectorAll(".summary-item").forEach((item) => {
+    const items = [...document.querySelectorAll(".summary-item")];
+    items.forEach((item) => {
       const action = item.querySelector(".action");
       if (action && (action.classList.contains("goal") || action.classList.contains("penalty"))) {
         decorate(item);
       }
     });
+
+    // Marquer visuellement les pénalités combinées du même joueur au même temps
+    items.forEach((item) => {
+      const action = item.querySelector(".action");
+      if (action && action.classList.contains("penalty")) {
+        const ev = readEvent(item);
+        if (ev) {
+          const penInfo = parsePenaltyEvent(ev.details);
+          if (penInfo.player) {
+            const companions = findCompanionPenalties(item, ev, penInfo.player);
+            if (companions.length > 1) {
+              item.classList.add("sa-penalty-linked");
+              const btn = item.querySelector(`.${BTN_CLASS}`);
+              if (btn) btn.title = "Pénalité combinée — Afficher / masquer le texte de l'annonceur";
+            } else {
+              item.classList.remove("sa-penalty-linked");
+            }
+          }
+        }
+      }
+    });
+
+    // Bouton d'inversion des côtés (Visiteur ⇄ Local)
+    injectSwapSidesButton();
   };
 
+  // ---------- Inversion des côtés (Visiteur ⇄ Local) ----------
+
+  const SWAP_STORAGE_KEY = "sa_swap_sides";
+  let isSidesSwapped = localStorage.getItem(SWAP_STORAGE_KEY) === "true";
+
+  const applySwapSidesState = () => {
+    if (isSidesSwapped) {
+      document.body.classList.add("sa-swapped-sides");
+    } else {
+      document.body.classList.remove("sa-swapped-sides");
+    }
+  };
+
+  const toggleSwapSides = () => {
+    isSidesSwapped = !isSidesSwapped;
+    try {
+      localStorage.setItem(SWAP_STORAGE_KEY, String(isSidesSwapped));
+    } catch (_) {}
+    applySwapSidesState();
+    updateSwapButtonLabel();
+  };
+
+  const updateSwapButtonLabel = () => {
+    const btn = document.getElementById("sa-swap-sides-btn");
+    if (!btn) return;
+    const labelSpan = btn.querySelector(".sa-swap-label");
+    if (labelSpan) {
+      labelSpan.textContent = isSidesSwapped ? "Côtés inversés (Local ⇄ Visiteur)" : "Inverser côtés (Visiteur ⇄ Local)";
+    }
+    btn.title = isSidesSwapped
+      ? "Cliquez pour rétablir la disposition normale (Visiteur à gauche, Local à droite)"
+      : "Cliquez pour inverser l'affichage (Local à gauche, Visiteur à droite) pour correspondre à la vue de la patinoire";
+  };
+
+  const injectSwapSidesButton = () => {
+    // Ne rien faire si le bouton existe déjà
+    if (document.getElementById("sa-swap-sides-btn")) {
+      updateSwapButtonLabel();
+      return;
+    }
+
+    // Cherche l'emplacement idéal : entre .game-category (ou .game-number) et .scoresheet-scores / .score-view
+    const targetAnchor = document.querySelector(".game-category") || document.querySelector(".game-number");
+    const scoreContainer = document.querySelector(".scoresheet-scores, .score-view");
+    if (!targetAnchor && !scoreContainer) return;
+
+    const bar = document.createElement("div");
+    bar.className = "sa-swap-sides-bar";
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.id = "sa-swap-sides-btn";
+    btn.className = "sa-swap-sides-btn";
+    btn.innerHTML = `<span class="sa-swap-arrow">⇄</span><span class="sa-swap-label"></span>`;
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      toggleSwapSides();
+    });
+
+    bar.appendChild(btn);
+
+    if (targetAnchor && targetAnchor.parentNode) {
+      targetAnchor.parentNode.insertBefore(bar, targetAnchor.nextSibling);
+    } else if (scoreContainer && scoreContainer.parentNode) {
+      scoreContainer.parentNode.insertBefore(bar, scoreContainer);
+    }
+
+    updateSwapButtonLabel();
+  };
+
+  // Appliquer l'état initial dès le chargement
+  applySwapSidesState();
+
   let scheduled = false;
-  const observer = new MutationObserver(() => {
+  const observer = new MutationObserver((mutations) => {
+    // Ignorer les mutations générées par nos propres éléments (popover, backdrop, swap bar)
+    const onlyOurNodes = mutations.every((m) => {
+      const el = m.target;
+      return el && (
+        el.id === "sa-popover" ||
+        el.id === "sa-backdrop" ||
+        el.id === "sa-swap-sides-btn" ||
+        el.className === "sa-swap-sides-bar" ||
+        (el.closest && (el.closest("#sa-popover") || el.closest("#sa-backdrop") || el.closest(".sa-swap-sides-bar")))
+      );
+    });
+    if (onlyOurNodes) return;
+
     if (scheduled) return;
     scheduled = true;
     requestAnimationFrame(() => {
@@ -385,3 +742,4 @@
   observer.observe(document.body, { childList: true, subtree: true });
   scan();
 })();
+

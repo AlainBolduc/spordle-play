@@ -1,39 +1,59 @@
-/* Bouton placé juste à gauche de la zone d'actions (.modify) */
+/* Bouton placé à gauche du crayon d'édition dans .modify */
 .sa-announce-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  margin: 0 10px 0 6px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 201, 0, 0.4);
-  background: rgba(255, 201, 0, 0.15);
-  color: #ffc900;
+  width: 28px;
+  height: 28px;
+  margin: 0 !important;
+  border-radius: 4px;
+  border: none !important;
+  background: transparent !important;
+  color: #003876 !important; /* Même bleu que le bouton crayon de Spordle */
   cursor: pointer;
   user-select: none;
-  flex-shrink: 0; /* Ne rétrécit jamais */
+  flex-shrink: 0 !important; /* Ne rétrécit jamais */
   padding: 0;
-  transition: all 0.15s ease-in-out;
+  transition: transform 0.15s ease, color 0.15s ease, background-color 0.15s ease;
   outline: none;
 }
 .sa-announce-btn svg {
   display: block;
+  pointer-events: none; /* Évite les conflits d'événements souris sur l'icône */
 }
 .sa-announce-btn:hover {
-  background: #ffc900;
-  color: #111;
-  border-color: #ffc900;
-  transform: scale(1.08);
-  box-shadow: 0 2px 8px rgba(255, 201, 0, 0.4);
+  color: #0086d7 !important;
+  background: rgba(0, 56, 118, 0.08) !important;
+  transform: scale(1.1);
 }
-.summary-item.sa-has-btn {
-  display: flex !important;
-  flex-wrap: nowrap !important; /* Empêche tout retour à la ligne */
+
+/* Préserve la grille et évite tout retour à la ligne des boutons d'action à droite */
+.summary-item {
+  grid-template-columns: 60px 150px 1fr auto !important;
+}
+
+.summary-item .modify {
+  width: auto !important;
+  min-width: 100px !important;
+  display: inline-flex !important;
   align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 2px !important;
 }
-.summary-item.sa-has-btn .details {
-  min-width: 0; /* Permet au texte de respecter l'espace sans forcer un wrap */
+
+.summary-item .modify ng-transclude {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  width: auto !important;
+}
+
+/* Lignes de pénalités combinées pour un même joueur au même temps (inset pour préserver l'alignement) */
+.summary-item.sa-penalty-linked {
+  box-shadow: inset 4px 0 0 #ffc900 !important;
+}
+.summary-item.sa-penalty-linked .sa-announce-btn {
+  color: #c9a340 !important;
 }
 
 /* Backdrop sombre pour fermer au clic à l'extérieur */
@@ -70,11 +90,14 @@
   box-shadow: 0 16px 60px rgba(0, 0, 0, 0.85);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   display: none;
-  pointer-events: auto !important; /* Toujours cliquable */
   border: 1px solid #333;
+  pointer-events: none; /* Ne capture jamais le curseur en survol d'aperçu */
 }
 #sa-popover.sa-visible {
   display: block;
+}
+#sa-popover.sa-pinned {
+  pointer-events: auto !important; /* Cliquable et scrollable uniquement lorsqu'épinglé */
 }
 #sa-popover .sa-close-btn {
   position: absolute;
@@ -101,7 +124,7 @@
   transform: scale(1.1);
 }
 #sa-popover .sa-title {
-  font-size: 30px;
+  font-size: clamp(22px, 3vw, 32px);
   font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -116,8 +139,8 @@
   color: #ef473a;
 }
 #sa-popover .sa-line {
-  font-size: 46px;
-  line-height: 1.3;
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1.35;
   font-weight: 600;
   margin: 6px 0;
 }
@@ -129,3 +152,105 @@
   font-size: 16px;
   color: #999;
 }
+
+/* ==========================================================
+   Bouton et disposition d'inversion des côtés (Visiteur ⇄ Local)
+   ========================================================== */
+
+.sa-swap-sides-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2px 0 12px;
+}
+
+.sa-swap-sides-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #25282c;
+  color: #e0e0e0;
+  border: 1px solid #4a5058;
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.sa-swap-sides-btn:hover {
+  background: #2e3237;
+  border-color: #ffc900;
+  color: #ffc900;
+  transform: translateY(-1px);
+}
+
+.sa-swap-sides-btn:active {
+  transform: translateY(0);
+}
+
+.sa-swap-sides-btn .sa-swap-arrow {
+  font-size: 14px;
+  color: #ffc900;
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.sa-swapped-sides .sa-swap-sides-btn {
+  background: #1e2023;
+  border-color: #ffc900;
+  color: #ffc900;
+  box-shadow: 0 0 8px rgba(255, 201, 0, 0.2);
+}
+
+.sa-swapped-sides .sa-swap-sides-btn .sa-swap-arrow {
+  transform: rotate(180deg);
+}
+
+/* Inversion du tableau de pointage (Grille Spordle officielle avec grid-template-areas) */
+.sa-swapped-sides .score-view {
+  grid-template-areas:
+    "home-logo home-name home-name home-score away-score away-name away-name away-logo"
+    "buttons buttons buttons buttons buttons buttons buttons buttons" !important;
+}
+
+/* Compatibilité demo.html / flex/grilles sans grid-template-areas nommées */
+.sa-swapped-sides .score-view:not([style*="grid-template-areas"]) {
+  /* Si pas d'areas nommées natives : inversion d'ordre des éléments */
+  grid-template-columns: 80px 1fr 90px 90px 1fr 80px;
+}
+.sa-swapped-sides .score-view .score-away.score-logo { order: 6 !important; }
+.sa-swapped-sides .score-view .score-away.score-name { order: 5 !important; text-align: right !important; }
+.sa-swapped-sides .score-view .score-away.score-score { order: 4 !important; }
+.sa-swapped-sides .score-view .score-home.score-score { order: 3 !important; }
+.sa-swapped-sides .score-view .score-home.score-name { order: 2 !important; text-align: left !important; }
+.sa-swapped-sides .score-view .score-home.score-logo { order: 1 !important; }
+.sa-swapped-sides .score-view .score-buttons { order: 7 !important; }
+
+/* Inversion des boutons sous le score (Grille Spordle officielle) */
+.sa-swapped-sides .score-buttons {
+  grid-template-areas: "home-swap home-penalty home-goal away-goal away-penalty away-swap" !important;
+}
+
+/* Alignement du texte des noms quand les côtés sont inversés (Spordle officiel) */
+.sa-swapped-sides .score-view .score-away.score-name {
+  text-align: right !important;
+}
+.sa-swapped-sides .score-view .score-home.score-name {
+  text-align: left !important;
+}
+
+/* Inversion des pénalités actives en cours (Local à gauche, Visiteur à droite) */
+.sa-swapped-sides .scoresheet-penalties .active-penalties {
+  flex-direction: row-reverse !important;
+}
+.sa-swapped-sides .scoresheet-penalties .away-penalties {
+  justify-content: flex-end !important;
+}
+.sa-swapped-sides .scoresheet-penalties .home-penalties {
+  justify-content: flex-start !important;
+}
+
