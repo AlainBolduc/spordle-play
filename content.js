@@ -644,11 +644,41 @@
 
   // ---------- Inversion des côtés (Visiteur ⇄ Local) ----------
 
-  const SWAP_STORAGE_KEY = "sa_swap_sides";
-  let isSidesSwapped = localStorage.getItem(SWAP_STORAGE_KEY) === "true";
+  // Extrait un identifiant unique pour le match en cours (URL ou numéro de match dans le DOM)
+  const getGameKey = () => {
+    // 1. Depuis l'URL de Spordle (ex: /scoresheets/933175/...)
+    const urlMatch = window.location.pathname.match(/\/scoresheets\/([^\/?#]+)/i) ||
+                     window.location.hash.match(/\/scoresheets\/([^\/?#]+)/i);
+    if (urlMatch && urlMatch[1]) {
+      return `game_${urlMatch[1]}`;
+    }
+
+    // 2. Depuis le numéro de match affiché dans le DOM (ex: "MATCH 1021" ou "MATCH 2007")
+    const gameNumEl = document.querySelector(".game-number");
+    if (gameNumEl) {
+      const text = (gameNumEl.textContent || "").trim();
+      const numMatch = text.match(/\b(?:MATCH|GAME)\s*#?\s*([A-Za-z0-9\-]+)/i);
+      if (numMatch && numMatch[1]) {
+        return `game_${numMatch[1]}`;
+      }
+    }
+
+    // 3. Repli si page statique ou demo sans identifiant
+    return "game_default";
+  };
+
+  const getSwapStorageKey = () => `sa_swap_sides_${getGameKey()}`;
+
+  const isSidesSwappedForCurrentGame = () => {
+    try {
+      return localStorage.getItem(getSwapStorageKey()) === "true";
+    } catch (_) {
+      return false;
+    }
+  };
 
   const applySwapSidesState = () => {
-    if (isSidesSwapped) {
+    if (isSidesSwappedForCurrentGame()) {
       document.body.classList.add("sa-swapped-sides");
     } else {
       document.body.classList.remove("sa-swapped-sides");
@@ -656,9 +686,13 @@
   };
 
   const toggleSwapSides = () => {
-    isSidesSwapped = !isSidesSwapped;
+    const nextState = !isSidesSwappedForCurrentGame();
     try {
-      localStorage.setItem(SWAP_STORAGE_KEY, String(isSidesSwapped));
+      if (nextState) {
+        localStorage.setItem(getSwapStorageKey(), "true");
+      } else {
+        localStorage.removeItem(getSwapStorageKey());
+      }
     } catch (_) {}
     applySwapSidesState();
     updateSwapButtonLabel();
@@ -667,29 +701,27 @@
   const updateSwapButtonLabel = () => {
     const btn = document.getElementById("sa-swap-sides-btn");
     if (!btn) return;
+    const isSwapped = isSidesSwappedForCurrentGame();
     const labelSpan = btn.querySelector(".sa-swap-label");
     if (labelSpan) {
-      labelSpan.textContent = isSidesSwapped ? "Côtés inversés (Local ⇄ Visiteur)" : "Inverser côtés (Visiteur ⇄ Local)";
+      labelSpan.textContent = isSwapped ? "Côtés inversés" : "Inverser côtés";
     }
-    btn.title = isSidesSwapped
-      ? "Cliquez pour rétablir la disposition normale (Visiteur à gauche, Local à droite)"
-      : "Cliquez pour inverser l'affichage (Local à gauche, Visiteur à droite) pour correspondre à la vue de la patinoire";
+    btn.title = isSwapped
+      ? "Disposition inversée : Local à gauche, Visiteur à droite.\nCliquez pour rétablir la disposition normale pour ce match."
+      : "Disposition normale : Visiteur à gauche, Local à droite.\nCliquez pour inverser les côtés pour correspondre à votre vue de la patinoire pour ce match.";
   };
 
   const injectSwapSidesButton = () => {
-    // Ne rien faire si le bouton existe déjà
-    if (document.getElementById("sa-swap-sides-btn")) {
+    // Si le bouton existe déjà et est toujours attaché au DOM
+    const existing = document.getElementById("sa-swap-sides-btn");
+    if (existing) {
       updateSwapButtonLabel();
       return;
     }
 
-    // Cherche l'emplacement idéal : entre .game-category (ou .game-number) et .scoresheet-scores / .score-view
-    const targetAnchor = document.querySelector(".game-category") || document.querySelector(".game-number");
-    const scoreContainer = document.querySelector(".scoresheet-scores, .score-view");
-    if (!targetAnchor && !scoreContainer) return;
-
-    const bar = document.createElement("div");
-    bar.className = "sa-swap-sides-bar";
+    // Cible en priorité l'élément de catégorie (.game-category) ou le numéro de match (.game-number)
+    const categoryEl = document.querySelector(".game-category") || document.querySelector(".game-number");
+    if (!categoryEl) return;
 
     const btn = document.createElement("button");
     btn.type = "button";
@@ -702,13 +734,8 @@
       toggleSwapSides();
     });
 
-    bar.appendChild(btn);
-
-    if (targetAnchor && targetAnchor.parentNode) {
-      targetAnchor.parentNode.insertBefore(bar, targetAnchor.nextSibling);
-    } else if (scoreContainer && scoreContainer.parentNode) {
-      scoreContainer.parentNode.insertBefore(bar, scoreContainer);
-    }
+    // Inséré directement à l'intérieur à droite du texte de la catégorie
+    categoryEl.appendChild(btn);
 
     updateSwapButtonLabel();
   };
@@ -718,15 +745,14 @@
 
   let scheduled = false;
   const observer = new MutationObserver((mutations) => {
-    // Ignorer les mutations générées par nos propres éléments (popover, backdrop, swap bar)
+    // Ignorer les mutations générées par nos propres éléments (popover, backdrop, swap btn)
     const onlyOurNodes = mutations.every((m) => {
       const el = m.target;
       return el && (
         el.id === "sa-popover" ||
         el.id === "sa-backdrop" ||
         el.id === "sa-swap-sides-btn" ||
-        el.className === "sa-swap-sides-bar" ||
-        (el.closest && (el.closest("#sa-popover") || el.closest("#sa-backdrop") || el.closest(".sa-swap-sides-bar")))
+        (el.closest && (el.closest("#sa-popover") || el.closest("#sa-backdrop") || el.closest("#sa-swap-sides-btn")))
       );
     });
     if (onlyOurNodes) return;
@@ -742,4 +768,5 @@
   observer.observe(document.body, { childList: true, subtree: true });
   scan();
 })();
+
 

@@ -106,10 +106,10 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
    - Un clic sur le backdrop sombre (`#sa-backdrop`), sur le bouton **✕** en haut à droite, ou l'appui sur **Échap** (`Escape`) ferme immédiatement le popover.
    - Textes d'annonce stylisés en très grand format adaptatif (`clamp(28px, 4vw, 46px)`), avec les chiffres et noms clés mis en évidence en couleur dorée (`#ffc900`).
 3. **Inversion des côtés (Bouton `⇄`)** :
-   - Ajout d'un bouton discret sous la catégorie du match (`.sa-swap-sides-bar`) pour permuter visuellement les côtés Visiteur et Local.
+   - Ajout d'un bouton discret inséré directement à la droite de la catégorie du match (`.game-category .sa-swap-sides-btn`) pour permuter visuellement les côtés Visiteur et Local, sans occuper de ligne supplémentaire et sans réduire l'espace d'affichage du sommaire.
    - Idéal lorsque les bancs ou tableaux physiques à l'aréna sont inversés par rapport à la feuille Spordle Play standard.
    - **Garantie d'intégrité** : l'inversion est purement visuelle (CSS Grid / Flexbox via `.sa-swapped-sides`). Le DOM sous-jacent et les bindings Angular restent intacts : chaque bouton physique (`But`, `Punitions`, `Gardien`) déclenche toujours exactement le modal de l'équipe affichée au-dessus de lui.
-   - L'état d'inversion est mémorisé dans le `localStorage` (`sa_swap_sides`).
+   - L'état d'inversion est mémorisé spécifiquement pour chaque match dans le `localStorage` (`sa_swap_sides_game_<id>` extrait de l'URL `/scoresheets/<id>` ou du numéro de match dans le DOM).
 
 ---
 
