@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spordle Annonceur
 // @namespace    https://github.com/AlainBolduc/spordle-play
-// @version      1.0.3
+// @version      1.0.4
 // @description  Affiche le texte exact à lire au micro pour chaque but et punition sur Spordle Play
 // @author       Alain Bolduc
 // @match        *://*.spordle.com/*
