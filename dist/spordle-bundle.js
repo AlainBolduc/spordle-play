@@ -1,11 +1,25 @@
-/**
- * Spordle Annonceur — Bundle Complet v1.0.0
- * Généré automatiquement le 2026-10-13T12:16:52.660Z
- */
-(() => {
-  "use strict";
+// ==UserScript==
+// @name         Spordle Annonceur
+// @namespace    https://github.com/AlainBolduc/spordle-play
+// @version      1.0.0
+// @description  Affiche le texte exact à lire au micro pour chaque but et punition sur Spordle Play
+// @author       Alain Bolduc
+// @match        *://*.spordle.com/*
+// @match        *://*.spordle.dev/*
+// @match        *://*.hisports.app/*
+// @grant        none
+// @run-at       document-idle
+// @updateURL    https://raw.githubusercontent.com/AlainBolduc/spordle-play/main/dist/spordle-annonceur.user.js
+// @downloadURL  https://raw.githubusercontent.com/AlainBolduc/spordle-play/main/dist/spordle-annonceur.user.js
+// ==/UserScript==
 
-  // --- 1. Injection des styles CSS ---
+/**
+ * =============================================================
+ * 1. INJECTION DES STYLES CSS (content.css)
+ * =============================================================
+ */
+
+(() => {
   try {
     const existing = document.getElementById("spordle-annonceur-styles");
     if (!existing) {
@@ -15,12 +29,18 @@
       style.textContent = css;
       (document.head || document.documentElement).appendChild(style);
     }
-  } catch (e) {
-    console.error("[Spordle Annonceur] Erreur injection CSS:", e);
+  } catch (err) {
+    console.error("[Spordle Annonceur] Erreur injection CSS:", err);
   }
+})();
 
-  // --- 2. Moteur d'annonces SpordleEngine ---
-  /**
+
+/**
+ * =============================================================
+ * 2. MOTEUR OFFICIEL DES ANNONCES (spordle-engine.js)
+ * =============================================================
+ */
+/**
  * Spordle Annonceur — Moteur métier pur (Spordle Engine)
  * 
  * Codification officielle Hockey Québec (Saison 2026-2027)
@@ -548,8 +568,12 @@
 });
 
 
-  // --- 3. Logique d'interface DOM ---
-  // Spordle Annonceur — ajoute une icône 📢 à chaque but / punition du sommaire
+/**
+ * =============================================================
+ * 3. LOGIQUE D'INJECTION DANS LE SOMMAIRE SPORDLE PLAY (content.js)
+ * =============================================================
+ */
+// Spordle Annonceur — ajoute une icône 📢 à chaque but / punition du sommaire
 // et affiche, au survol, le texte à lire en gros caractères.
 (() => {
   "use strict";
@@ -1447,4 +1471,3 @@
 
 
 
-})();
