@@ -107,18 +107,19 @@
       s = s.replace(new RegExp(`^[^()]+?\\(${servedBy.number}\\)`), "").trim();
     }
 
-    s = clean(s).replace(/^[\-–—:,\s]+/, "");
+    s = clean(s).replace(/^[\-–—:,\s]+/, "").replace(/[\-–—:,\s]+$/, "");
     s = s.replace(/^(?:banc|bench|équipe|equipe)\s*[\-–—:]*\s*/i, "");
+    s = clean(s).replace(/^[\-–—:,\s]+/, "").replace(/[\-–—:,\s]+$/, "");
 
     let severity = "";
     const sevMatch = s.match(/\(([^()]+)\)\s*$/);
     if (sevMatch) {
       severity = clean(sevMatch[1]);
-      s = clean(s.slice(0, sevMatch.index));
+      s = clean(s.slice(0, sevMatch.index)).replace(/^[\-–—:,\s]+/, "").replace(/[\-–—:,\s]+$/, "");
     }
     const parts = s.split(/\s+[\-–—]\s+/).map(clean).filter(Boolean);
     let code = "";
-    if (parts.length && /^[A-Z]{1,2}\d{1,3}[a-z]?$/i.test(parts[0])) code = parts.shift();
+    if (parts.length && /^[A-Z]{1,2}\d{1,3}[a-z]?(?:\/[A-Z]+)?$/i.test(parts[0])) code = parts.shift();
     const infraction = parts.join(" - ");
     const found = DURATIONS.find(([re]) => re.test(severity));
     const duration = found ? found[1] : (severity ? "" : "2 minutes");
@@ -147,7 +148,7 @@
     }
     const parts = s.split(/\s+[\-–—]\s+/).map(clean).filter(Boolean);
     let code = "";
-    if (parts.length && /^[A-Z]{1,2}\d{1,3}[a-z]?$/i.test(parts[0])) code = parts.shift();
+    if (parts.length && /^[A-Z]{1,2}\d{1,3}[a-z]?(?:\/[A-Z]+)?$/i.test(parts[0])) code = parts.shift();
     const infraction = parts.join(" - ");
     const found = DURATIONS.find(([re]) => re.test(severity));
     return { code, infraction, severity, duration: found ? found[1] : (severity ? "" : "2 minutes") };
@@ -531,14 +532,25 @@
     }
   };
 
+  const getTeamLogo = (side) => {
+    const el = document.querySelector(`.score-${side}.score-logo .hi-logo`) || document.querySelector(`.score-${side}.score-logo`);
+    return el?.style?.backgroundImage || "";
+  };
+
   const renderEvent = (summaryItem) => () => {
     const ev = readEvent(summaryItem);
     if (!ev) return null;
-    const title = ev.type === "goal" ? "🚨 But" : "⛔ Pénalité";
+    const isGoal = ev.type === "goal";
+    const typeLabel = isGoal ? "BUT" : "PÉNALITÉ";
+    const logoUrl = getTeamLogo(ev.side);
     return {
       type: ev.type,
-      title: `${title} — ${escapeHtml(ev.team)}`,
-      body: ev.type === "goal" ? buildGoal(ev, summaryItem) : buildPenalty(ev, summaryItem),
+      side: ev.side,
+      sideLabel: ev.sideLabel,
+      team: ev.team,
+      typeLabel,
+      logoUrl,
+      body: isGoal ? buildGoal(ev, summaryItem) : buildPenalty(ev, summaryItem),
     };
   };
 
@@ -550,15 +562,38 @@
     pinned = isPinned;
     currentOpenItem = summaryItem;
 
-    popover.className = `sa-visible sa-${content.type}${isPinned ? " sa-pinned" : ""}`;
+    popover.className = `sa-visible sa-${content.type} sa-${content.side}${isPinned ? " sa-pinned" : ""}`;
+    
+    const logoHtml = content.logoUrl
+      ? `<div class="sa-modal-team-logo" style="background-image: ${escapeHtml(content.logoUrl)};"></div>`
+      : "";
+
     popover.innerHTML =
-      `<button type="button" class="sa-close-btn" aria-label="Fermer">&times;</button>` +
-      `<div class="sa-title">${content.title}</div>` +
-      content.body +
-      `<div class="sa-hint">Cliquer n'importe où, sur le bouton ✕ ou sur Échap pour fermer.</div>`;
+      `<div class="sa-modal-header bar bar-header bar-dark">` +
+        `<div class="sa-modal-badge sa-badge-${content.type}">` +
+          `<span class="sa-badge-dot"></span>` +
+          `<span class="sa-badge-text">${content.typeLabel}</span>` +
+        `</div>` +
+        `<div class="sa-modal-title">` +
+          logoHtml +
+          `<span class="sa-team-name">${escapeHtml(content.team)}</span>` +
+        `</div>` +
+        `<button type="button" class="sa-modal-close-btn button button-stable button-clear" aria-label="Fermer">` +
+          `<i class="icon ion-close-round"></i>` +
+        `</button>` +
+      `</div>` +
+      `<div class="sa-modal-body">` +
+        `<div class="sa-modal-card">` +
+          content.body +
+        `</div>` +
+      `</div>` +
+      `<div class="sa-modal-footer">` +
+        `<span class="sa-hint-icon"><i class="icon ion-volume-high"></i> Annonce vocale</span>` +
+        `<span class="sa-hint-dismiss">Cliquer n'importe où, sur ✕ ou sur Échap pour fermer</span>` +
+      `</div>`;
 
     // Clic sur le bouton X pour fermer immédiatement
-    const closeBtn = popover.querySelector(".sa-close-btn");
+    const closeBtn = popover.querySelector(".sa-modal-close-btn");
     if (closeBtn) {
       closeBtn.addEventListener("click", (e) => {
         e.stopPropagation();

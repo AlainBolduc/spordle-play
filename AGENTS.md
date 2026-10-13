@@ -101,12 +101,20 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
    - Grille CSS native préservée avec `grid-template-columns: 60px 150px 1fr auto !important;`.
    - `.modify` est configuré en `display: inline-flex !important; align-items: center !important; justify-content: flex-end !important; gap: 2px !important; min-width: 100px !important; width: auto !important;` avec `ng-transclude { flex-wrap: nowrap !important; }` afin d'éviter tout retour à la ligne des boutons d'action (`[📢]`, `[✏️]`, `[❌]`) et de garantir un alignement horizontal parfait avec les lignes gardiens.
    - Les pénalités combinées utilisent un accent doré `box-shadow: inset 4px 0 0 #ffc900 !important;` (`.sa-penalty-linked`) et une icône dorée (`#c9a340`).
-2. **Popover & Backdrop (Anti-flicker)** :
+2. **Popover Modal & Backdrop (Style Spordle Play)** :
    - Un seul popover ouvert à la fois.
+   - **Charte visuelle Spordle Play** : Le popover adopte l'apparence des fenêtres modales officielles de Spordle Play :
+     - Fond `#33383c`, bordure `#4a5058`, rayons de courbure cohérents (6px).
+     - Barre de titre supérieure `.bar-dark` (`#252831`) intégrant :
+       - Une pastille d'événement (`BUT` en bleu officiel `#003876` avec point vert, ou `PÉNALITÉ` en rouge officiel `#b83f43` avec point doré).
+       - Le logo officiel de l'équipe (extrait du DOM) et son nom complet en police Spordle `interbold`.
+       - Le bouton de fermeture discret avec icône Ionicons `ion-close-round` stylisé comme les boutons d'en-tête Spordle.
+     - Conteneur de lecture principal stylisé comme une section/card Spordle (`#2b2e34`, bordure `#454b54`, accent coloré latéral gauche 5px).
+     - Pied de modal `.sa-modal-footer` (`#252831`) rappelant l'objectif d'annonce vocale et les raccourcis de fermeture.
    - **Survol sans flicker** : le popover a `pointer-events: none` tant qu'il n'est pas épinglé par un clic (pour ne jamais intercepter le curseur de la souris et déclencher des boucles `mouseleave`/`mouseenter`), accompagné d'un court délai (120ms).
    - **Mode Clic (Toggle épinglé)** : un clic sur l'icône ouvre et épingle (`.sa-pinned` active `pointer-events: auto !important` et affiche le backdrop sombre). Un second clic referme.
    - Un clic sur le backdrop sombre (`#sa-backdrop`), sur le bouton **✕** en haut à droite, ou l'appui sur **Échap** (`Escape`) ferme immédiatement le popover.
-   - Textes d'annonce stylisés en très grand format adaptatif (`clamp(28px, 4vw, 46px)`), avec les chiffres et noms clés mis en évidence en couleur dorée (`#ffc900`).
+   - Textes d'annonce stylisés en très grand format adaptatif (`clamp(24px, 3.2vw, 38px)`), avec les chiffres et noms clés mis en évidence en couleur dorée (`#ffc900`).
 3. **Inversion des côtés (Bouton `⇄`)** :
    - Ajout d'un bouton discret inséré directement à la droite de la catégorie du match (`.game-category .sa-swap-sides-btn`) pour permuter visuellement les côtés Visiteur et Local, sans occuper de ligne supplémentaire et sans réduire l'espace d'affichage du sommaire.
    - Idéal lorsque les bancs ou tableaux physiques à l'aréna sont inversés par rapport à la feuille Spordle Play standard.

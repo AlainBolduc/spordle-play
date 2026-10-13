@@ -73,84 +73,217 @@
   display: block;
 }
 
-/* Popover géant */
+/* Popover d'annonceur — Style modal Spordle Play */
 #sa-popover {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 2147483647;
-  width: min(92vw, 1100px);
+  width: min(92vw, 1020px);
   max-height: 90vh;
-  overflow: auto;
-  padding: 32px 40px 36px;
-  border-radius: 18px;
-  background: #111;
-  color: #fff;
-  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.85);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   display: none;
-  border: 1px solid #333;
+  flex-direction: column;
+  background-color: #33383c;
+  color: #fff;
+  border-radius: 6px;
+  border: 1px solid #4a5058;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  font-family: "interregular", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
   pointer-events: none; /* Ne capture jamais le curseur en survol d'aperçu */
 }
 #sa-popover.sa-visible {
-  display: block;
+  display: flex;
 }
 #sa-popover.sa-pinned {
   pointer-events: auto !important; /* Cliquable et scrollable uniquement lorsqu'épinglé */
 }
-#sa-popover .sa-close-btn {
-  position: absolute;
-  top: 18px;
-  right: 20px;
-  width: 38px;
-  height: 38px;
+
+/* En-tête modal bar-dark */
+#sa-popover .sa-modal-header {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  width: 100% !important;
+  height: 52px !important;
+  min-height: 52px !important;
+  padding: 0 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  background-color: #252831 !important;
+  border-bottom: 1px solid #1a1c22 !important;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  box-sizing: border-box;
+}
+
+/* Badge de type d'événement (BUT ou PÉNALITÉ) */
+#sa-popover .sa-modal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-family: "interbold", "interregular", sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+#sa-popover .sa-modal-badge .sa-badge-dot {
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: inline-block;
+}
+#sa-popover .sa-modal-badge.sa-badge-goal {
+  background-color: #003876;
   color: #fff;
-  font-size: 22px;
-  font-weight: bold;
+  border: 1px solid #004d99;
+}
+#sa-popover .sa-modal-badge.sa-badge-goal .sa-badge-dot {
+  background-color: #33cd5f;
+  box-shadow: 0 0 6px #33cd5f;
+}
+#sa-popover .sa-modal-badge.sa-badge-penalty {
+  background-color: #b83f43;
+  color: #fff;
+  border: 1px solid #d94b50;
+}
+#sa-popover .sa-modal-badge.sa-badge-penalty .sa-badge-dot {
+  background-color: #ffc900;
+  box-shadow: 0 0 6px #ffc900;
+}
+
+/* Titre central avec logo et nom d'équipe */
+#sa-popover .sa-modal-title {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  line-height: 1;
-}
-#sa-popover .sa-close-btn:hover {
-  background: #ef473a;
-  border-color: #ef473a;
-  transform: scale(1.1);
-}
-#sa-popover .sa-title {
-  font-size: clamp(22px, 3vw, 32px);
-  font-weight: 800;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 18px;
-  padding-bottom: 12px;
-  border-bottom: 3px solid currentColor;
-}
-#sa-popover.sa-goal .sa-title {
-  color: #33cd5f;
-}
-#sa-popover.sa-penalty .sa-title {
-  color: #ef473a;
-}
-#sa-popover .sa-line {
-  font-size: clamp(28px, 4vw, 46px);
-  line-height: 1.35;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  padding: 0 12px;
+  color: #dce2e3;
+  font-family: "interbold", "interregular", sans-serif;
+  font-size: 17px;
   font-weight: 600;
-  margin: 6px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#sa-popover .sa-modal-team-logo {
+  width: 32px;
+  height: 32px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  flex-shrink: 0;
+}
+#sa-popover .sa-team-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.2px;
+}
+
+/* Bouton Fermer (icône discrète Ionicons intégrée au header Spordle) */
+#sa-popover .sa-modal-close-btn {
+  background: transparent !important;
+  border: none !important;
+  color: #a1a3ac !important;
+  padding: 4px 8px !important;
+  margin: 0 !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  line-height: 1 !important;
+  cursor: pointer;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px !important;
+  flex-shrink: 0;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+#sa-popover .sa-modal-close-btn:hover {
+  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Corps du popover */
+#sa-popover .sa-modal-body {
+  padding: 22px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Carte de contenu principale calquée sur les sections/cards Spordle */
+#sa-popover .sa-modal-card {
+  background-color: #2b2e34;
+  border: 1px solid #454b54;
+  border-radius: 6px;
+  padding: 24px 30px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Accentuation de bordure gauche selon le type d'événement */
+#sa-popover.sa-goal .sa-modal-card {
+  border-left: 5px solid #0086d7;
+}
+#sa-popover.sa-penalty .sa-modal-card {
+  border-left: 5px solid #b83f43;
+}
+
+/* Lignes de texte d'annonce (gros caractères pour le micro) */
+#sa-popover .sa-line {
+  font-size: clamp(24px, 3.2vw, 38px);
+  line-height: 1.38;
+  font-weight: 500;
+  color: #f0f3f4;
+  margin: 8px 0;
+  font-family: "interregular", -apple-system, sans-serif;
 }
 #sa-popover .sa-line strong {
+  font-family: "interbold", "interregular", sans-serif;
   color: #ffc900;
+  font-weight: 700;
 }
-#sa-popover .sa-hint {
-  margin-top: 18px;
-  font-size: 16px;
-  color: #999;
+
+/* Ligne de temps distincte et légèrement plus sobre */
+#sa-popover .sa-line:last-child {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: clamp(20px, 2.5vw, 30px);
+  color: #c0cbcc;
+}
+
+/* Footer informatif discret */
+#sa-popover .sa-modal-footer {
+  padding: 10px 24px;
+  background-color: #252831;
+  border-top: 1px solid #1a1c22;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #8c929a;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+#sa-popover .sa-modal-footer .sa-hint-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffc900;
+  font-weight: 600;
+}
+#sa-popover .sa-modal-footer .sa-hint-dismiss {
+  color: #7d828a;
 }
 
 /* ==========================================================
