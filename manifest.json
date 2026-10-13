@@ -10,7 +10,7 @@
         "*://*.spordle.dev/*",
         "*://*.hisports.app/*"
       ],
-      "js": ["content.js"],
+      "js": ["spordle-engine.js", "content.js"],
       "css": ["content.css"],
       "run_at": "document_idle"
     }

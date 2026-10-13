@@ -17,7 +17,9 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
 ```text
 .
 ├── manifest.json       # Manifest V3 de l'extension Chrome
-├── content.js          # Script de contenu injecté (logique métier & DOM)
+├── spordle-engine.js   # Moteur pur d'annonces & dictionnaire officiel Hockey Québec 2026-2027
+├── test-engine.js      # Suite de tests unitaires automatisés (node test-engine.js)
+├── content.js          # Script de contenu injecté (logique DOM & UI)
 ├── content.css         # Styles de l'extension (boutons, popover, backdrop)
 ├── spordle.css         # Feuilles de styles officielles extraites de Spordle Play
 ├── assets/             # Polices (Inter, Ionicons, Montserrat, HiSports) et logos locaux
@@ -26,7 +28,7 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
 ├── icon-16.png         # Icône extension 16x16
 ├── icon-48.png         # Icône extension 48x48
 ├── icon-128.png        # Icône extension 128x128
-├── .gitignore          # Ignore les zips et .DS_Store
+├── .gitignore          # Ignore les zips, images de dev et .DS_Store
 └── AGENTS.md           # Ce guide de contexte et d'instructions
 ```
 

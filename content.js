@@ -286,8 +286,26 @@
 
     // Calcule si c'est le 2e, 3e, etc. but de ce joueur dans le match
     const pRank = summaryItem && scorer ? playerGoalRank(summaryItem, ev.side, scorer.number) : 0;
-    const playerRankSuffix = pRank >= 2 ? `, son <strong>${ordinal(pRank)}</strong> de la rencontre` : "";
+    if (scorer) scorer.goalCountInGame = pRank;
 
+    // Délégation vers le moteur pur SpordleEngine si présent
+    if (typeof SpordleEngine !== "undefined") {
+      const formatted = SpordleEngine.formatGoal({
+        teamName: ev.team,
+        teamGoalCount: ev.rank,
+        scorer,
+        assists,
+        isPowerplay: isPowerPlay,
+        isShorthanded: isShortHanded,
+        isEmptyNet,
+        isPenaltyShot,
+        time: ev.time,
+        period: ev.period,
+      });
+      return formatted.htmlLines.map((l) => `<div class="sa-line">${l}</div>`).join("");
+    }
+
+    const playerRankSuffix = pRank >= 2 ? `, son <strong>${ordinal(pRank)}</strong> de la rencontre` : "";
     const opening = ev.rank
       ? `Le <strong>${ordinal(ev.rank)}</strong> but des <strong>${escapeHtml(ev.team)}</strong>${playerRankSuffix},`
       : `Le but des <strong>${escapeHtml(ev.team)}</strong>${playerRankSuffix},`;
@@ -408,6 +426,34 @@
 
   const buildPenalty = (ev, summaryItem) => {
     const penInfo = parsePenaltyEvent(ev.details);
+
+    // Délégation vers le moteur pur SpordleEngine si présent
+    if (typeof SpordleEngine !== "undefined") {
+      const companions = summaryItem && penInfo.player ? findCompanionPenalties(summaryItem, ev, penInfo.player) : [];
+      const itemsToCombine = companions.length ? companions : [summaryItem];
+      const codes = [];
+
+      itemsToCombine.forEach((item) => {
+        const oEv = item === summaryItem ? ev : readEvent(item);
+        const parsed = parsePenaltyEvent(oEv.details);
+        if (parsed.code) codes.push(parsed.code);
+      });
+
+      const formatted = SpordleEngine.formatPenalty({
+        teamName: ev.team,
+        isBenchMinor: penInfo.isBench,
+        penalizedPlayer: penInfo.player,
+        servedByPlayer: penInfo.servedBy,
+        codes: codes.length > 0 ? codes : undefined,
+        infractionDescription: penInfo.infraction,
+        durationDescription: penInfo.duration,
+        time: ev.time,
+        period: ev.period,
+      });
+
+      return formatted.htmlLines.map((l) => `<div class="sa-line">${l}</div>`).join("");
+    }
+
     const lines = [];
 
     if (penInfo.isBench) {

@@ -1,3 +1,5 @@
 # Fichiers temporaires ou bundles générés
 *.zip
 .DS_Store
+/*.png
+!/icon-*.png
