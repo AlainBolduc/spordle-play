@@ -1,0 +1,131 @@
+/* Bouton placé juste à gauche de la zone d'actions (.modify) */
+.sa-announce-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin: 0 10px 0 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 201, 0, 0.4);
+  background: rgba(255, 201, 0, 0.15);
+  color: #ffc900;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0; /* Ne rétrécit jamais */
+  padding: 0;
+  transition: all 0.15s ease-in-out;
+  outline: none;
+}
+.sa-announce-btn svg {
+  display: block;
+}
+.sa-announce-btn:hover {
+  background: #ffc900;
+  color: #111;
+  border-color: #ffc900;
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(255, 201, 0, 0.4);
+}
+.summary-item.sa-has-btn {
+  display: flex !important;
+  flex-wrap: nowrap !important; /* Empêche tout retour à la ligne */
+  align-items: center !important;
+}
+.summary-item.sa-has-btn .details {
+  min-width: 0; /* Permet au texte de respecter l'espace sans forcer un wrap */
+}
+
+/* Backdrop sombre pour fermer au clic à l'extérieur */
+#sa-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: 2147483646;
+  display: none;
+  cursor: pointer;
+}
+#sa-backdrop.sa-visible {
+  display: block;
+}
+
+/* Popover géant */
+#sa-popover {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2147483647;
+  width: min(92vw, 1100px);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 32px 40px 36px;
+  border-radius: 18px;
+  background: #111;
+  color: #fff;
+  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.85);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  display: none;
+  pointer-events: auto !important; /* Toujours cliquable */
+  border: 1px solid #333;
+}
+#sa-popover.sa-visible {
+  display: block;
+}
+#sa-popover .sa-close-btn {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 22px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+#sa-popover .sa-close-btn:hover {
+  background: #ef473a;
+  border-color: #ef473a;
+  transform: scale(1.1);
+}
+#sa-popover .sa-title {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid currentColor;
+}
+#sa-popover.sa-goal .sa-title {
+  color: #33cd5f;
+}
+#sa-popover.sa-penalty .sa-title {
+  color: #ef473a;
+}
+#sa-popover .sa-line {
+  font-size: 46px;
+  line-height: 1.3;
+  font-weight: 600;
+  margin: 6px 0;
+}
+#sa-popover .sa-line strong {
+  color: #ffc900;
+}
+#sa-popover .sa-hint {
+  margin-top: 18px;
+  font-size: 16px;
+  color: #999;
+}

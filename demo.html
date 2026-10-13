@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+@charset "UTF-8";
+[ng\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}
+ng\:form{display:block;}
+.ng-animate-shim{visibility:hidden;}
+.ng-anchor{position:absolute;}
+</style>
+<title>Spordle Play - Aperçu Local</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no,width=device-width">
+
+<!-- CSS extrait de Spordle Play pour le rendu exact hors-ligne sans appel distant -->
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #373b40;
+  color: #fff;
+  user-select: none;
+}
+.bar-header {
+  height: 44px;
+  background-color: #2b2e33;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  border-bottom: 1px solid #1a1c1e;
+}
+.bar-header .button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 6px 12px;
+}
+.scoresheet-view {
+  padding: 10px;
+  max-width: 1024px;
+  margin: 0 auto;
+}
+.game-number {
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  margin: 6px 0 2px;
+  color: #e0e0e0;
+}
+.game-category {
+  font-size: 13px;
+  text-align: center;
+  margin: 0 0 12px;
+  color: #aaa;
+}
+.score-view {
+  display: grid;
+  grid-template-columns: 80px 1fr 90px 90px 1fr 80px;
+  align-items: center;
+  background: #25282c;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  margin-bottom: 15px;
+  gap: 10px;
+}
+.score-name {
+  font-size: 18px;
+  font-weight: bold;
+}
+.score-name.score-away { text-align: left; }
+.score-name.score-home { text-align: right; }
+.score-score {
+  text-align: center;
+}
+.score-score .type {
+  font-size: 11px;
+  color: #999;
+  letter-spacing: 0.5px;
+}
+.score-score .score {
+  font-size: 42px;
+  font-weight: 800;
+  color: #ffc900;
+  line-height: 1;
+}
+.score-score .sportsmanship {
+  font-size: 11px;
+  color: #888;
+}
+.score-logo .hi-logo {
+  width: 60px;
+  height: 60px;
+  background: #3a3f45;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+}
+.score-buttons {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  border-top: 1px solid #373b40;
+  padding-top: 10px;
+}
+.score-buttons .button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  color: #fff;
+}
+.button-balanced { background: #33cd5f; }
+.button-assertive { background: #ef473a; }
+
+/* Active penalties */
+.scoresheet-penalties {
+  background: #25282c;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+.active-penalties {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.active-label {
+  font-size: 11px;
+  font-weight: bold;
+  text-align: center;
+  color: #ffc900;
+  white-space: pre-line;
+  padding: 0 10px;
+}
+.away-penalties, .home-penalties {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+}
+.home-penalties { justify-content: flex-end; }
+.jersey-select {
+  background: #1e2023;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-align: center;
+  border: 1px solid #3a3f45;
+}
+.jersey-name { font-size: 12px; font-weight: bold; }
+.jersey-label { font-size: 20px; margin: 2px 0; color: #ffc900; }
+.jersey-details { font-size: 11px; color: #aaa; }
+
+/* Summary */
+.scoresheet-summary {
+  background: #25282c;
+  border-radius: 8px;
+  padding: 15px;
+}
+.summary-period-header {
+  background: #1a1c1e;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #ffc900;
+  border-radius: 4px;
+  margin: 15px 0 8px;
+}
+.summary-period-header:first-child { margin-top: 0; }
+.summary-item {
+  display: flex;
+  align-items: center;
+  background: #2e3237;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  gap: 12px;
+}
+.summary-item .time {
+  font-weight: bold;
+  font-size: 14px;
+  color: #fff;
+  min-width: 48px;
+}
+.summary-item .action {
+  font-size: 12px;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.summary-item .action.goal.away { background: #1b5e20; color: #81c784; }
+.summary-item .action.goal.home { background: #2e7d32; color: #a5d6a7; }
+.summary-item .action.penalty.away { background: #b71c1c; color: #ef9a9a; }
+.summary-item .action.penalty.home { background: #c62828; color: #ffcdd2; }
+.summary-item .details {
+  flex: 1;
+  font-size: 13px;
+  color: #e0e0e0;
+}
+.summary-item .modify {
+  display: flex;
+  gap: 6px;
+}
+.summary-item .modify button {
+  background: transparent;
+  border: 1px solid #4a5058;
+  color: #aaa;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.summary-filters {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #373b40;
+}
+.summary-filters button {
+  background: #373b40;
+  border: 1px solid #4a5058;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.summary-filters button.selected {
+  background: #ffc900;
+  color: #000;
+  font-weight: bold;
+}
+</style>
+
+<!-- Fichier CSS de l'extension -->
+<link rel="stylesheet" href="content.css">
+</head>
+
+<body ng-app="hiSports" class="grade-a platform-browser platform-macintel platform-ready">
+<noscript>You need to enable JavaScript in your browser to view Spordle Play.</noscript>
+
+<!-- DOM EXACT DE TON HTML -->
+<ui-view class="view-container">
+  <ui-view>
+    <hi-scoresheet $game="::$resolve.$game">
+      <div class="bar-header bar bar-dark">
+        <div class="buttons">
+          <button class="button button-stable button-clear icon-left hi hi-arrow-left">
+            <div class="hide-md ng-binding">Avant-match</div>
+          </button>
+        </div>
+        <div class="buttons pull-right">
+          <button class="button button-stable button-clear icon-right ion-help-circled">
+            <span class="hide-md ng-binding">Aide</span>
+          </button>
+          <button class="button button-stable button-clear icon-right ion-android-document">
+            <span class="hide-md ng-binding">Feuille de match</span>
+          </button>
+          <button class="button button-stable button-clear icon-right ion-android-settings">
+            <span class="hide-md ng-binding">Options</span>
+          </button>
+          <button class="button button-stable button-clear icon-right hi hi-stop">
+            <div class="hide-md ng-binding">Finir le match</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="scoresheet-view">
+        <h5 class="game-number text-center ng-binding">MATCH 2007</h5>
+        <h5 class="game-category text-center ng-binding">U11 BB</h5>
+
+        <hi-score class="scoresheet-scores" $game="$ctrl.$game">
+          <div class="score-view">
+            <hi-logo class="score-away score-logo" team="$ctrl.awayTeam">
+              <div class="hi-logo" style="background-color: #4a5058;"></div>
+            </hi-logo>
+            <div class="score-away score-name"><span class="ng-binding">EXPRESS RIVE-SUD 9</span></div>
+            <div class="score-away score-score">
+              <div class="type ng-binding">VISITEUR</div>
+              <div class="score ng-binding">4</div>
+              <div class="sportsmanship ng-binding" data-title="Points franc jeu">(1)</div>
+            </div>
+            <div class="score-home score-score">
+              <div class="type ng-binding">LOCAL</div>
+              <div class="score ng-binding">5</div>
+              <div class="sportsmanship ng-binding" data-title="Points franc jeu">(1)</div>
+            </div>
+            <div class="score-home score-name"><span class="ng-binding">EXPRESS RIVE-SUD 7</span></div>
+            <hi-logo class="score-home score-logo" team="$ctrl.homeTeam">
+              <div class="hi-logo" style="background-color: #4a5058;"></div>
+            </hi-logo>
+            <div class="score-buttons">
+              <button class="score-away score-goal button button-balanced padding-half"><span class="bold ng-binding">But</span></button>
+              <button class="score-away score-penalty button button-assertive padding-half"><span class="bold ng-binding">Punitions</span></button>
+              <button class="score-away score-swap button button-assertive padding-half"><span class="bold ng-binding">Gardien</span></button>
+              <button class="score-home score-swap button button-assertive padding-half"><span class="bold ng-binding">Gardien</span></button>
+              <button class="score-home score-penalty button button-assertive padding-half"><span class="bold ng-binding">Punitions</span></button>
+              <button class="score-home score-goal button button-balanced padding-half"><span class="bold ng-binding">But</span></button>
+            </div>
+          </div>
+        </hi-score>
+
+        <hi-active-penalties class="scoresheet-penalties" $game="$ctrl.$game">
+          <div class="active-penalties">
+            <hi-penalty-list class="away-penalties">
+              <hi-jersey-select>
+                <hi-jersey class="jersey-select">
+                  <div class="jersey jersey-player">
+                    <div class="jersey-info">
+                      <div class="jersey-name"><span>HARVIE</span></div>
+                      <h2 class="bold light jersey-label">97</h2>
+                    </div>
+                  </div>
+                  <div class="jersey-details">Fini --:--</div>
+                </hi-jersey>
+              </hi-jersey-select>
+            </hi-penalty-list>
+            <div class="active-label">PUNITIONS<br>EN<br>COURS</div>
+            <hi-penalty-list class="home-penalties">
+              <hi-jersey-select>
+                <hi-jersey class="jersey-select">
+                  <div class="jersey jersey-player">
+                    <div class="jersey-info">
+                      <div class="jersey-name"><span>SIROIS</span></div>
+                      <h2 class="bold light jersey-label">40</h2>
+                    </div>
+                  </div>
+                  <div class="jersey-details">Fini --:--</div>
+                </hi-jersey>
+              </hi-jersey-select>
+            </hi-penalty-list>
+          </div>
+        </hi-active-penalties>
+
+        <hi-summary class="scoresheet-summary hi-summary" $game="$ctrl.$game" show-period-shortcut="true">
+          <hi-summary-list class="summary-list">
+            <div class="summary-items">
+              
+              <!-- 3E PÉRIODE -->
+              <div class="summary-period-header" style="">3E PÉRIODE - 12:00<button class="button no-border ion-edit" style="display:none;"></button></div>
+              
+              <hi-summary-item>
+                <div class="summary-item">
+                  <div class="time ng-binding">05:17</div>
+                  <div class="action ng-binding home goal">But - Local</div>
+                  <div class="details ng-binding">MILAN MAROIS (43) </div>
+                  <div class="modify"><button class="button">Modifier</button></div>
+                </div>
+              </hi-summary-item>
+
+              <hi-summary-item>
+                <div class="summary-item">
+                  <div class="time ng-binding">02:49</div>
+                  <div class="action ng-binding home goal">But - Local</div>
+                  <div class="details ng-binding">VICTOR LOUIS (61) </div>
+                  <div class="modify"><button class="button">Modifier</button></div>
+                </div>
+              </hi-summary-item>
+
+              <hi-summary-item>
+                <div class="summary-item">
+                  <div class="time ng-binding">01:27</div>
+                  <div class="action ng-binding away goal">But - Visiteur</div>
+                  <div class="details ng-binding">JACKSON AUDET (61)  - PASSES: JAYKE HARVIE (97)</div>
+                  <div class="modify"><button class="button">Modifier</button></div>
+                </div>
+              </hi-summary-item>
+
+              <!-- 2E PÉRIODE -->
+              <div class="summary-period-header" style="">2E PÉRIODE - 10:00</div>
+
+              <hi-summary-item>
+                <div class="summary-item">
+                  <div class="time ng-binding">05:59</div>
+                  <div class="action ng-binding away goal">But - Visiteur</div>
+                  <div class="details ng-binding">ALEXIS PELLETIER (81) </div>
+                  <div class="modify"><button class="button">Modifier</button></div>
+                </div>
+              </hi-summary-item>
+
+              <hi-summary-item>
+                <div class="summary-item">
+                  <div class="time ng-binding">05:22</div>
+                  <div class="action ng-binding home goal">But - Local</div>
+                  <div class="details ng-binding">THOMAS MARCHAND (2)  - PASSES: NATHAN SOUCY (63)</div>
+                  <div class="modify"><button class="button">Modifier</button></div>
+                </div>
+              </hi-summary-item>
+
+              <hi-summary-item>
+                <div class="summary-item">
+                  <div class="time ng-binding">04:40</div>
+                  <div class="action ng-binding away goal">But - Visiteur</div>
+                  <div class="details ng-binding">ALEXIS PELLETIER (81) </div>
+                  <div class="modify"><button class="button">Modifier</button></div>
+                </div>
+              </hi-summary-item>
+
+              <hi-summary-item>
+                <div class="summary-item">
+                  <div class="time ng-binding">04:11</div>
+                  <div class="action ng-binding home goal">But - Local</div>
+                  <div class="details ng-binding">LOÏC POULIN (74)  - PASSES: NATHAN SOUCY (63)</div>
+                  <div class="modify"><button class="button">Modifier</button></div>
+                </div>
+              </hi-summary-item>
+
+              <hi-summary-item>
+                <div class="summary-item">
+                  <div class="time ng-binding">01:34</div>
+                  <div class="action ng-binding away penalty">Punition - Visiteur</div>
+                  <div class="details ng-binding">JAYKE HARVIE (97) - A22 - Coup de bâton (Mineure)</div>
+                  <div class="modify"><button class="button">Modifier</button></div>
+                </div>
+              </hi-summary-item>
+
+              <hi-summary-item>
+                <div class="summary-item">
+                  <div class="time ng-binding">01:34</div>
+                  <div class="action ng-binding home penalty">Punition - Local</div>
+                  <div class="details ng-binding">TRISTAN SIROIS (40) - A39 - Mise en échec corporelle (Mineure)</div>
+                  <div class="modify"><button class="button">Modifier</button></div>
+                </div>
+              </hi-summary-item>
+
+              <!-- 1RE PÉRIODE -->
+              <div class="summary-period-header" style="">1RE PÉRIODE - 10:00</div>
+
+              <hi-summary-item>
+                <div class="summary-item">
+                  <div class="time ng-binding">09:34</div>
+                  <div class="action ng-binding home goal">But - Local</div>
+                  <div class="details ng-binding">LOÏC POULIN (74)  - PASSES: JACOB LAPIERRE (4)</div>
+                  <div class="modify"><button class="button">Modifier</button></div>
+                </div>
+              </hi-summary-item>
+
+              <hi-summary-item>
+                <div class="summary-item">
+                  <div class="time ng-binding">05:44</div>
+                  <div class="action ng-binding away goal">But - Visiteur</div>
+                  <div class="details ng-binding">MAYSON GOSSELIN (77)  - PASSES: ARNO ALLAIRE (21)</div>
+                  <div class="modify"><button class="button">Modifier</button></div>
+                </div>
+              </hi-summary-item>
+
+            </div>
+          </hi-summary-list>
+
+          <div class="summary-filters">
+            <div class="filters">
+              <button class="filter">VISITEUR</button>
+              <button class="filter">LOCAL</button>
+            </div>
+            <div class="filters">
+              <button class="filter">BUTS</button>
+              <button class="filter">PUNITIONS</button>
+            </div>
+          </div>
+        </hi-summary>
+
+      </div>
+    </hi-scoresheet>
+  </ui-view>
+</ui-view>
+
+<!-- Injection du script de ton extension chrome -->
+<script src="content.js"></script>
+
+</body>
+</html>
