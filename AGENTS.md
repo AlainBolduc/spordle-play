@@ -25,13 +25,14 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
 ├── content.css         # Styles de l'extension (boutons, popover, backdrop)
 ├── spordle.css         # Feuilles de styles officielles extraites de Spordle Play
 ├── assets/             # Polices (Inter, Ionicons, Montserrat, HiSports) et logos locaux
-├── game_data.json      # Données JSON brutes du match (événements, équipes, etc.)
+├── game_data.json      # Données JSON 100% anonymisées/synthétiques (schéma API Spordle, aucun PII)
 ├── demo.html           # Page miroir 100% hors-ligne pilotée par les données de test-events.js
+├── guide-installation.html # Guide illustré pas-à-pas pour l'installation sur Safari iOS / iPad
 ├── icon-16.png         # Icône extension 16x16
 ├── icon-48.png         # Icône extension 48x48
 ├── icon-128.png        # Icône extension 128x128
 ├── build-userscript.js # Script de compilation du Userscript Safari/iOS (node build-userscript.js)
-├── dist/               # Fichiers distribués pour Safari iOS (spordle-annonceur.user.js)
+├── dist/               # Fichiers distribués pour Safari iOS (.user.js, .meta.js)
 ├── .gitignore          # Ignore les zips, images de dev et .DS_Store
 └── AGENTS.md           # Ce guide de contexte et d'instructions
 ```
@@ -160,3 +161,23 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
 - **Git Remote & SSH** :
   - Dépôt distant : `git@github-perso:AlainBolduc/spordle-play.git` (ou `git@github.com:AlainBolduc/spordle-play.git`).
   - Branche principale : `main`.
+
+---
+
+## 7. Règles de Confidentialité, Sécurité & Identité Git
+
+1. **Identité Git pour les commits (Dépôt Public)** :
+   - L'adresse e-mail de commit configurée localement **DOIT impérativement** être l'adresse officielle anonyme GitHub :
+     ```bash
+     git config user.name "Alain Bolduc"
+     git config user.email "alainbolduc@users.noreply.github.com"
+     ```
+   - **Interdiction absolue** de commiter avec une adresse d'entreprise (`@vooban.com`) ou une adresse personnelle directe (`@gmail.com`).
+2. **Anonymisation stricte des données de test** :
+   - `game_data.json` ainsi que toute fixture de test future doivent contenir exclusivement des données synthétiques/fictives :
+     - Aucun nom réel de joueur mineur, entraîneur ou officiel.
+     - Aucun numéro réel de registre Hockey Canada (`HCRId`).
+     - Aucune URL avec token ou signature externe.
+3. **Zéro requête réseau & Zéro Bearer Token** :
+   - L'extension et le userscript fonctionnent entièrement **en local dans le navigateur** (aucun appel `fetch`, `XMLHttpRequest`, ni analytics).
+   - Ne jamais intercepter ni journaliser de jetons d'authentification (`Bearer`, cookies de session Spordle/HiSports).
