@@ -300,6 +300,92 @@ test("Pénalité 9 : Gardien de but A22/G (Suffixe /G)", () => {
   assert.strictEqual(res.lines[3], "La pénalité sera purgée par le numéro 14, Juliette Lambert.");
 });
 
+// =========================================================================
+// TESTS : GARDIENS DE BUT (GOALIE ENGINE)
+// =========================================================================
+console.log("\n--- Tests du moteur de gardiens de but ---");
+
+test("Gardien 1 : Changement de gardien de but standard", () => {
+  const res = engine.formatGoalieChange({
+    teamName: "Remparts Ouest Richelieu",
+    goalie: { name: "NATHAN BOLDUC", number: 33 },
+    time: "10:00",
+    period: "2"
+  });
+
+  assert.strictEqual(res.lines[0], "Changement de gardien de but du côté des Remparts Ouest Richelieu,");
+  assert.strictEqual(res.lines[1], "maintenant devant le filet : le numéro 33, Nathan Bolduc.");
+  assert.strictEqual(res.lines[2], "Le temps du changement : 10:00 de la 2e période.");
+});
+
+test("Gardien 2 : Changement de gardien sans temps", () => {
+  const res = engine.formatGoalieChange({
+    teamName: "Express Rive-Sud",
+    goalie: { name: "CHARLIE HEBERT", number: 1 }
+  });
+
+  assert.strictEqual(res.lines[0], "Changement de gardien de but du côté des Express Rive-Sud,");
+  assert.strictEqual(res.lines[1], "maintenant devant le filet : le numéro 1, Charlie Hebert.");
+  assert.strictEqual(res.lines.length, 2);
+});
+
+// =========================================================================
+// TESTS : VALIDATION DU CATALOGUE COMPLET (test-events.js)
+// =========================================================================
+console.log("\n--- Validation du catalogue complet de match (test-events.js) ---");
+
+test("Validation de l'ensemble des 66 événements de test-events.js", () => {
+  const testData = require("./test-events.js");
+  assert.ok(testData.periods && testData.periods.length > 0, "test-events.js doit contenir des périodes");
+  
+  let eventCount = 0;
+  testData.periods.forEach((period) => {
+    period.events.forEach((ev) => {
+      eventCount++;
+      const teamName = ev.side === "home" ? testData.game.homeTeam.name : testData.game.awayTeam.name;
+
+      if (ev.type === "goal") {
+        const res = engine.formatGoal({
+          teamName,
+          teamGoalCount: 1,
+          scorer: ev.scorer,
+          assists: ev.assists,
+          isPowerplay: ev.isPowerplay,
+          isShorthanded: ev.isShorthanded,
+          isEmptyNet: ev.isEmptyNet,
+          isPenaltyShot: ev.isPenaltyShot,
+          time: ev.time,
+          period: period.name
+        });
+        assert.ok(res.lines.length >= 2, `Le but ${ev.scorer.name} doit générer au moins 2 lignes`);
+        assert.ok(res.htmlLines.length >= 2, `Le but ${ev.scorer.name} doit générer des lignes HTML`);
+      } else if (ev.type === "penalty") {
+        const res = engine.formatPenalty({
+          teamName,
+          penalizedPlayer: ev.player,
+          servedByPlayer: ev.servedBy,
+          isBenchMinor: ev.isBench,
+          codes: ev.code ? [ev.code] : [],
+          time: ev.time,
+          period: period.name
+        });
+        assert.ok(res.lines.length >= 2, `La pénalité (${ev.code}) doit générer au moins 2 lignes`);
+        assert.ok(res.htmlLines.length >= 2, `La pénalité (${ev.code}) doit générer des lignes HTML`);
+      } else if (ev.type === "goalie") {
+        const res = engine.formatGoalieChange({
+          teamName,
+          goalie: { name: "ANAELLE LEMIEUX", number: 33 },
+          time: ev.time,
+          period: period.name
+        });
+        assert.ok(res.lines.length >= 2, `Le changement de gardien doit générer au moins 2 lignes`);
+      }
+    });
+  });
+
+  assert.strictEqual(eventCount, 66, "Le catalogue doit contenir exactement 66 événements");
+});
+
 console.log(`\n=== RÉSULTATS : ${passed}/${total} tests réussis ===\n`);
 if (passed === total) {
   process.exit(0);

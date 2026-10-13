@@ -18,16 +18,20 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
 .
 ├── manifest.json       # Manifest V3 de l'extension Chrome
 ├── spordle-engine.js   # Moteur pur d'annonces & dictionnaire officiel Hockey Québec 2026-2027
+├── test-events.js      # Source unique de vérité : 66 cas de tests & structure de match complète
+├── demo-renderer.js    # Rendu dynamique du sommaire Spordle Play pour demo.html
 ├── test-engine.js      # Suite de tests unitaires automatisés (node test-engine.js)
 ├── content.js          # Script de contenu injecté (logique DOM & UI)
 ├── content.css         # Styles de l'extension (boutons, popover, backdrop)
 ├── spordle.css         # Feuilles de styles officielles extraites de Spordle Play
 ├── assets/             # Polices (Inter, Ionicons, Montserrat, HiSports) et logos locaux
 ├── game_data.json      # Données JSON brutes du match (événements, équipes, etc.)
-├── demo.html           # Page miroir 100% hors-ligne pour tester sans réseau
+├── demo.html           # Page miroir 100% hors-ligne pilotée par les données de test-events.js
 ├── icon-16.png         # Icône extension 16x16
 ├── icon-48.png         # Icône extension 48x48
 ├── icon-128.png        # Icône extension 128x128
+├── build-userscript.js # Script de compilation du Userscript Safari/iOS (node build-userscript.js)
+├── dist/               # Fichiers distribués pour Safari iOS (spordle-annonceur.user.js)
 ├── .gitignore          # Ignore les zips, images de dev et .DS_Store
 └── AGENTS.md           # Ce guide de contexte et d'instructions
 ```
@@ -89,6 +93,15 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
    - **Ne pas mentionner** « mineure », « majeure », ou le code d'arbitrage (ex: `A22`, `A52`, `B40`, `D40`).
    - **Ignorer** les pastilles de statistiques Spordle comme `1 OAN`, `2 OAN` (Opportunités en Avantage Numérique) et les mentions d'horodatage comme `Début: 07:00`.
 6. **Temps de la pénalité** : « Le temps de la pénalité : **MM:SS** de la Xe période. »
+
+### C. Annonce d'un changement de gardien de but (`buildGoalieChange` / `formatGoalieChange`)
+1. **Formule officielle** :
+   - « Changement de gardien de but du côté des **[Équipe]**, »
+   - « maintenant devant le filet : le numéro **X, [Prénom Nom]**. »
+   - « Le temps du changement : **MM:SS** de la Xe période. »
+2. **Gardien retiré (6e attaquant / filet désert)** :
+   - « Le gardien de but des **[Équipe]** est retiré de son filet. »
+   - « Le temps du retrait : **MM:SS** de la Xe période. »
 
 ---
 

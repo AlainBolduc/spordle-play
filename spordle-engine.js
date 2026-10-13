@@ -447,6 +447,62 @@
     };
   };
 
+  /**
+   * 5b. FORMATAGE D'UN CHANGEMENT DE GARDIEN DE BUT
+   * 
+   * Règle d'annonce :
+   * « Changement de gardien de but du côté de [Équipe]. »
+   * « Maintenant devant le filet : le numéro [X, Prénom Nom]. »
+   * « Le temps du changement : [MM:SS] de la [Xe période]. » (si le temps est spécifié)
+   */
+  const formatGoalieChange = (goalieEvent) => {
+    const lines = [];
+    const htmlLines = [];
+
+    const team = clean(goalieEvent.teamName || "l'équipe");
+    const num = goalieEvent.goalie ? String(goalieEvent.goalie.number || "").trim() : "";
+    const name = goalieEvent.goalie ? titleCase(goalieEvent.goalie.name || "") : "";
+
+    // Ligne 1 : Annonce de l'équipe
+    lines.push(`Changement de gardien de but du côté des ${team},`);
+    htmlLines.push(`Changement de gardien de but du côté des <strong>${escapeHtml(team)}</strong>,`);
+
+    // Ligne 2 : Nouveau gardien devant le filet
+    if (num && name) {
+      lines.push(`maintenant devant le filet : le numéro ${num}, ${name}.`);
+      htmlLines.push(`maintenant devant le filet : le numéro <strong>${escapeHtml(num)}</strong>, ${escapeHtml(name)}.`);
+    } else if (name) {
+      lines.push(`maintenant devant le filet : ${name}.`);
+      htmlLines.push(`maintenant devant le filet : <strong>${escapeHtml(name)}</strong>.`);
+    } else {
+      lines.push(`maintenant devant le filet.`);
+      htmlLines.push(`maintenant devant le filet.`);
+    }
+
+    // Ligne 3 : Temps du changement
+    if (goalieEvent.time) {
+      const t = clean(goalieEvent.time).replace(/^0(\d)/, "$1");
+      let pLabel = "3e période";
+      const pStr = String(goalieEvent.period || "").trim().toLowerCase();
+      if (pStr === "1" || pStr.includes("1re") || pStr.includes("1er")) pLabel = "1re période";
+      else if (pStr === "2" || pStr.includes("2e")) pLabel = "2e période";
+      else if (pStr === "3" || pStr.includes("3e")) pLabel = "3e période";
+      else if (pStr === "ot" || pStr.includes("prolongation") || pStr === "4") pLabel = "période de prolongation";
+
+      lines.push(`Le temps du changement : ${t} de la ${pLabel}.`);
+      htmlLines.push(`Le temps du changement : <strong>${escapeHtml(t)}</strong> de la ${escapeHtml(pLabel)}.`);
+    }
+
+    return {
+      type: "goalie",
+      title: `GARDIEN — ${team.toUpperCase()}`,
+      teamName: team,
+      lines,
+      htmlLines,
+      speechText: lines.join(" ")
+    };
+  };
+
   // =========================================================================
   // 6. EXPORT DU MODULE
   // =========================================================================
@@ -458,6 +514,7 @@
     resolvePenaltyCombination,
     formatGoal,
     formatPenalty,
+    formatGoalieChange,
     utils: {
       clean,
       titleCase,

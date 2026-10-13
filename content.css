@@ -158,6 +158,15 @@
   background-color: #ffc900;
   box-shadow: 0 0 6px #ffc900;
 }
+#sa-popover .sa-modal-badge.sa-badge-goalie {
+  background-color: #4a5058;
+  color: #fff;
+  border: 1px solid #626973;
+}
+#sa-popover .sa-modal-badge.sa-badge-goalie .sa-badge-dot {
+  background-color: #00d2d3;
+  box-shadow: 0 0 6px #00d2d3;
+}
 
 /* Titre central avec logo et nom d'équipe */
 #sa-popover .sa-modal-title {
@@ -236,6 +245,9 @@
 }
 #sa-popover.sa-penalty .sa-modal-card {
   border-left: 5px solid #b83f43;
+}
+#sa-popover.sa-goalie .sa-modal-card {
+  border-left: 5px solid #00d2d3;
 }
 
 /* Lignes de texte d'annonce (gros caractères pour le micro) */

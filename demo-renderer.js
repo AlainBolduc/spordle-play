@@ -1,0 +1,123 @@
+/**
+ * Rendu dynamique du sommaire Spordle Play à partir de TEST_GAME_DATA.
+ * Permet à demo.html d'être entièrement piloté par les données (sans HTML hardcodé).
+ */
+(() => {
+  "use strict";
+
+  if (typeof TEST_GAME_DATA === "undefined") {
+    console.warn("[demo-renderer] TEST_GAME_DATA n'est pas défini.");
+    return;
+  }
+
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+    );
+  }
+
+  function formatEventDetails(ev) {
+    if (ev.type === "goal") {
+      let flags = [];
+      if (ev.isPowerplay) flags.push("[AN]");
+      if (ev.isShorthanded) flags.push("[DN]");
+      if (ev.isEmptyNet) flags.push("[FD]");
+      if (ev.isPenaltyShot) flags.push("[Tir de punition]");
+      const flagStr = flags.length ? " " + flags.join(" ") : "";
+      let str = `${escapeHtml(ev.scorer.name)} (${escapeHtml(ev.scorer.number)})${flagStr}`;
+      if (ev.assists && ev.assists.length) {
+        str += ` - PASSES: ` + ev.assists.map(a => `${escapeHtml(a.name)} (${escapeHtml(a.number)})`).join(", ");
+      }
+      return str;
+    }
+
+    if (ev.type === "penalty") {
+      let parts = [];
+      if (ev.isBench) {
+        if (ev.servedBy) {
+          parts.push(`Punition de banc: ${escapeHtml(ev.servedBy.name)} (${escapeHtml(ev.servedBy.number)})`);
+        } else {
+          parts.push(`Punition de banc`);
+        }
+      } else {
+        parts.push(`${escapeHtml(ev.player.name)} (${escapeHtml(ev.player.number)})`);
+        if (ev.servedBy) {
+          parts.push(`SERVI: ${escapeHtml(ev.servedBy.name)} (${escapeHtml(ev.servedBy.number)})`);
+        }
+      }
+      if (ev.code) parts.push(escapeHtml(ev.code));
+      let desc = ev.label || "";
+      if (ev.severity) desc += ` (${ev.severity})`;
+      if (desc) parts.push(escapeHtml(desc));
+      return parts.join(" - ");
+    }
+
+    if (ev.type === "goalie") {
+      return escapeHtml(ev.details);
+    }
+
+    return "";
+  }
+
+  function renderSummary(container, data) {
+    if (!container) return;
+    container.innerHTML = "";
+
+    (data.periods || []).forEach((period) => {
+      // En-tête de période
+      const header = document.createElement("div");
+      header.className = "summary-period-header ng-binding";
+      header.innerHTML = `${escapeHtml(period.name)} - ${escapeHtml(period.length || "20:00")}<button class="button no-border ion-edit"></button>`;
+      container.appendChild(header);
+
+      // Événements de la période
+      (period.events || []).forEach((ev) => {
+        const itemHost = document.createElement("hi-summary-item");
+        // Attacher l'objet structuré à l'élément pour une inspection directe (mode hybride)
+        itemHost.dataset.event = JSON.stringify(ev);
+
+        const isGoal = ev.type === "goal";
+        const isPenalty = ev.type === "penalty";
+        const isGoalie = ev.type === "goalie";
+
+        const actionClass = isGoal ? "goal" : isPenalty ? "penalty" : "goalie";
+        const actionSideClass = ev.side === "home" ? "home" : "away";
+        const actionLabel = isGoal
+          ? (ev.side === "home" ? "But - Local" : "But - Visiteur")
+          : isPenalty
+          ? (ev.side === "home" ? "Punition - Local" : "Punition - Visiteur")
+          : (ev.side === "home" ? "Gardien - Local" : "Gardien - Visiteur");
+
+        const detailsText = formatEventDetails(ev);
+
+        itemHost.innerHTML = `
+          <div class="summary-item">
+            <div class="time ng-binding">${escapeHtml(ev.time)}</div>
+            <div class="action ng-binding ${actionSideClass} ${actionClass}">${escapeHtml(actionLabel)}</div>
+            <div class="details ng-binding">${detailsText}</div>
+            <div class="modify">
+              <ng-transclude>
+                <button class="button button-balanced button-outline no-border ion-edit"></button>
+                <button class="button button-energized button-outline no-border ion-close"></button>
+              </ng-transclude>
+            </div>
+          </div>
+        `.trim();
+
+        container.appendChild(itemHost);
+      });
+
+      // Pied de période
+      const footer = document.createElement("div");
+      footer.className = "summary-period-footer ng-binding ng-hide";
+      footer.textContent = "0 événements cachés par le filtre actuel";
+      container.appendChild(footer);
+    });
+  }
+
+  // Initialisation au chargement du DOM
+  const container = document.querySelector(".summary-items");
+  if (container) {
+    renderSummary(container, TEST_GAME_DATA);
+  }
+})();

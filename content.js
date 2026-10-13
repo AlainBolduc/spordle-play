@@ -241,7 +241,7 @@
     const actionEl = summaryItem.querySelector(".action");
     if (!actionEl) return null;
     const cls = actionEl.classList;
-    const type = cls.contains("goal") ? "goal" : cls.contains("penalty") ? "penalty" : null;
+    const type = cls.contains("goal") ? "goal" : cls.contains("penalty") ? "penalty" : cls.contains("goalie") ? "goalie" : null;
     if (!type) return null;
 
     const side = cls.contains("home") ? "home" : "away";
@@ -532,6 +532,49 @@
     }
   };
 
+  const buildGoalieChange = (ev, summaryItem) => {
+    // Format attendu de ev.details : "ANAELLE LEMIEUX (33) - Mis dans le filet" ou "Retiré du filet"
+    const isIntoNet = /mis\s*dans\s*le\s*filet|in\s*net|entr[eé]/i.test(ev.details);
+    const isPulled = /retir[eé]\s*du\s*filet|pulled|out/i.test(ev.details);
+
+    const players = parsePlayers(ev.details);
+    const goalie = players.length ? players[0] : null;
+
+    if (typeof SpordleEngine !== "undefined" && SpordleEngine.formatGoalieChange) {
+      if (isIntoNet) {
+        const formatted = SpordleEngine.formatGoalieChange({
+          teamName: ev.team,
+          goalie,
+          time: ev.time,
+          period: ev.period
+        });
+        return formatted.htmlLines.map((l) => `<div class="sa-line">${l}</div>`).join("");
+      } else if (isPulled) {
+        // Gardien retiré (ex: 6e attaquant ou fin de match)
+        const lines = [
+          `<div class="sa-line">Le gardien de but des <strong>${escapeHtml(ev.team)}</strong> est retiré de son filet.</div>`
+        ];
+        if (ev.time) {
+          lines.push(`<div class="sa-line">Le temps du retrait : <strong>${escapeHtml(ev.time)}</strong>${ev.period ? ` de la ${escapeHtml(ev.period)}` : ""}.</div>`);
+        }
+        return lines.join("");
+      }
+    }
+
+    // Fallback direct
+    const numStr = goalie ? `le numéro <strong>${escapeHtml(goalie.number)}</strong>, ${escapeHtml(goalie.name)}` : "";
+    const lines = [
+      `<div class="sa-line">Changement de gardien de but du côté des <strong>${escapeHtml(ev.team)}</strong>,</div>`
+    ];
+    if (numStr) {
+      lines.push(`<div class="sa-line">maintenant devant le filet : ${numStr}.</div>`);
+    }
+    if (ev.time) {
+      lines.push(`<div class="sa-line">Le temps du changement : <strong>${escapeHtml(ev.time)}</strong>${ev.period ? ` de la ${escapeHtml(ev.period)}` : ""}.</div>`);
+    }
+    return lines.join("");
+  };
+
   const getTeamLogo = (side) => {
     const el = document.querySelector(`.score-${side}.score-logo .hi-logo`) || document.querySelector(`.score-${side}.score-logo`);
     return el?.style?.backgroundImage || "";
@@ -541,7 +584,8 @@
     const ev = readEvent(summaryItem);
     if (!ev) return null;
     const isGoal = ev.type === "goal";
-    const typeLabel = isGoal ? "BUT" : "PÉNALITÉ";
+    const isGoalie = ev.type === "goalie";
+    const typeLabel = isGoal ? "BUT" : isGoalie ? "GARDIEN" : "PÉNALITÉ";
     const logoUrl = getTeamLogo(ev.side);
     return {
       type: ev.type,
@@ -550,7 +594,7 @@
       team: ev.team,
       typeLabel,
       logoUrl,
-      body: isGoal ? buildGoal(ev, summaryItem) : buildPenalty(ev, summaryItem),
+      body: isGoal ? buildGoal(ev, summaryItem) : isGoalie ? buildGoalieChange(ev, summaryItem) : buildPenalty(ev, summaryItem),
     };
   };
 
@@ -693,7 +737,7 @@
     const items = [...document.querySelectorAll(".summary-item")];
     items.forEach((item) => {
       const action = item.querySelector(".action");
-      if (action && (action.classList.contains("goal") || action.classList.contains("penalty"))) {
+      if (action && (action.classList.contains("goal") || action.classList.contains("penalty") || action.classList.contains("goalie"))) {
         decorate(item);
       }
     });
