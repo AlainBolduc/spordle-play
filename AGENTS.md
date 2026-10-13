@@ -145,6 +145,14 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
 
 ## 6. Commandes utiles & Déploiement
 
+- **Règle absolue de versioning (Auto-update iPad / Userscripts)** :
+  - **Chaque fois qu'on push sur GitHub, on DOIT obligatoirement incrémenter le numéro de version (`version`) dans `manifest.json` avant le commit.**
+  - Sans incrémentation de version (`1.0.0` -> `1.0.1` -> etc.), l'application Userscripts sur les iPads des annonceurs ne détectera pas la mise à jour automatique.
+  - Procédure de déploiement systématique :
+    1. Modifier `version` dans `manifest.json`.
+    2. Exécuter `node build-userscript.js` (recompile `dist/spordle-annonceur.user.js` avec la nouvelle version).
+    3. Exécuter les tests : `node test-engine.js`.
+    4. Commiter et pousser : `git commit -am "..." && git push origin main`.
 - **Recharger dans Chrome** :
   1. Ouvrir `chrome://extensions`.
   2. Mode développeur activé.
