@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guide d'installation — Spordle Annonceur</title>
+  <style>
+    /* Mode sombre sobre et épuré type documentation Apple Developer / GitHub Dark */
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --border-light: #21262d;
+      --blue: #58a6ff;
+      --badge-bg: #1f242c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 40px 20px 80px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrapper {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* En-tête sobre */
+    header {
+      margin-bottom: 36px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tag {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      margin-bottom: 8px;
+      color: #ffffff;
+    }
+
+    .lead {
+      font-size: 16px;
+      color: var(--text-muted);
+    }
+
+    /* Boîte QR & Lien direct */
+    .quick-access {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 18px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 40px;
+    }
+
+    .qr-box {
+      background: #ffffff;
+      padding: 6px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .qr-box img {
+      width: 100px;
+      height: 100px;
+      display: block;
+    }
+
+    .quick-text {
+      font-size: 14px;
+    }
+
+    .quick-text strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 4px;
+      color: #ffffff;
+    }
+
+    .quick-text p {
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .quick-link {
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    .quick-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Étapes numérotées */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 16px;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      background: #21262d;
+      border: 1px solid var(--border);
+      color: #ffffff;
+      border-radius: 50%;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-content h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: -0.2px;
+      color: #ffffff;
+    }
+
+    .step-content p, .step-content ol {
+      font-size: 15px;
+      color: #c9d1d9;
+      margin-bottom: 12px;
+    }
+
+    .step-content ol {
+      margin-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .step-content strong {
+      color: #ffffff;
+    }
+
+    .btn-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #21262d;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      text-decoration: none;
+      margin-top: 4px;
+    }
+
+    .btn-link:hover {
+      background: #30363d;
+    }
+
+    /* Galerie et captures d'écran */
+    .screenshots-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .screenshot-card {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .screenshot-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .screenshot-caption {
+      padding: 8px 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+    }
+
+    .placeholder-box {
+      padding: 32px 16px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .placeholder-box .path {
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 12px;
+      color: #6e7681;
+      margin-top: 4px;
+      display: block;
+    }
+
+    /* Note discrète */
+    .note {
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: #161b22;
+      border-left: 3px solid var(--blue);
+      border-radius: 0 6px 6px 0;
+      font-size: 13px;
+      color: #8b949e;
+    }
+
+    footer {
+      margin-top: 60px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+
+    <header>
+      <div class="tag">Spordle Play — Safari iOS</div>
+      <h1>Installation de Spordle Annonceur</h1>
+      <p class="lead">Guide pas à pas pour configurer l'extension sur iPad ou iPhone.</p>
+    </header>
+
+    <!-- Accès direct -->
+    <div class="quick-access">
+      <div class="qr-box">
+        <img src="assets/guide/qr-code.png" alt="Code QR">
+      </div>
+      <div class="quick-text">
+        <strong>Lien direct vers le script</strong>
+        <p>Scannez le code avec l'appareil photo ou ouvrez le lien dans Safari :</p>
+        <a href="https://bit.ly/spordle-play-assist" target="_blank" class="quick-link">
+          https://bit.ly/spordle-play-assist →
+        </a>
+      </div>
+    </div>
+
+    <div class="steps">
+
+      <!-- Étape 1 -->
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h2>Installer l'application Userscripts</h2>
+          <p>
+            Téléchargez l'application gratuite <strong>Userscripts</strong> depuis l'App Store. C'est l'extension qui permet à Safari d'exécuter des scripts.
+          </p>
+          <a href="https://apple.co/4hHYsZJ" target="_blank" class="btn-link">
+            Ouvrir dans l'App Store (apple.co/4hHYsZJ) ↗
+          </a>
+
+          <div class="screenshot-zone">
+            <!-- Si l'image existe, remplacer le bloc ci-dessous par: <img src="assets/guide/step1-appstore.png" alt="Étape 1"> -->
+            <div class="placeholder-box">
+              Capture d'écran : App Store (Userscripts)
+              <span class="path">assets/guide/step1-appstore.png</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Étape 2 -->
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h2>Activer l'extension dans les Réglages</h2>
+          <ol>
+            <li>Ouvrez l'application <strong>Réglages</strong> de l'iPad.</li>
+            <li>Allez dans <strong>Apps</strong> &gt; <strong>Safari</strong> &gt; <strong>Extensions</strong> (ou directement <strong>Userscripts</strong>).</li>
+            <li>Activez <strong>Autoriser l'extension</strong>.</li>
+            <li>Dans la section <em>Autorisations</em>, assurez-vous que les domaines Spordle (<code>play.spordle.com</code>) sont bien configurés sur <strong>Autoriser</strong>.</li>
+          </ol>
+
+          <div class="screenshots-group">
+            <div class="screenshot-card">
+              <img src="assets/guide/step2-settings-permissions.png" alt="Réglages des autorisations Userscripts">
+              <div class="screenshot-caption">Réglages &gt; Extensions &gt; Userscripts : Activer l'extension et vérifier les autorisations d'accès.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Étape 3 -->
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h2>Vérifier le dossier de travail (Optionnel)</h2>
+          <p>
+            Par défaut, l'application utilise déjà le dossier <em>Userscripts</em> sur votre appareil. Si vous souhaitez le personnaliser ou le vérifier :
+          </p>
+          <ol>
+            <li>Ouvrez l'application <strong>Userscripts</strong> sur votre écran d'accueil.</li>
+            <li>Touchez <strong>Set Userscripts-Directory</strong>.</li>
+            <li>Confirmez l'accès au dossier <em>Userscripts</em> (ou choisissez un dossier de votre choix).</li>
+          </ol>
+
+          <div class="screenshots-group">
+            <div class="screenshot-card">
+              <div class="placeholder-box">
+                Capture d'écran : Sélection du dossier dans l'app Userscripts
+                <span class="path">assets/guide/step3-choose-directory.png</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Étape 4 -->
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h2>Télécharger et enregistrer le script</h2>
+          <p>
+            Scannez le code QR ci-dessous avec l'iPad ou ouvrez directement le lien dans <strong>Safari</strong> :
+          </p>
+
+          <div class="quick-access" style="margin: 14px 0 16px 0; padding: 14px 16px;">
+            <div class="qr-box">
+              <img src="assets/guide/qr-code.png" alt="Code QR d'installation" style="width: 88px; height: 88px;">
+            </div>
+            <div class="quick-text">
+              <a href="https://bit.ly/spordle-play-assist" target="_blank" class="quick-link" style="font-size: 15px;">
+                https://bit.ly/spordle-play-assist →
+              </a>
+              <p style="margin-top: 4px; font-size: 13px;">
+                Touchez le lien ou scannez le code pour lancer l'installation.
+              </p>
+            </div>
+          </div>
+
+          <ol>
+            <li>Au chargement de la page du script dans Safari, touchez la barre en bas : <strong>TÉLÉCHARGER</strong>.</li>
+            <li>Dans le menu de partage qui s'affiche, choisissez <strong>Enregistrer dans Fichiers</strong>.</li>
+            <li>Sélectionnez le dossier <strong>Userscripts</strong> (dans <em>Sur mon iPad</em> ou <em>iCloud Drive</em>) et touchez <strong>Enregistrer</strong>.</li>
+          </ol>
+
+          <div class="note">
+            ⚠️ <strong>Important :</strong> le fichier doit impérativement se trouver à l'intérieur du dossier <strong>Userscripts</strong> pour que Safari puisse le charger automatiquement.
+          </div>
+
+          <div class="screenshots-group">
+            <div class="screenshot-card">
+              <img src="assets/guide/step4-download-bar.png" alt="Bandeau de téléchargement Safari">
+              <div class="screenshot-caption">1. Toucher « Télécharger » sur le bandeau en bas de la page Safari.</div>
+            </div>
+            <div class="screenshot-card">
+              <img src="assets/guide/step4-save-files.png" alt="Menu partager Enregistrer dans Fichiers">
+              <div class="screenshot-caption">2. Dans le menu de partage, sélectionner « Enregistrer dans Fichiers ».</div>
+            </div>
+            <div class="screenshot-card">
+              <img src="assets/guide/step4-save-dialog.png" alt="Sélection du dossier Userscripts dans Fichiers">
+              <div class="screenshot-caption">3. Choisir le dossier « Userscripts » et toucher « Enregistrer ».</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Étape 5 -->
+      <div class="step-item">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h2>Vérifier et autoriser sur Spordle</h2>
+          <ol>
+            <li>Ouvrez votre feuille de match sur <strong>play.spordle.com</strong>.</li>
+            <li>Dans la barre d'adresse de Safari, touchez le bouton <strong>Extensions</strong> (icône puzzle 🧩 ou <strong>aA</strong>).</li>
+            <li>Touchez <strong>Userscripts</strong> pour vérifier que l'extension est bien active et autorisée sur le site.</li>
+            <li>Rechargez la page.</li>
+          </ol>
+
+          <div class="note">
+            🏒 <strong>C'est prêt !</strong> Les petites icônes mégaphones 📢 apparaissent désormais à côté de chaque but et punition dans le sommaire. Un toucher dessus affiche le texte officiel complet.
+          </div>
+
+          <div class="screenshots-group">
+            <div class="screenshot-card">
+              <img src="assets/guide/step5-safari-menu.png" alt="Menu Extensions de Safari">
+              <div class="screenshot-caption">1. Toucher le bouton d'extensions dans Safari puis sélectionner « Userscripts ».</div>
+            </div>
+            <div class="screenshot-card">
+              <img src="assets/guide/step5-userscripts-toggle.png" alt="Fenêtre Userscripts avec Spordle Annonceur activé">
+              <div class="screenshot-caption">2. S'assurer que le commutateur en haut à droite est activé et que « Spordle Annonceur » est présent dans la liste.</div>
+            </div>
+            <div class="screenshot-card">
+              <img src="assets/guide/step5-result-megaphones.png" alt="Feuille Spordle Play avec les icônes mégaphones actives">
+              <div class="screenshot-caption">3. Résultat : Les icônes mégaphones 📢 apparaissent sur chaque but et punition du sommaire, et le bouton d'inversion des côtés (⇄) s'affiche à côté de la catégorie.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <footer>
+      Spordle Annonceur — Les futures mises à jour du script se font automatiquement au chargement de Safari.
+    </footer>
+
+  </div>
+
+</body>
+</html>
