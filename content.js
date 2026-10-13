@@ -829,7 +829,7 @@
     const isSwapped = isSidesSwappedForCurrentGame();
     const labelSpan = btn.querySelector(".sa-swap-label");
     if (labelSpan) {
-      labelSpan.textContent = isSwapped ? "Côtés inversés" : "Inverser côtés";
+      labelSpan.textContent = isSwapped ? "🔥 TEST AUTO-UPDATE OK 🔥" : "🚀 TEST AUTO-UPDATE ACTIF 🚀";
     }
     btn.title = isSwapped
       ? "Disposition inversée : Local à gauche, Visiteur à droite.\nCliquez pour rétablir la disposition normale pour ce match."
