@@ -633,6 +633,93 @@
   let currentUtterance = null;
   let isSpeaking = false;
 
+  const scoreVoice = (v) => {
+    if (!v || !v.lang) return 0;
+    const lang = v.lang.toLowerCase().replace("_", "-");
+    const name = (v.name || "").toLowerCase();
+    const isCA = lang === "fr-ca" || name.includes("canada") || name.includes("canad");
+    const isFR = lang.startsWith("fr") || name.includes("french") || name.includes("français");
+    if (!isFR) return 0;
+
+    let score = isCA ? 1000 : 100;
+    if (name.includes("premium")) score += 500;
+    else if (name.includes("enhanced") || name.includes("amélior") || name.includes("amelior")) score += 400;
+    else if (name.includes("natural") || name.includes("online")) score += 350;
+    else if (name.includes("siri")) score += 300;
+    else if (name.includes("google")) score += 250;
+
+    if (name.includes("compact")) score -= 200;
+    return score;
+  };
+
+  const getAvailableFrenchVoices = () => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return [];
+    const voices = window.speechSynthesis.getVoices() || [];
+    const frVoices = voices.filter((v) => {
+      const l = (v.lang || "").toLowerCase().replace("_", "-");
+      const n = (v.name || "").toLowerCase();
+      return l.startsWith("fr") || n.includes("french") || n.includes("français");
+    });
+    return frVoices.sort((a, b) => scoreVoice(b) - scoreVoice(a));
+  };
+
+  const getBestFrenchVoice = () => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return null;
+    const voices = window.speechSynthesis.getVoices() || [];
+    if (!voices.length) return null;
+
+    // 1. Choix explicite sauvegardé par l'utilisateur
+    try {
+      const savedVoice = localStorage.getItem("sa_tts_voice_name");
+      if (savedVoice) {
+        const found = voices.find((v) => v.name === savedVoice);
+        if (found) return found;
+      }
+    } catch (_) {}
+
+    // 2. Meilleure voix selon le score (priorité Enhanced / Amélioré / Premium québécoise)
+    const sorted = getAvailableFrenchVoices();
+    return sorted.length > 0 ? sorted[0] : null;
+  };
+
+  const populateVoiceSelect = (selectEl) => {
+    if (!selectEl) return;
+    const frVoices = getAvailableFrenchVoices();
+    if (frVoices.length <= 1) {
+      selectEl.style.display = "none";
+      return;
+    }
+
+    selectEl.style.display = "inline-block";
+    selectEl.innerHTML = "";
+
+    const activeVoice = getBestFrenchVoice();
+
+    frVoices.forEach((v) => {
+      const opt = document.createElement("option");
+      opt.value = v.name;
+      let label = v.name
+        .replace(/\s*\(French\s*\([A-Za-z\s]+\)\)/gi, "")
+        .replace(/\s*\(Français\s*\([A-Za-z\s]+\)\)/gi, "")
+        .trim();
+      const isCA = (v.lang || "").toLowerCase().includes("ca") || v.name.toLowerCase().includes("canad");
+      if (isCA && !label.includes("QC") && !label.includes("CA") && !label.includes("Canad")) {
+        label += " (QC)";
+      }
+      opt.textContent = label;
+      if (activeVoice && activeVoice.name === v.name) {
+        opt.selected = true;
+      }
+      selectEl.appendChild(opt);
+    });
+
+    selectEl.onchange = (e) => {
+      try {
+        localStorage.setItem("sa_tts_voice_name", e.target.value);
+      } catch (_) {}
+    };
+  };
+
   const stopSpeech = () => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
@@ -651,17 +738,6 @@
     }
   };
 
-  const getBestFrenchVoice = () => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return null;
-    const voices = window.speechSynthesis.getVoices() || [];
-    if (!voices.length) return null;
-    return (
-      voices.find((v) => v.lang === "fr-CA" || v.lang === "fr_CA") ||
-      voices.find((v) => v.lang && v.lang.toLowerCase().startsWith("fr")) ||
-      null
-    );
-  };
-
   const playSpeech = (text, btn) => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     stopSpeech();
@@ -669,14 +745,16 @@
     if (!text) return;
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "fr-CA";
-    utterance.rate = 0.95;
-    utterance.pitch = 1.0;
-
     const voice = getBestFrenchVoice();
     if (voice) {
       utterance.voice = voice;
+      utterance.lang = voice.lang || "fr-CA";
+    } else {
+      utterance.lang = "fr-CA";
     }
+
+    utterance.rate = 0.92;
+    utterance.pitch = 1.0;
 
     utterance.onstart = () => {
       isSpeaking = true;
@@ -716,6 +794,8 @@
     if (window.speechSynthesis.onvoiceschanged !== undefined) {
       window.speechSynthesis.onvoiceschanged = () => {
         window.speechSynthesis.getVoices();
+        const sel = popover?.querySelector(".sa-voice-select");
+        if (sel) populateVoiceSelect(sel);
       };
     }
   }
@@ -777,10 +857,13 @@
         `</div>` +
       `</div>` +
       `<div class="sa-modal-footer">` +
-        `<button type="button" class="sa-tts-btn" aria-label="Annoncer vocalement" title="Lire l'annonce au micro (synthèse vocale québécoise)">` +
-          `<i class="icon ion-volume-high sa-tts-icon"></i>` +
-          `<span class="sa-tts-label">Annoncer vocalement</span>` +
-        `</button>` +
+        `<div class="sa-tts-controls">` +
+          `<button type="button" class="sa-tts-btn" aria-label="Annoncer vocalement" title="Lire l'annonce au micro (synthèse vocale québécoise)">` +
+            `<i class="icon ion-volume-high sa-tts-icon"></i>` +
+            `<span class="sa-tts-label">Annoncer vocalement</span>` +
+          `</button>` +
+          `<select class="sa-voice-select" aria-label="Choisir la voix de l'annonceur" title="Changer la voix de synthèse"></select>` +
+        `</div>` +
         `<span class="sa-hint-dismiss">Cliquer n'importe où, sur ✕ ou sur Échap pour fermer</span>` +
       `</div>`;
 
@@ -792,6 +875,12 @@
         e.preventDefault();
         toggleSpeech(content.speechText, ttsBtn);
       });
+    }
+
+    // Remplissage du sélecteur de voix
+    const voiceSelect = popover.querySelector(".sa-voice-select");
+    if (voiceSelect) {
+      populateVoiceSelect(voiceSelect);
     }
 
     // Clic sur le bouton X pour fermer immédiatement

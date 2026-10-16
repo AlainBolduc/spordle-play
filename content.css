@@ -294,6 +294,32 @@
   color: #ffc900;
   font-weight: 600;
 }
+#sa-popover .sa-modal-footer .sa-tts-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+#sa-popover .sa-modal-footer .sa-voice-select {
+  display: none;
+  background-color: #2b2f38;
+  color: #c0cbcc;
+  border: 1px solid #4a5058;
+  border-radius: 14px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  max-width: 190px;
+}
+#sa-popover .sa-modal-footer .sa-voice-select:hover,
+#sa-popover .sa-modal-footer .sa-voice-select:focus {
+  border-color: #ffc900;
+  color: #fff;
+  background-color: #383e4a;
+}
 #sa-popover .sa-modal-footer .sa-tts-btn {
   display: inline-flex;
   align-items: center;
