@@ -628,10 +628,57 @@
     return el?.style?.backgroundImage || "";
   };
 
-  // ---------- Synthèse vocale (Text-To-Speech) ----------
+  // ---------- Synthèse vocale (Text-To-Speech & Gemini IA) ----------
 
   let currentUtterance = null;
+  let currentAudio = null;
   let isSpeaking = false;
+  let settingsModal = null;
+
+  const GEMINI_VOICES = [
+    { id: "Fenrir", name: "Fenrir (Homme — puissant & grave, style aréna)", gender: "male" },
+    { id: "Puck", name: "Puck (Homme — dynamique & énergique)", gender: "male" },
+    { id: "Charon", name: "Charon (Homme — posé & officiel)", gender: "male" },
+    { id: "Aoede", name: "Aoede (Femme — chaleureuse & claire)", gender: "female" },
+    { id: "Kore", name: "Kore (Femme — vive & dynamique)", gender: "female" },
+  ];
+
+  const writePcmString = (view, offset, string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  };
+
+  const pcmToWav = (pcmBase64, sampleRate = 24000) => {
+    const binaryStr = atob(pcmBase64);
+    const len = binaryStr.length;
+    const buffer = new ArrayBuffer(44 + len);
+    const view = new DataView(buffer);
+
+    writePcmString(view, 0, "RIFF");
+    view.setUint32(4, 36 + len, true);
+    writePcmString(view, 8, "WAVE");
+
+    writePcmString(view, 12, "fmt ");
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true); // PCM format
+    view.setUint16(22, 1, true); // Mono
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+
+    writePcmString(view, 36, "data");
+    view.setUint32(40, len, true);
+
+    const bytes = new Uint8Array(buffer, 44);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+
+    const blob = new Blob([buffer], { type: "audio/wav" });
+    return URL.createObjectURL(blob);
+  };
 
   const scoreVoice = (v) => {
     if (!v || !v.lang) return 0;
@@ -668,7 +715,6 @@
     const voices = window.speechSynthesis.getVoices() || [];
     if (!voices.length) return null;
 
-    // 1. Choix explicite sauvegardé par l'utilisateur
     try {
       const savedVoice = localStorage.getItem("sa_tts_voice_name");
       if (savedVoice) {
@@ -677,52 +723,106 @@
       }
     } catch (_) {}
 
-    // 2. Meilleure voix selon le score (priorité Enhanced / Amélioré / Premium québécoise)
     const sorted = getAvailableFrenchVoices();
     return sorted.length > 0 ? sorted[0] : null;
   };
 
   const populateVoiceSelect = (selectEl) => {
     if (!selectEl) return;
-    const frVoices = getAvailableFrenchVoices();
-    if (frVoices.length <= 1) {
-      selectEl.style.display = "none";
-      return;
-    }
+    const apiKey = (localStorage.getItem("sa_gemini_api_key") || "").trim();
+    const currentEngine = localStorage.getItem("sa_tts_engine") || (apiKey ? "gemini" : "local");
+    const geminiVoice = localStorage.getItem("sa_gemini_voice") || "Fenrir";
 
     selectEl.style.display = "inline-block";
     selectEl.innerHTML = "";
 
-    const activeVoice = getBestFrenchVoice();
+    // Groupe Gemini IA
+    const geminiGroup = document.createElement("optgroup");
+    geminiGroup.label = "✨ Voix IA Réaliste (Gemini)";
 
-    frVoices.forEach((v) => {
-      const opt = document.createElement("option");
-      opt.value = v.name;
-      let label = v.name
-        .replace(/\s*\(French\s*\([A-Za-z\s]+\)\)/gi, "")
-        .replace(/\s*\(Français\s*\([A-Za-z\s]+\)\)/gi, "")
-        .trim();
-      const isCA = (v.lang || "").toLowerCase().includes("ca") || v.name.toLowerCase().includes("canad");
-      if (isCA && !label.includes("QC") && !label.includes("CA") && !label.includes("Canad")) {
-        label += " (QC)";
-      }
-      opt.textContent = label;
-      if (activeVoice && activeVoice.name === v.name) {
-        opt.selected = true;
-      }
-      selectEl.appendChild(opt);
-    });
+    if (apiKey) {
+      GEMINI_VOICES.forEach((gv) => {
+        const opt = document.createElement("option");
+        opt.value = `gemini:${gv.id}`;
+        opt.textContent = `✨ ${gv.id} (IA)`;
+        if (currentEngine === "gemini" && geminiVoice === gv.id) {
+          opt.selected = true;
+        }
+        geminiGroup.appendChild(opt);
+      });
+    } else {
+      const optCfg = document.createElement("option");
+      optCfg.value = "__configure_gemini__";
+      optCfg.textContent = "⚙️ Activer Gemini IA...";
+      geminiGroup.appendChild(optCfg);
+    }
+    selectEl.appendChild(geminiGroup);
+
+    // Groupe Voix locales
+    const localGroup = document.createElement("optgroup");
+    localGroup.label = "🤖 Voix de l'appareil (Hors-ligne)";
+
+    const frVoices = getAvailableFrenchVoices();
+    const activeLocalVoice = getBestFrenchVoice();
+
+    if (frVoices.length > 0) {
+      frVoices.forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = `local:${v.name}`;
+        let label = v.name
+          .replace(/\s*\(French\s*\([A-Za-z\s]+\)\)/gi, "")
+          .replace(/\s*\(Français\s*\([A-Za-z\s]+\)\)/gi, "")
+          .trim();
+        const isCA = (v.lang || "").toLowerCase().includes("ca") || v.name.toLowerCase().includes("canad");
+        if (isCA && !label.includes("QC") && !label.includes("CA") && !label.includes("Canad")) {
+          label += " (QC)";
+        }
+        opt.textContent = label;
+        if (currentEngine === "local" && activeLocalVoice && activeLocalVoice.name === v.name) {
+          opt.selected = true;
+        }
+        localGroup.appendChild(opt);
+      });
+    } else {
+      const optDefault = document.createElement("option");
+      optDefault.value = "local:default";
+      optDefault.textContent = "Voix système standard";
+      if (currentEngine === "local") optDefault.selected = true;
+      localGroup.appendChild(optDefault);
+    }
+    selectEl.appendChild(localGroup);
 
     selectEl.onchange = (e) => {
-      try {
-        localStorage.setItem("sa_tts_voice_name", e.target.value);
-      } catch (_) {}
+      const val = e.target.value;
+      if (val === "__configure_gemini__") {
+        openSettingsModal();
+        populateVoiceSelect(selectEl);
+        return;
+      }
+      if (val.startsWith("gemini:")) {
+        const vId = val.replace("gemini:", "");
+        localStorage.setItem("sa_tts_engine", "gemini");
+        localStorage.setItem("sa_gemini_voice", vId);
+      } else if (val.startsWith("local:")) {
+        const vName = val.replace("local:", "");
+        localStorage.setItem("sa_tts_engine", "local");
+        if (vName !== "default") {
+          localStorage.setItem("sa_tts_voice_name", vName);
+        }
+      }
     };
   };
 
   const stopSpeech = () => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
+    }
+    if (currentAudio) {
+      try {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      } catch (_) {}
+      currentAudio = null;
     }
     isSpeaking = false;
     currentUtterance = null;
@@ -738,7 +838,129 @@
     }
   };
 
-  const playSpeech = (text, btn) => {
+  const playGeminiSpeech = async (text, btn) => {
+    const apiKey = (localStorage.getItem("sa_gemini_api_key") || "").trim();
+    if (!apiKey) {
+      openSettingsModal();
+      return;
+    }
+
+    stopSpeech();
+
+    isSpeaking = true;
+    if (btn) {
+      btn.classList.add("sa-speaking");
+      const icon = btn.querySelector(".sa-tts-icon");
+      if (icon) icon.className = "icon ion-load-c sa-spin sa-tts-icon";
+      const label = btn.querySelector(".sa-tts-label");
+      if (label) label.textContent = "Génération IA...";
+    }
+
+    const voiceName = localStorage.getItem("sa_gemini_voice") || "Fenrir";
+    const prompt = `Tu es l'annonceur maison officiel dans un aréna de hockey au Québec. Annonce ce texte au micro avec le dynamisme, la clarté et l'intonation d'un annonceur sportif d'aréna québécois. Lis UNIQUEMENT l'annonce suivante, mot pour mot, sans aucune phrase d'introduction ni de conclusion :\n\n${text}`;
+
+    try {
+      const candidateModels = ["gemini-3.8-flash", "gemini-2.5-flash"];
+      let data = null;
+      let lastError = null;
+
+      for (const model of candidateModels) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: "user",
+                  parts: [{ text: prompt }]
+                }
+              ],
+              generationConfig: {
+                responseModalities: ["AUDIO"],
+                speechConfig: {
+                  voiceConfig: {
+                    prebuiltVoiceConfig: {
+                      voiceName: voiceName
+                    }
+                  }
+                }
+              }
+            })
+          });
+
+          if (!res.ok) {
+            const errJson = await res.json().catch(() => ({}));
+            const errMsg = errJson?.error?.message || `Erreur HTTP ${res.status}`;
+            if (res.status === 404 || errMsg.includes("no longer available") || errMsg.includes("not found")) {
+              lastError = new Error(errMsg);
+              continue;
+            }
+            throw new Error(errMsg);
+          }
+
+          data = await res.json();
+          break;
+        } catch (e) {
+          lastError = e;
+          if (!e.message.includes("no longer available") && !e.message.includes("not found") && !e.message.includes("404")) {
+            throw e;
+          }
+        }
+      }
+
+      if (!data) {
+        throw lastError || new Error("L'API Gemini n'a pu être contactée.");
+      }
+
+      const inlineData = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+      if (!inlineData || !inlineData.data) {
+        throw new Error("L'API Gemini n'a retourné aucun flux audio.");
+      }
+
+      let audioSrc;
+      const mime = inlineData.mimeType || "audio/wav";
+      if (mime.includes("pcm")) {
+        const rateMatch = mime.match(/rate=(\d+)/);
+        const rate = rateMatch ? parseInt(rateMatch[1], 10) : 24000;
+        audioSrc = pcmToWav(inlineData.data, rate);
+      } else {
+        audioSrc = `data:${mime};base64,${inlineData.data}`;
+      }
+
+      const audio = new Audio(audioSrc);
+      currentAudio = audio;
+
+      if (btn) {
+        const icon = btn.querySelector(".sa-tts-icon");
+        if (icon) icon.className = "icon ion-stop sa-tts-icon";
+        const label = btn.querySelector(".sa-tts-label");
+        if (label) label.textContent = "Arrêter l'annonce";
+      }
+
+      audio.onended = () => {
+        stopSpeech();
+      };
+      audio.onerror = (e) => {
+        console.error("[Spordle Annonceur] Erreur lecture audio Gemini:", e);
+        stopSpeech();
+      };
+
+      await audio.play();
+    } catch (err) {
+      console.warn("[Spordle Annonceur] Erreur Gemini:", err);
+      stopSpeech();
+      const retryLocal = confirm(
+        `Impossible d'utiliser la voix IA Gemini (${err.message}).\n\nSouhaitez-vous utiliser la voix intégrée de l'appareil à la place ?`
+      );
+      if (retryLocal) {
+        playLocalSpeech(text, btn);
+      }
+    }
+  };
+
+  const playLocalSpeech = (text, btn) => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     stopSpeech();
 
@@ -782,12 +1004,190 @@
     window.speechSynthesis.speak(utterance);
   };
 
+  const playSpeech = (text, btn) => {
+    const engineMode = localStorage.getItem("sa_tts_engine") || "local";
+    const apiKey = (localStorage.getItem("sa_gemini_api_key") || "").trim();
+
+    if (engineMode === "gemini" && apiKey) {
+      playGeminiSpeech(text, btn);
+    } else {
+      playLocalSpeech(text, btn);
+    }
+  };
+
   const toggleSpeech = (text, btn) => {
     if (isSpeaking) {
       stopSpeech();
     } else {
       playSpeech(text, btn);
     }
+  };
+
+  const closeSettingsModal = () => {
+    if (settingsModal && document.body.contains(settingsModal)) {
+      document.body.removeChild(settingsModal);
+      settingsModal = null;
+    }
+  };
+
+  const openSettingsModal = () => {
+    closeSettingsModal();
+
+    const currentKey = localStorage.getItem("sa_gemini_api_key") || "";
+    const currentEngine = localStorage.getItem("sa_tts_engine") || (currentKey ? "gemini" : "local");
+    const currentVoice = localStorage.getItem("sa_gemini_voice") || "Fenrir";
+
+    const backdropEl = document.createElement("div");
+    backdropEl.id = "sa-settings-backdrop";
+
+    const voiceOptionsHtml = GEMINI_VOICES.map(
+      (v) => `<option value="${escapeHtml(v.id)}" ${currentVoice === v.id ? "selected" : ""}>${escapeHtml(v.name)}</option>`
+    ).join("");
+
+    backdropEl.innerHTML = `
+      <div class="sa-settings-card" role="dialog" aria-modal="true">
+        <div class="sa-settings-title">
+          <span>🎙️ Voix IA Réaliste — Configuration Gemini</span>
+          <button type="button" class="sa-settings-close-btn" aria-label="Fermer">✕</button>
+        </div>
+        <div class="sa-settings-desc">
+          Propulsez vos annonces avec la voix d'un annonceur sportif réaliste grâce à <strong>Gemini Flash</strong> (gratuit avec votre compte Google sur Google AI Studio).
+        </div>
+
+        <div class="sa-form-group">
+          <label class="sa-form-label">Mode d'annonce vocale :</label>
+          <div class="sa-radio-group">
+            <label class="sa-radio-label">
+              <input type="radio" name="sa_engine_mode" value="gemini" ${currentEngine === "gemini" ? "checked" : ""}>
+              <span>✨ Voix IA Réaliste (Gemini Flash)</span>
+            </label>
+            <label class="sa-radio-label">
+              <input type="radio" name="sa_engine_mode" value="local" ${currentEngine === "local" ? "checked" : ""}>
+              <span>🤖 Voix locale de l'appareil (100% hors-ligne)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="sa-gemini-fields" style="${currentEngine === "gemini" ? "" : "opacity: 0.5;"}">
+          <div class="sa-form-group">
+            <label class="sa-form-label" for="sa-gemini-key-input">
+              <span>Clé d'API Google AI Studio :</span>
+              <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="sa-link-hint">Obtenir gratuitement ↗</a>
+            </label>
+            <div class="sa-key-input-wrapper">
+              <input type="password" id="sa-gemini-key-input" class="sa-input-text" placeholder="Collez votre clé AIzaSy..." value="${escapeHtml(currentKey)}" autocomplete="off" />
+              <button type="button" class="sa-toggle-key-btn" title="Afficher / Masquer la clé">👁️</button>
+            </div>
+            <div class="sa-field-hint">Votre clé est enregistrée uniquement dans votre navigateur sur cet appareil.</div>
+          </div>
+
+          <div class="sa-form-group">
+            <label class="sa-form-label" for="sa-gemini-voice-select">Voix de l'annonceur Gemini :</label>
+            <select id="sa-gemini-voice-select" class="sa-select-input">
+              ${voiceOptionsHtml}
+            </select>
+          </div>
+        </div>
+
+        <div class="sa-settings-actions">
+          ${currentKey ? `<button type="button" class="sa-btn-danger" id="sa-btn-delete-key">Effacer la clé</button>` : ""}
+          <button type="button" class="sa-btn-test" id="sa-btn-test-voice">🔊 Tester</button>
+          <button type="button" class="sa-btn-secondary" id="sa-btn-cancel">Annuler</button>
+          <button type="button" class="sa-btn-primary" id="sa-btn-save">Enregistrer</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(backdropEl);
+    settingsModal = backdropEl;
+
+    const closeBtn = backdropEl.querySelector(".sa-settings-close-btn");
+    closeBtn?.addEventListener("click", closeSettingsModal);
+
+    const cancelBtn = backdropEl.querySelector("#sa-btn-cancel");
+    cancelBtn?.addEventListener("click", closeSettingsModal);
+
+    backdropEl.addEventListener("click", (e) => {
+      if (e.target === backdropEl) closeSettingsModal();
+    });
+
+    const radioGemini = backdropEl.querySelector('input[value="gemini"]');
+    const radioLocal = backdropEl.querySelector('input[value="local"]');
+    const geminiFields = backdropEl.querySelector(".sa-gemini-fields");
+
+    const updateFieldsState = () => {
+      if (geminiFields) {
+        geminiFields.style.opacity = radioGemini?.checked ? "1" : "0.5";
+      }
+    };
+    radioGemini?.addEventListener("change", updateFieldsState);
+    radioLocal?.addEventListener("change", updateFieldsState);
+
+    const keyInput = backdropEl.querySelector("#sa-gemini-key-input");
+    const toggleKeyBtn = backdropEl.querySelector(".sa-toggle-key-btn");
+    toggleKeyBtn?.addEventListener("click", () => {
+      if (keyInput) {
+        keyInput.type = keyInput.type === "password" ? "text" : "password";
+      }
+    });
+
+    const voiceSelect = backdropEl.querySelector("#sa-gemini-voice-select");
+
+    // Bouton Test
+    const testBtn = backdropEl.querySelector("#sa-btn-test-voice");
+    testBtn?.addEventListener("click", async () => {
+      const testKey = (keyInput?.value || "").trim();
+      const testVoice = voiceSelect?.value || "Fenrir";
+      if (!testKey) {
+        alert("Veuillez d'abord coller votre clé d'API pour tester.");
+        return;
+      }
+      testBtn.disabled = true;
+      testBtn.textContent = "Génération...";
+      try {
+        localStorage.setItem("sa_gemini_api_key", testKey);
+        localStorage.setItem("sa_gemini_voice", testVoice);
+        await playGeminiSpeech(
+          "Le premier but des Remparts. Marqué par le numéro 77, Mayson Gosselin. Le temps du but, 7 minutes 48 de la première période."
+        );
+      } catch (err) {
+        alert("Erreur test : " + err.message);
+      } finally {
+        testBtn.disabled = false;
+        testBtn.textContent = "🔊 Tester";
+      }
+    });
+
+    // Bouton Delete
+    const deleteBtn = backdropEl.querySelector("#sa-btn-delete-key");
+    deleteBtn?.addEventListener("click", () => {
+      if (confirm("Supprimer la clé Gemini enregistrée ?")) {
+        localStorage.removeItem("sa_gemini_api_key");
+        localStorage.setItem("sa_tts_engine", "local");
+        closeSettingsModal();
+        const sel = popover?.querySelector(".sa-voice-select");
+        if (sel) populateVoiceSelect(sel);
+      }
+    });
+
+    // Bouton Save
+    const saveBtn = backdropEl.querySelector("#sa-btn-save");
+    saveBtn?.addEventListener("click", () => {
+      const mode = radioGemini?.checked ? "gemini" : "local";
+      const key = (keyInput?.value || "").trim();
+      const v = voiceSelect?.value || "Fenrir";
+
+      localStorage.setItem("sa_tts_engine", mode);
+      if (key) {
+        localStorage.setItem("sa_gemini_api_key", key);
+      }
+      localStorage.setItem("sa_gemini_voice", v);
+
+      closeSettingsModal();
+
+      const sel = popover?.querySelector(".sa-voice-select");
+      if (sel) populateVoiceSelect(sel);
+    });
   };
 
   if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -858,11 +1258,12 @@
       `</div>` +
       `<div class="sa-modal-footer">` +
         `<div class="sa-tts-controls">` +
-          `<button type="button" class="sa-tts-btn" aria-label="Annoncer vocalement" title="Lire l'annonce au micro (synthèse vocale québécoise)">` +
+          `<button type="button" class="sa-tts-btn" aria-label="Annoncer vocalement" title="Lire l'annonce au micro">` +
             `<i class="icon ion-volume-high sa-tts-icon"></i>` +
             `<span class="sa-tts-label">Annoncer vocalement</span>` +
           `</button>` +
           `<select class="sa-voice-select" aria-label="Choisir la voix de l'annonceur" title="Changer la voix de synthèse"></select>` +
+          `<button type="button" class="sa-settings-btn" aria-label="Paramètres voix & clé Gemini" title="Configurer la voix IA Gemini...">⚙️</button>` +
         `</div>` +
         `<span class="sa-hint-dismiss">Cliquer n'importe où, sur ✕ ou sur Échap pour fermer</span>` +
       `</div>`;
@@ -881,6 +1282,16 @@
     const voiceSelect = popover.querySelector(".sa-voice-select");
     if (voiceSelect) {
       populateVoiceSelect(voiceSelect);
+    }
+
+    // Clic sur le bouton Paramètres
+    const settingsBtn = popover.querySelector(".sa-settings-btn");
+    if (settingsBtn) {
+      settingsBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        openSettingsModal();
+      });
     }
 
     // Clic sur le bouton X pour fermer immédiatement

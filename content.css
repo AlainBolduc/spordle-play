@@ -372,8 +372,247 @@
     box-shadow: 0 0 4px rgba(255, 201, 0, 0.3);
   }
 }
+#sa-popover .sa-modal-footer .sa-settings-btn {
+  background: transparent;
+  color: #8c929a;
+  border: 1px solid #4a5058;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+#sa-popover .sa-modal-footer .sa-settings-btn:hover {
+  color: #ffc900;
+  border-color: #ffc900;
+  background-color: #383e4a;
+  transform: rotate(30deg);
+}
 #sa-popover .sa-modal-footer .sa-hint-dismiss {
   color: #7d828a;
+}
+
+/* ==========================================================
+   Modal des paramètres Audio & Clé Gemini IA
+   ========================================================== */
+#sa-settings-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.sa-settings-card {
+  background-color: #2b2e34;
+  border: 1px solid #4a5058;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 490px;
+  padding: 22px 24px;
+  color: #dce2e3;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
+  font-family: "interregular", -apple-system, sans-serif;
+  box-sizing: border-box;
+}
+.sa-settings-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffc900;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #3c424c;
+  padding-bottom: 10px;
+}
+.sa-settings-close-btn {
+  background: transparent;
+  border: none;
+  color: #8c929a;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+.sa-settings-close-btn:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.sa-settings-desc {
+  font-size: 13px;
+  color: #a1a6b0;
+  line-height: 1.45;
+  margin-bottom: 18px;
+}
+.sa-form-group {
+  margin-bottom: 15px;
+}
+.sa-form-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: #dce2e3;
+  margin-bottom: 6px;
+}
+.sa-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: #212429;
+  border: 1px solid #3c424c;
+  border-radius: 6px;
+  padding: 10px 14px;
+}
+.sa-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #dce2e3;
+  cursor: pointer;
+}
+.sa-radio-label input {
+  cursor: pointer;
+  accent-color: #ffc900;
+}
+.sa-key-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.sa-input-text, .sa-select-input {
+  width: 100%;
+  background-color: #1f2227;
+  border: 1px solid #454b54;
+  border-radius: 6px;
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 13px;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+.sa-key-input-wrapper .sa-input-text {
+  padding-right: 38px;
+}
+.sa-toggle-key-btn {
+  position: absolute;
+  right: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  opacity: 0.7;
+}
+.sa-toggle-key-btn:hover {
+  opacity: 1;
+}
+.sa-input-text:focus, .sa-select-input:focus {
+  border-color: #ffc900;
+  outline: none;
+}
+.sa-field-hint {
+  font-size: 11px;
+  color: #7d838c;
+  margin-top: 4px;
+}
+.sa-link-hint {
+  font-size: 11px;
+  color: #ffc900;
+  text-decoration: underline;
+  font-weight: 500;
+}
+.sa-link-hint:hover {
+  color: #ffe066;
+}
+.sa-settings-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  border-top: 1px solid #3c424c;
+  padding-top: 14px;
+}
+.sa-btn-primary {
+  background-color: #ffc900;
+  color: #111;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.sa-btn-primary:hover {
+  background-color: #ffe066;
+}
+.sa-btn-secondary {
+  background-color: transparent;
+  color: #a1a6b0;
+  border: 1px solid #4a5058;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.sa-btn-secondary:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+.sa-btn-test {
+  background-color: #2b394e;
+  color: #5bb3ff;
+  border: 1px solid #3b5275;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.sa-btn-test:hover {
+  background-color: #344866;
+  color: #8ac6ff;
+}
+.sa-btn-danger {
+  background-color: transparent;
+  color: #e74c3c;
+  border: 1px solid #a8382c;
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-right: auto;
+  transition: all 0.15s ease;
+}
+.sa-btn-danger:hover {
+  background-color: rgba(231, 76, 60, 0.15);
+  color: #ff6b5b;
+}
+.sa-spin {
+  display: inline-block;
+  animation: sa-spin-anim 1s infinite linear;
+}
+@keyframes sa-spin-anim {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* ==========================================================

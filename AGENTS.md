@@ -137,16 +137,18 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
    - Idéal lorsque les bancs ou tableaux physiques à l'aréna sont inversés par rapport à la feuille Spordle Play standard.
    - **Garantie d'intégrité** : l'inversion est purement visuelle (CSS Grid / Flexbox via `.sa-swapped-sides`). Le DOM sous-jacent et les bindings Angular restent intacts : chaque bouton physique (`But`, `Punitions`, `Gardien`) déclenche toujours exactement le modal de l'équipe affichée au-dessus de lui.
    - L'état d'inversion est mémorisé spécifiquement pour chaque match dans le `localStorage` (`sa_swap_sides_game_<id>` extrait de l'URL `/scoresheets/<id>` ou du numéro de match dans le DOM).
-4. **Synthèse vocale intégrée (Text-To-Speech / Web Speech API)** :
+4. **Synthèse vocale intégrée & Voix IA Réaliste (Web Speech & Gemini Flash)** :
    - Bouton interactif `.sa-tts-btn` inséré en bas à gauche du popover (`.sa-modal-footer`) : `[ 🔊 Annoncer vocalement ]`.
-   - Lance la lecture automatique au micro via l'API native `window.speechSynthesis` (100% hors-ligne, zéro serveur externe, respect strict de la confidentialité).
-   - Sélection prioritaire d'une voix québécoise / canadienne-française (`fr-CA` comme *Amélie*, *Thomas*, *Chantal* ou *Nicolas* sur iOS/macOS, ou *Google français canadien* sur Chrome), avec fallback sur toute voix française.
-   - Adaptation phonétique automatique (`cleanForSpeech`) :
+   - **Mode Hybride Double Moteur** :
+     - **Mode 1 : Voix IA Réaliste (Gemini Flash Audio)** : Utilise l'API Google AI Studio (`gemini-3.8-flash` avec repli `gemini-2.5-flash` et `responseModalities: ["AUDIO"]`). Génère une voix de broadcast sportive naturelle (voix *Fenrir*, *Puck*, *Charon*, *Aoede*, *Kore*) avec le ton d'un annonceur officiel québécois. Conversion PCM en WAV 24kHz intégrée.
+     - **Mode 2 : Voix locale de l'appareil (100% hors-ligne)** : Synthèse Web Speech native de l'appareil (`fr-CA` comme *Amélie* ou *Chantal*), parfait si aucun réseau Wi-Fi/LTE n'est disponible.
+   - **Bouton et modal de configuration (`.sa-settings-btn` / `#sa-settings-backdrop`)** :
+     - Bouton engrenage ⚙️ et option dans le sélecteur permettant de coller sa clé API Google AI Studio (`AIzaSy...`), de choisir la voix IA (*Fenrir* par défaut), et de tester l'audio en direct. Clé conservée localement dans le `localStorage`.
+   - **Adaptation phonétique automatique (`cleanForSpeech`)** :
      - Conversion des périodes (« 1re période » -> « première période »).
      - Conversion des temps de jeu (« 7:48 » -> « 7 minutes 48 », « 14:05 » -> « 14 minutes et 5 secondes », « 0:45 » -> « 45 secondes »).
-     - Remplacement des deux-points isolés par des virgules pour des pauses orales naturelles sans lecture du mot « deux-points ».
-   - États visuels interactifs : bouton doré `#ffc900` au repos, passe en rouge actif `#b83f43` avec pulsation lumineuse (`sa-pulse-speaking`) et texte `[ ⏹️ Arrêter l'annonce ]` pendant la lecture.
-   - Contrôles & Raccourcis : un second clic, l'appui sur **Espace** (si le modal est ouvert), la touche **Échap** ou la fermeture du popover interrompt immédiatement la lecture vocale.
+     - Remplacement des deux-points isolés par des virgules pour des pauses orales naturelles.
+   - **Contrôles & Raccourcis** : un second clic, l'appui sur **Espace** (si le modal est ouvert), la touche **Échap** ou la fermeture du popover interrompt immédiatement la lecture vocale.
 
 ---
 
