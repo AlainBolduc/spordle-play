@@ -862,24 +862,40 @@
     const prompt = `Tu es l'annonceur maison officiel dans un aréna de hockey au Québec. Annonce ce texte au micro avec le dynamisme, la clarté et l'intonation d'un annonceur sportif d'aréna québécois. Lis UNIQUEMENT l'annonce suivante, mot pour mot, sans aucune phrase d'introduction ni de conclusion :\n\n${text}`;
 
     try {
-      const candidateModels = ["gemini-2.5-flash", "gemini-3.8-flash", "gemini-3.7-flash"];
-      let data = null;
+      const candidateModels = [
+        "gemini-3.8-flash-lite-tts",
+        "gemini-3.8-flash-tts",
+        "gemini-3.1-flash-tts-preview",
+        "gemini-2.5-flash-preview-tts",
+        "gemini-3.8-flash"
+      ];
+      let audioData = null;
       let lastError = null;
 
       for (const model of candidateModels) {
         for (let attempt = 0; attempt < 2; attempt++) {
           try {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-            const res = await fetch(url, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                contents: [
+            const isTtsModel = model.includes("-tts");
+            const contents = isTtsModel
+              ? [
+                  {
+                    role: "user",
+                    parts: [{ text: text }]
+                  }
+                ]
+              : [
                   {
                     role: "user",
                     parts: [{ text: prompt }]
                   }
-                ],
+                ];
+
+            const res = await fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: contents,
                 generationConfig: {
                   responseModalities: ["AUDIO"],
                   speechConfig: {
@@ -916,7 +932,23 @@
               break; // Passe au modèle candidat suivant
             }
 
-            data = await res.json();
+            const json = await res.json();
+            const parts = json?.candidates?.[0]?.content?.parts || [];
+            let foundAudio = null;
+            for (const p of parts) {
+              if (p.inlineData && p.inlineData.data) {
+                foundAudio = p.inlineData;
+                break;
+              }
+            }
+
+            if (!foundAudio) {
+              console.warn(`[Spordle Annonceur] Pas de flux audio retourné par ${model}, essai du modèle suivant...`);
+              lastError = new Error(`Le modèle ${model} n'a pas retourné de données audio.`);
+              break; // Passe au modèle suivant
+            }
+
+            audioData = foundAudio;
             break; // Modèle exécuté avec succès
           } catch (e) {
             if (e.message.includes("Clé d'API invalide")) throw e;
@@ -927,26 +959,21 @@
             }
           }
         }
-        if (data) break;
+        if (audioData) break;
       }
 
-      if (!data) {
+      if (!audioData) {
         throw lastError || new Error("Les serveurs Google IA sont temporairement surchargés.");
       }
 
-      const inlineData = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
-      if (!inlineData || !inlineData.data) {
-        throw new Error("L'API Gemini n'a retourné aucun flux audio.");
-      }
-
       let audioSrc;
-      const mime = inlineData.mimeType || "audio/wav";
-      if (mime.includes("pcm")) {
+      const mime = (audioData.mimeType || "audio/wav").toLowerCase();
+      if (mime.includes("pcm") || mime.includes("l16")) {
         const rateMatch = mime.match(/rate=(\d+)/);
         const rate = rateMatch ? parseInt(rateMatch[1], 10) : 24000;
-        audioSrc = pcmToWav(inlineData.data, rate);
+        audioSrc = pcmToWav(audioData.data, rate);
       } else {
-        audioSrc = `data:${mime};base64,${inlineData.data}`;
+        audioSrc = `data:${mime};base64,${audioData.data}`;
       }
 
       const audio = new Audio(audioSrc);
