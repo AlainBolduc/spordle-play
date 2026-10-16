@@ -140,10 +140,10 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
 4. **Synthèse vocale intégrée & Voix IA Réaliste (Web Speech & Gemini Flash)** :
    - Bouton interactif `.sa-tts-btn` inséré en bas à gauche du popover (`.sa-modal-footer`) : `[ 🔊 Annoncer vocalement ]`.
    - **Mode Hybride Double Moteur** :
-     - **Mode 1 : Voix IA Réaliste (Gemini Flash Audio)** : Utilise l'API Google AI Studio (`gemini-3.8-flash` avec repli `gemini-2.5-flash` et `responseModalities: ["AUDIO"]`). Génère une voix de broadcast sportive naturelle (voix *Fenrir*, *Puck*, *Charon*, *Aoede*, *Kore*) avec le ton d'un annonceur officiel québécois. Conversion PCM en WAV 24kHz intégrée.
+     - **Mode 1 : Voix IA Réaliste (Gemini Flash TTS)** : Utilise l'API Google AI Studio (`gemini-3.8-flash-lite-tts`, `gemini-3.8-flash-tts` avec `speechMetadata` stylisé). Génère une voix d'aréna québécois avec 3 niveaux d'énergie (Aréna survolté, Énergique standard, Classique) et choix de voix (*Puck*, *Fenrir*, *Kore*, *Charon*, *Aoede*). Conversion PCM en WAV 24kHz intégrée.
      - **Mode 2 : Voix locale de l'appareil (100% hors-ligne)** : Synthèse Web Speech native de l'appareil (`fr-CA` comme *Amélie* ou *Chantal*), parfait si aucun réseau Wi-Fi/LTE n'est disponible.
    - **Bouton et modal de configuration (`.sa-settings-btn` / `#sa-settings-backdrop`)** :
-     - Bouton engrenage ⚙️ et option dans le sélecteur permettant de coller sa clé API Google AI Studio (`AIzaSy...`), de choisir la voix IA (*Fenrir* par défaut), et de tester l'audio en direct. Clé conservée localement dans le `localStorage`.
+     - Bouton engrenage ⚙️ et option dans le sélecteur permettant de coller sa clé API Google AI Studio (`AIzaSy...`), de choisir la voix IA (*Puck* le plus dynamique par défaut), le niveau d'énergie, et de tester l'audio en direct. Clé conservée localement dans le `localStorage`.
    - **Adaptation phonétique automatique (`cleanForSpeech`)** :
      - Conversion des périodes (« 1re période » -> « première période »).
      - Conversion des temps de jeu (« 7:48 » -> « 7 minutes 48 », « 14:05 » -> « 14 minutes et 5 secondes », « 0:45 » -> « 45 secondes »).

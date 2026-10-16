@@ -636,12 +636,25 @@
   let settingsModal = null;
 
   const GEMINI_VOICES = [
-    { id: "Fenrir", name: "Fenrir (Homme — puissant & grave, style aréna)", gender: "male" },
-    { id: "Puck", name: "Puck (Homme — dynamique & énergique)", gender: "male" },
+    { id: "Puck", name: "Puck (Homme — le plus dynamique & énergique, style aréna)", gender: "male" },
+    { id: "Fenrir", name: "Fenrir (Homme — puissant & grave)", gender: "male" },
+    { id: "Kore", name: "Kore (Femme — très vive & dynamique)", gender: "female" },
     { id: "Charon", name: "Charon (Homme — posé & officiel)", gender: "male" },
     { id: "Aoede", name: "Aoede (Femme — chaleureuse & claire)", gender: "female" },
-    { id: "Kore", name: "Kore (Femme — vive & dynamique)", gender: "female" },
   ];
+
+  const getGeminiStylePrompt = (styleKey = "extreme") => {
+    switch (styleKey) {
+      case "extreme":
+        return "Annonceur maison officiel dans un aréna de hockey sur glace québécois. Ton extrêmement survolté, passionné, très énergique, percutant et vibrant au micro devant une foule en délire ! Voix puissante, fière et projetée avec enthousiasme communicatif.";
+      case "high":
+        return "Annonceur maison officiel dans un aréna de hockey québécois. Ton très énergique, dynamique, percutant, fier et enthousiaste au micro devant la foule de l'aréna ! Voix puissante et rythmée.";
+      case "classic":
+        return "Annonceur de match officiel. Ton posé, professionnel, classique, articulé et clair au micro.";
+      default:
+        return "Annonceur maison officiel dans un aréna de hockey québécois. Ton très énergique, percutant et dynamique au micro de l'aréna !";
+    }
+  };
 
   const writePcmString = (view, offset, string) => {
     for (let i = 0; i < string.length; i++) {
@@ -858,8 +871,10 @@
       if (label) label.textContent = "Génération IA...";
     }
 
-    const voiceName = localStorage.getItem("sa_gemini_voice") || "Fenrir";
-    const prompt = `Tu es l'annonceur maison officiel dans un aréna de hockey au Québec. Annonce ce texte au micro avec le dynamisme, la clarté et l'intonation d'un annonceur sportif d'aréna québécois. Lis UNIQUEMENT l'annonce suivante, mot pour mot, sans aucune phrase d'introduction ni de conclusion :\n\n${text}`;
+    const voiceName = localStorage.getItem("sa_gemini_voice") || "Puck";
+    const styleKey = localStorage.getItem("sa_gemini_style") || "extreme";
+    const stylePrompt = getGeminiStylePrompt(styleKey);
+    const prompt = `${stylePrompt}\n\nLis UNIQUEMENT l'annonce suivante au micro mot pour mot avec cette énergie festive, sans phrase d'introduction ni de conclusion :\n\n${text}`;
 
     try {
       const candidateModels = [
@@ -881,7 +896,13 @@
               ? [
                   {
                     role: "user",
-                    parts: [{ text: text }]
+                    parts: [
+                      {
+                        text: text,
+                        speechMetadata: { style: stylePrompt },
+                        speech_metadata: { style: stylePrompt }
+                      }
+                    ]
                   }
                 ]
               : [
@@ -1082,7 +1103,8 @@
 
     const currentKey = localStorage.getItem("sa_gemini_api_key") || "";
     const currentEngine = localStorage.getItem("sa_tts_engine") || (currentKey ? "gemini" : "local");
-    const currentVoice = localStorage.getItem("sa_gemini_voice") || "Fenrir";
+    const currentVoice = localStorage.getItem("sa_gemini_voice") || "Puck";
+    const currentStyle = localStorage.getItem("sa_gemini_style") || "extreme";
 
     const backdropEl = document.createElement("div");
     backdropEl.id = "sa-settings-backdrop";
@@ -1134,6 +1156,15 @@
               ${voiceOptionsHtml}
             </select>
           </div>
+
+          <div class="sa-form-group">
+            <label class="sa-form-label" for="sa-gemini-style-select">Niveau d'énergie & dynamisme :</label>
+            <select id="sa-gemini-style-select" class="sa-select-input">
+              <option value="extreme" ${currentStyle === "extreme" ? "selected" : ""}>🔥 Aréna survolté (Maximum d'énergie & punch)</option>
+              <option value="high" ${currentStyle === "high" ? "selected" : ""}>⚡ Énergique standard (Annonceur aréna pro)</option>
+              <option value="classic" ${currentStyle === "classic" ? "selected" : ""}>🎙️ Classique & Posé (Ton calme)</option>
+            </select>
+          </div>
         </div>
 
         <div class="sa-settings-actions">
@@ -1179,12 +1210,14 @@
     });
 
     const voiceSelect = backdropEl.querySelector("#sa-gemini-voice-select");
+    const styleSelect = backdropEl.querySelector("#sa-gemini-style-select");
 
     // Bouton Test
     const testBtn = backdropEl.querySelector("#sa-btn-test-voice");
     testBtn?.addEventListener("click", async () => {
       const testKey = (keyInput?.value || "").trim();
-      const testVoice = voiceSelect?.value || "Fenrir";
+      const testVoice = voiceSelect?.value || "Puck";
+      const testStyle = styleSelect?.value || "extreme";
       if (!testKey) {
         alert("Veuillez d'abord coller votre clé d'API pour tester.");
         return;
@@ -1194,8 +1227,9 @@
       try {
         localStorage.setItem("sa_gemini_api_key", testKey);
         localStorage.setItem("sa_gemini_voice", testVoice);
+        localStorage.setItem("sa_gemini_style", testStyle);
         await playGeminiSpeech(
-          "Le premier but des Remparts. Marqué par le numéro 77, Mayson Gosselin. Le temps du but, 7 minutes 48 de la première période."
+          "Le premier but des Remparts ! Marqué par le numéro 77, Mayson Gosselin ! Le temps du but, 7 minutes 48 de la première période."
         );
       } catch (err) {
         alert("Erreur test : " + err.message);
@@ -1222,13 +1256,15 @@
     saveBtn?.addEventListener("click", () => {
       const mode = radioGemini?.checked ? "gemini" : "local";
       const key = (keyInput?.value || "").trim();
-      const v = voiceSelect?.value || "Fenrir";
+      const v = voiceSelect?.value || "Puck";
+      const s = styleSelect?.value || "extreme";
 
       localStorage.setItem("sa_tts_engine", mode);
       if (key) {
         localStorage.setItem("sa_gemini_api_key", key);
       }
       localStorage.setItem("sa_gemini_voice", v);
+      localStorage.setItem("sa_gemini_style", s);
 
       closeSettingsModal();
 

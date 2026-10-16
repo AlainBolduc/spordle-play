@@ -391,9 +391,10 @@
     // Ligne 3 HTML
     const htmlLine3 = `Le temps du but : <strong>${escapeHtml(t)}</strong> de la ${escapeHtml(pLabel)}.`;
 
-    // Formatage avec pauses respiratoires pour la synthèse vocale
-    const speechLine1 = line1.replace(/,\s*$/, ".");
-    const speechLine2 = line2.charAt(0).toUpperCase() + line2.slice(1);
+    // Formatage avec pauses respiratoires et ponctuation énergique pour la synthèse vocale
+    const speechLine1 = line1.replace(/,\s*$/, " !");
+    let speechLine2 = line2.charAt(0).toUpperCase() + line2.slice(1);
+    speechLine2 = speechLine2.replace(/\.\s*$/, " !");
 
     return {
       type: "goal",
