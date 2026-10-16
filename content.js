@@ -838,6 +838,8 @@
     }
   };
 
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const playGeminiSpeech = async (text, btn) => {
     const apiKey = (localStorage.getItem("sa_gemini_api_key") || "").trim();
     if (!apiKey) {
@@ -860,58 +862,76 @@
     const prompt = `Tu es l'annonceur maison officiel dans un aréna de hockey au Québec. Annonce ce texte au micro avec le dynamisme, la clarté et l'intonation d'un annonceur sportif d'aréna québécois. Lis UNIQUEMENT l'annonce suivante, mot pour mot, sans aucune phrase d'introduction ni de conclusion :\n\n${text}`;
 
     try {
-      const candidateModels = ["gemini-3.8-flash", "gemini-2.5-flash"];
+      const candidateModels = ["gemini-2.5-flash", "gemini-3.8-flash", "gemini-3.7-flash"];
       let data = null;
       let lastError = null;
 
       for (const model of candidateModels) {
-        try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-          const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [
-                {
-                  role: "user",
-                  parts: [{ text: prompt }]
-                }
-              ],
-              generationConfig: {
-                responseModalities: ["AUDIO"],
-                speechConfig: {
-                  voiceConfig: {
-                    prebuiltVoiceConfig: {
-                      voiceName: voiceName
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+            const res = await fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [
+                  {
+                    role: "user",
+                    parts: [{ text: prompt }]
+                  }
+                ],
+                generationConfig: {
+                  responseModalities: ["AUDIO"],
+                  speechConfig: {
+                    voiceConfig: {
+                      prebuiltVoiceConfig: {
+                        voiceName: voiceName
+                      }
                     }
                   }
                 }
+              })
+            });
+
+            if (!res.ok) {
+              const errJson = await res.json().catch(() => ({}));
+              const errMsg = errJson?.error?.message || `Erreur HTTP ${res.status}`;
+              if (errMsg.includes("API key not valid") || errMsg.includes("API_KEY_INVALID")) {
+                throw new Error("Clé d'API invalide. Veuillez vérifier votre clé Google AI Studio.");
               }
-            })
-          });
 
-          if (!res.ok) {
-            const errJson = await res.json().catch(() => ({}));
-            const errMsg = errJson?.error?.message || `Erreur HTTP ${res.status}`;
-            if (res.status === 404 || errMsg.includes("no longer available") || errMsg.includes("not found")) {
+              const isHighDemand =
+                res.status === 503 ||
+                res.status === 429 ||
+                errMsg.includes("high demand") ||
+                errMsg.includes("temporarily");
+
+              if (isHighDemand && attempt === 0) {
+                console.warn(`[Spordle Annonceur] Forte demande sur ${model}, réessai dans 1.2s...`);
+                await sleep(1200);
+                continue;
+              }
+
               lastError = new Error(errMsg);
-              continue;
+              break; // Passe au modèle candidat suivant
             }
-            throw new Error(errMsg);
-          }
 
-          data = await res.json();
-          break;
-        } catch (e) {
-          lastError = e;
-          if (!e.message.includes("no longer available") && !e.message.includes("not found") && !e.message.includes("404")) {
-            throw e;
+            data = await res.json();
+            break; // Modèle exécuté avec succès
+          } catch (e) {
+            if (e.message.includes("Clé d'API invalide")) throw e;
+            lastError = e;
+            console.warn(`[Spordle Annonceur] Tentative ${attempt + 1} échouée sur ${model}:`, e.message);
+            if (attempt === 0) {
+              await sleep(1000);
+            }
           }
         }
+        if (data) break;
       }
 
       if (!data) {
-        throw lastError || new Error("L'API Gemini n'a pu être contactée.");
+        throw lastError || new Error("Les serveurs Google IA sont temporairement surchargés.");
       }
 
       const inlineData = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
