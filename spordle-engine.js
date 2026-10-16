@@ -168,35 +168,6 @@
     return `Le temps ${pLabel.includes("prolongation") ? "du but" : ""} : ${t} de la ${pLabel}.`;
   };
 
-  /**
-   * Adapte phonétiquement un texte d'annonce pour une synthèse vocale (TTS) naturelle et fluide :
-   * - Développe les abréviations de périodes ("1re période" -> "première période")
-   * - Convertit les temps de jeu MM:SS en minutes/secondes parlées ("7:48" -> "7 minutes 48")
-   * - Remplace les deux-points isolés par des virgules pour des pauses orales naturelles
-   */
-  const cleanForSpeech = (text) => {
-    if (!text) return "";
-    return text
-      .replace(/<[^>]+>/g, " ")
-      .replace(/\b1(?:re|er)\s+p[eé]riode\b/gi, "première période")
-      .replace(/\b2e\s+p[eé]riode\b/gi, "deuxième période")
-      .replace(/\b3e\s+p[eé]riode\b/gi, "troisième période")
-      .replace(/\b4e\s+p[eé]riode\b/gi, "quatrième période")
-      .replace(/\b00?:0?1\b/g, "1 seconde")
-      .replace(/\b00?:0?(\d+)\b/g, "$1 secondes")
-      .replace(/\b1:00\b/g, "1 minute")
-      .replace(/\b1:01\b/g, "1 minute et 1 seconde")
-      .replace(/\b1:0(\d)\b/g, "1 minute et $1 secondes")
-      .replace(/\b1:(\d{2})\b/g, "1 minute $1")
-      .replace(/\b(\d+):00\b/g, "$1 minutes")
-      .replace(/\b(\d+):01\b/g, "$1 minutes et 1 seconde")
-      .replace(/\b(\d+):0(\d)\b/g, "$1 minutes et $2 secondes")
-      .replace(/\b(\d+):(\d{2})\b/g, "$1 minutes $2")
-      .replace(/\s*:\s*/g, ", ")
-      .replace(/\s+/g, " ")
-      .trim();
-  };
-
   // =========================================================================
   // 3. MOTEUR DE DÉCODAGE DES CODES HOCKEY QUÉBEC
   // =========================================================================
@@ -391,18 +362,13 @@
     // Ligne 3 HTML
     const htmlLine3 = `Le temps du but : <strong>${escapeHtml(t)}</strong> de la ${escapeHtml(pLabel)}.`;
 
-    // Formatage avec pauses respiratoires et ponctuation énergique pour la synthèse vocale
-    const speechLine1 = line1.replace(/,\s*$/, " !");
-    let speechLine2 = line2.charAt(0).toUpperCase() + line2.slice(1);
-    speechLine2 = speechLine2.replace(/\.\s*$/, " !");
-
     return {
       type: "goal",
       title: `BUT — ${team.toUpperCase()}`,
       teamName: team,
       lines: [line1, line2, line3],
       htmlLines: [htmlLine1, htmlLine2, htmlLine3],
-      speechText: cleanForSpeech(`${speechLine1} ${speechLine2} ${line3}`)
+      speechText: `${line1} ${line2} ${line3}`
     };
   };
 
@@ -471,19 +437,13 @@
     lines.push(`Le temps de la pénalité : ${t} de la ${pLabel}.`);
     htmlLines.push(`Le temps de la pénalité : <strong>${escapeHtml(t)}</strong> de la ${escapeHtml(pLabel)}.`);
 
-    // Formatage avec pauses respiratoires pour la synthèse vocale
-    const speechLines = lines.map((l) => {
-      const s = l.trim().replace(/,\s*$/, ".");
-      return s.charAt(0).toUpperCase() + s.slice(1);
-    });
-
     return {
       type: "penalty",
       title: `PÉNALITÉ — ${team.toUpperCase()}`,
       teamName: team,
       lines,
       htmlLines,
-      speechText: cleanForSpeech(speechLines.join(" "))
+      speechText: lines.join(" ")
     };
   };
 
@@ -533,19 +493,13 @@
       htmlLines.push(`Le temps du changement : <strong>${escapeHtml(t)}</strong> de la ${escapeHtml(pLabel)}.`);
     }
 
-    // Formatage avec pauses respiratoires pour la synthèse vocale
-    const speechLines = lines.map((l) => {
-      const s = l.trim().replace(/,\s*$/, ".");
-      return s.charAt(0).toUpperCase() + s.slice(1);
-    });
-
     return {
       type: "goalie",
       title: `GARDIEN — ${team.toUpperCase()}`,
       teamName: team,
       lines,
       htmlLines,
-      speechText: cleanForSpeech(speechLines.join(" "))
+      speechText: lines.join(" ")
     };
   };
 
@@ -566,8 +520,7 @@
       titleCase,
       escapeHtml,
       getOrdinalMasc,
-      formatPeriodTime,
-      cleanForSpeech
+      formatPeriodTime
     }
   };
 });
