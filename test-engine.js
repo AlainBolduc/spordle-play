@@ -386,6 +386,51 @@ test("Validation de l'ensemble des 66 événements de test-events.js", () => {
   assert.strictEqual(eventCount, 66, "Le catalogue doit contenir exactement 66 événements");
 });
 
+// =========================================================================
+// TESTS : SYNTHÈSE VOCALE (TEXT-TO-SPEECH FORMATTING)
+// =========================================================================
+console.log("\n--- Tests de l'adaptation phonétique vocale (TTS) ---");
+
+test("TTS 1 : Conversion naturelle du temps et des périodes", () => {
+  const raw = "Le premier but des Express Rive-Sud, marqué par le numéro 77, Mayson Gosselin. Le temps du but : 7:48 de la 1re période.";
+  const spoken = engine.utils.cleanForSpeech(raw);
+  assert.strictEqual(
+    spoken,
+    "Le premier but des Express Rive-Sud, marqué par le numéro 77, Mayson Gosselin. Le temps du but, 7 minutes 48 de la première période."
+  );
+});
+
+test("TTS 2 : Temps avec secondes uniques (ex: 14:05 -> 14 minutes et 5 secondes)", () => {
+  const raw = "Le temps de la pénalité : 14:05 de la 2e période.";
+  const spoken = engine.utils.cleanForSpeech(raw);
+  assert.strictEqual(
+    spoken,
+    "Le temps de la pénalité, 14 minutes et 5 secondes de la deuxième période."
+  );
+});
+
+test("TTS 3 : Début de période (< 1 minute, ex: 0:45 -> 45 secondes)", () => {
+  const raw = "Le temps du but : 0:45 de la 3e période.";
+  const spoken = engine.utils.cleanForSpeech(raw);
+  assert.strictEqual(
+    spoken,
+    "Le temps du but, 45 secondes de la troisième période."
+  );
+});
+
+test("TTS 4 : speechText présent et bien formaté sur un but", () => {
+  const res = engine.formatGoal({
+    teamName: "Remparts Est Richelieu",
+    teamGoalCount: 1,
+    scorer: { name: "SARAH ZHANG", number: 25 },
+    assists: [{ name: "ALEXE ROUSSON", number: 99 }],
+    time: "13:37",
+    period: "3"
+  });
+  assert.ok(res.speechText.includes("13 minutes 37 de la troisième période"));
+  assert.ok(!res.speechText.includes(":"));
+});
+
 console.log(`\n=== RÉSULTATS : ${passed}/${total} tests réussis ===\n`);
 if (passed === total) {
   process.exit(0);

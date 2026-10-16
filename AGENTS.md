@@ -17,6 +17,8 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
 ```text
 .
 ├── manifest.json       # Manifest V3 de l'extension Chrome
+├── LICENSE             # Licence propriétaire (Alain Bolduc) protégeant la PI
+├── package.json        # Dépendances de build (javascript-obfuscator) et scripts npm
 ├── spordle-engine.js   # Moteur pur d'annonces & dictionnaire officiel Hockey Québec 2026-2027
 ├── test-events.js      # Source unique de vérité : 66 cas de tests & structure de match complète
 ├── demo-renderer.js    # Rendu dynamique du sommaire Spordle Play pour demo.html
@@ -28,12 +30,13 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
 ├── game_data.json      # Données JSON 100% anonymisées/synthétiques (schéma API Spordle, aucun PII)
 ├── demo.html           # Page miroir 100% hors-ligne pilotée par les données de test-events.js
 ├── guide-installation.html # Guide illustré pas-à-pas pour l'installation sur Safari iOS / iPad
+├── docs/               # Distribution GitHub Pages (index.html, spordle-annonceur.user.js obfusqué)
 ├── icon-16.png         # Icône extension 16x16
 ├── icon-48.png         # Icône extension 48x48
 ├── icon-128.png        # Icône extension 128x128
-├── build-userscript.js # Script de compilation du Userscript Safari/iOS (node build-userscript.js)
-├── dist/               # Fichiers distribués pour Safari iOS (.user.js, .meta.js)
-├── .gitignore          # Ignore les zips, images de dev et .DS_Store
+├── build-userscript.js # Script de compilation + obfuscation (node build-userscript.js)
+├── dist/               # Fichiers distribués obfusqués pour Safari iOS (.user.js, .meta.js)
+├── .gitignore          # Ignore node_modules, les zips, images de dev et .DS_Store
 └── AGENTS.md           # Ce guide de contexte et d'instructions
 ```
 
@@ -134,6 +137,16 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
    - Idéal lorsque les bancs ou tableaux physiques à l'aréna sont inversés par rapport à la feuille Spordle Play standard.
    - **Garantie d'intégrité** : l'inversion est purement visuelle (CSS Grid / Flexbox via `.sa-swapped-sides`). Le DOM sous-jacent et les bindings Angular restent intacts : chaque bouton physique (`But`, `Punitions`, `Gardien`) déclenche toujours exactement le modal de l'équipe affichée au-dessus de lui.
    - L'état d'inversion est mémorisé spécifiquement pour chaque match dans le `localStorage` (`sa_swap_sides_game_<id>` extrait de l'URL `/scoresheets/<id>` ou du numéro de match dans le DOM).
+4. **Synthèse vocale intégrée (Text-To-Speech / Web Speech API)** :
+   - Bouton interactif `.sa-tts-btn` inséré en bas à gauche du popover (`.sa-modal-footer`) : `[ 🔊 Annoncer vocalement ]`.
+   - Lance la lecture automatique au micro via l'API native `window.speechSynthesis` (100% hors-ligne, zéro serveur externe, respect strict de la confidentialité).
+   - Sélection prioritaire d'une voix québécoise / canadienne-française (`fr-CA` comme *Amélie*, *Thomas*, *Chantal* ou *Nicolas* sur iOS/macOS, ou *Google français canadien* sur Chrome), avec fallback sur toute voix française.
+   - Adaptation phonétique automatique (`cleanForSpeech`) :
+     - Conversion des périodes (« 1re période » -> « première période »).
+     - Conversion des temps de jeu (« 7:48 » -> « 7 minutes 48 », « 14:05 » -> « 14 minutes et 5 secondes », « 0:45 » -> « 45 secondes »).
+     - Remplacement des deux-points isolés par des virgules pour des pauses orales naturelles sans lecture du mot « deux-points ».
+   - États visuels interactifs : bouton doré `#ffc900` au repos, passe en rouge actif `#b83f43` avec pulsation lumineuse (`sa-pulse-speaking`) et texte `[ ⏹️ Arrêter l'annonce ]` pendant la lecture.
+   - Contrôles & Raccourcis : un second clic, l'appui sur **Espace** (si le modal est ouvert), la touche **Échap** ou la fermeture du popover interrompt immédiatement la lecture vocale.
 
 ---
 
@@ -151,9 +164,12 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
   - Sans incrémentation de version (`1.0.0` -> `1.0.1` -> etc.), l'application Userscripts sur les iPads des annonceurs ne détectera pas la mise à jour automatique.
   - Procédure de déploiement systématique :
     1. Modifier `version` dans `manifest.json`.
-    2. Exécuter `node build-userscript.js` (recompile `dist/spordle-annonceur.user.js` avec la nouvelle version).
+    2. Exécuter `node build-userscript.js` (obfusque le code JavaScript, recompile `dist/` et met à jour le site GitHub Pages dans `docs/`).
     3. Exécuter les tests : `node test-engine.js`.
     4. Commiter et pousser : `git commit -am "..." && git push origin main`.
+- **Hébergement GitHub Pages** :
+  - Configuré dans GitHub > Settings > Pages : Source = `Deploy from a branch`, Branch = `main`, Dossier = `/docs`.
+  - URL publique du guide et de la distribution : `https://alainbolduc.github.io/spordle-play/`.
 - **Recharger dans Chrome** :
   1. Ouvrir `chrome://extensions`.
   2. Mode développeur activé.

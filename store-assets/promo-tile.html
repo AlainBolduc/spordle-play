@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 440px;
+      height: 280px;
+      background: linear-gradient(135deg, #252831 0%, #15171c 100%);
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #3c424c;
+    }
+    .glow {
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(255, 20, 77, 0.16) 0%, rgba(0, 56, 118, 0) 70%);
+      top: -70px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+    .app-icon {
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.65));
+      margin-bottom: 12px;
+      z-index: 2;
+    }
+    .title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+      margin-bottom: 6px;
+      z-index: 2;
+    }
+    .subtitle {
+      font-size: 13px;
+      font-weight: 500;
+      color: #9ea8b6;
+      letter-spacing: 0.1px;
+      margin-bottom: 14px;
+      z-index: 2;
+      text-align: center;
+      max-width: 360px;
+    }
+    .badge-bar {
+      display: flex;
+      gap: 8px;
+      z-index: 2;
+    }
+    .tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 5px 12px;
+      border-radius: 14px;
+    }
+    .tag-blue {
+      background: rgba(0, 134, 215, 0.18);
+      border: 1px solid rgba(0, 134, 215, 0.45);
+      color: #38bdf8;
+    }
+    .tag-gold {
+      background: rgba(255, 201, 0, 0.15);
+      border: 1px solid rgba(255, 201, 0, 0.45);
+      color: #ffc900;
+    }
+  </style>
+</head>
+<body>
+  <div class="glow"></div>
+  <img src="icon-128.png" alt="Spordle Annonceur" class="app-icon">
+  <div class="title">Spordle Annonceur</div>
+  <div class="subtitle">L'assistant officiel au micro pour la feuille de match Spordle Play</div>
+  <div class="badge-bar">
+    <span class="tag tag-blue">Spordle Play</span>
+    <span class="tag tag-gold">Hockey Québec</span>
+  </div>
+</body>
+</html>

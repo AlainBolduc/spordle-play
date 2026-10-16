@@ -1,0 +1,60 @@
+PROPRIETARY LICENSE / LICENCE PROPRIÉTAIRE
+
+Copyright (c) 2026 Alain Bolduc. Tous droits réservés / All rights reserved.
+
+===============================================================================
+FRANÇAIS :
+===============================================================================
+
+Ce logiciel (« Spordle Annonceur ») ainsi que son code source, sa documentation, 
+ses algorithmes et ses suites de tests sont la propriété intellectuelle exclusive 
+d'Alain Bolduc.
+
+1. UTILISATION AUTORISÉE (USAGE BÉNÉVOLE ET PERSONNEL) :
+Une licence non exclusive, personnelle, gratuite et non transférable est accordée 
+aux individus (annonceurs maison, marqueurs, parents et bénévoles d'équipes de hockey 
+amateur) pour installer et exécuter ce logiciel sur leurs propres appareils dans le seul 
+but d'assister les annonces protocolaires lors de matchs de hockey officiels.
+
+2. RESTRICTIONS ET INTERDICTIONS STRICTES :
+Sans le consentement écrit préalable et exprès d'Alain Bolduc, il est formellement interdit :
+a) D'utiliser, intégrer, fusionner, incorporer ou redistribuer ce logiciel ou toute partie 
+   de son code source, de sa logique ou de ses algorithmes dans un logiciel, service, 
+   application, produit commercial ou plateforme propriétaire (incluant notamment toute 
+   plateforme développée, éditée ou opérée par Spordle Inc., HiSports ou toute entité affiliée).
+b) De vendre, louer, sous-licencier, commercialiser ou monétiser ce logiciel de quelque 
+   manière que ce soit.
+c) De procéder à de l'ingénierie inverse (reverse engineering), de décompiler, désassembler 
+   ou tenter d'extraire la logique métier sous-jacente des versions compilées ou obfusquées.
+d) De retirer, modifier ou masquer les mentions de droit d'auteur, de propriété intellectuelle 
+   ou la présente licence.
+
+Pour toute demande de licence commerciale, d'intégration native ou de partenariat :
+Contact : Alain Bolduc (alainbolduc@users.noreply.github.com)
+
+===============================================================================
+ENGLISH:
+===============================================================================
+
+This software ("Spordle Annonceur"), including its source code, documentation, 
+algorithms, and test suites, is the exclusive intellectual property of Alain Bolduc.
+
+1. PERMITTED USE (PERSONAL AND VOLUNTEER USE):
+A non-exclusive, personal, royalty-free, and non-transferable license is granted 
+to individuals (volunteer arena announcers, scorekeepers, parents, and team volunteers) 
+to install and run this software on their personal devices solely to assist with official 
+hockey game announcements.
+
+2. STRICT PROHIBITIONS:
+Without prior explicit written consent from Alain Bolduc, it is strictly prohibited to:
+a) Use, integrate, merge, incorporate, or redistribute this software or any portion 
+   of its source code, logic, or algorithms into any commercial software, service, application, 
+   commercial product, or proprietary platform (including, without limitation, any platform 
+   developed, published, or operated by Spordle Inc., HiSports, or affiliated entities).
+b) Sell, rent, lease, sub-license, commercialize, or monetize this software in any manner.
+c) Reverse-engineer, decompile, disassemble, or attempt to extract source algorithms from 
+   compiled or obfuscated versions.
+d) Remove, alter, or obscure any copyright notices, attributions, or this license.
+
+For commercial licensing, native integration inquiries, or partnerships:
+Contact: Alain Bolduc (alainbolduc@users.noreply.github.com)

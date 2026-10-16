@@ -1,0 +1,27 @@
+{
+  "name": "spordle-play",
+  "version": "1.0.0",
+  "description": "Extension Chrome et Userscript Safari pour assister les annonceurs officiels sur Spordle Play",
+  "main": "build-userscript.js",
+  "scripts": {
+    "test": "node test-engine.js",
+    "build": "node build-userscript.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlainBolduc/spordle-play.git"
+  },
+  "keywords": [
+    "spordle",
+    "hockey",
+    "userscript",
+    "chrome-extension",
+    "hockey-quebec"
+  ],
+  "author": "Alain Bolduc",
+  "license": "Proprietary",
+  "type": "commonjs",
+  "devDependencies": {
+    "javascript-obfuscator": "^5.9.0"
+  }
+}

@@ -86,4 +86,22 @@ COURS</div><hi-penalty-list class="home-penalties" $game="$ctrl.$game" members="
   <script src="demo-renderer.js"></script>
   <script src="spordle-engine.js"></script>
   <script src="content.js"></script>
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const swap = params.get("swap");
+      if (swap === "true") {
+        const swapBtn = document.getElementById("sa-swap-sides-btn");
+        if (swapBtn) swapBtn.click();
+      }
+      const openIdx = params.get("open");
+      if (openIdx !== null) {
+        const idx = parseInt(openIdx, 10);
+        const btns = document.querySelectorAll(".sa-announce-btn");
+        if (btns[idx]) {
+          btns[idx].click();
+        }
+      }
+    })();
+  </script>
 </body></html>

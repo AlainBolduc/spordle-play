@@ -25,6 +25,33 @@
   // "05:44" -> "5:44"
   const formatTime = (t) => clean(t).replace(/^0(\d)/, "$1");
 
+  // Adapte phonétiquement le texte pour la synthèse vocale (TTS)
+  const cleanForSpeech = (text) => {
+    if (typeof SpordleEngine !== "undefined" && SpordleEngine.utils && SpordleEngine.utils.cleanForSpeech) {
+      return SpordleEngine.utils.cleanForSpeech(text);
+    }
+    if (!text) return "";
+    return text
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\b1(?:re|er)\s+p[eé]riode\b/gi, "première période")
+      .replace(/\b2e\s+p[eé]riode\b/gi, "deuxième période")
+      .replace(/\b3e\s+p[eé]riode\b/gi, "troisième période")
+      .replace(/\b4e\s+p[eé]riode\b/gi, "quatrième période")
+      .replace(/\b00?:0?1\b/g, "1 seconde")
+      .replace(/\b00?:0?(\d+)\b/g, "$1 secondes")
+      .replace(/\b1:00\b/g, "1 minute")
+      .replace(/\b1:01\b/g, "1 minute et 1 seconde")
+      .replace(/\b1:0(\d)\b/g, "1 minute et $1 secondes")
+      .replace(/\b1:(\d{2})\b/g, "1 minute $1")
+      .replace(/\b(\d+):00\b/g, "$1 minutes")
+      .replace(/\b(\d+):01\b/g, "$1 minutes et 1 seconde")
+      .replace(/\b(\d+):0(\d)\b/g, "$1 minutes et $2 secondes")
+      .replace(/\b(\d+):(\d{2})\b/g, "$1 minutes $2")
+      .replace(/\s*:\s*/g, ", ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
   // Extrait les joueurs au format "NOM PRÉNOM (77)"
   const parsePlayers = (text) => {
     const players = [];
@@ -303,7 +330,10 @@
         time: ev.time,
         period: ev.period,
       });
-      return formatted.htmlLines.map((l) => `<div class="sa-line">${l}</div>`).join("");
+      return {
+        html: formatted.htmlLines.map((l) => `<div class="sa-line">${l}</div>`).join(""),
+        speechText: formatted.speechText
+      };
     }
 
     const playerRankSuffix = pRank >= 2 ? `, son <strong>${ordinal(pRank)}</strong> de la rencontre` : "";
@@ -348,7 +378,10 @@
       lines.push(`<div class="sa-line">${timeStr}</div>`);
     }
 
-    return lines.join("");
+    return {
+      html: lines.join(""),
+      speechText: cleanForSpeech(lines.join(" "))
+    };
   };
 
   // Retrouve toutes les lignes de pénalité associées au même joueur au même temps de match
@@ -452,7 +485,10 @@
         period: ev.period,
       });
 
-      return formatted.htmlLines.map((l) => `<div class="sa-line">${l}</div>`).join("");
+      return {
+        html: formatted.htmlLines.map((l) => `<div class="sa-line">${l}</div>`).join(""),
+        speechText: formatted.speechText
+      };
     }
 
     const lines = [];
@@ -509,7 +545,10 @@
 
     const pTime = timeSentence(ev);
     if (pTime) lines.push(`<div class="sa-line">${pTime}</div>`);
-    return lines.join("");
+    return {
+      html: lines.join(""),
+      speechText: cleanForSpeech(lines.join(" "))
+    };
   };
 
   // ---------- Popover ----------
@@ -548,7 +587,10 @@
           time: ev.time,
           period: ev.period
         });
-        return formatted.htmlLines.map((l) => `<div class="sa-line">${l}</div>`).join("");
+        return {
+          html: formatted.htmlLines.map((l) => `<div class="sa-line">${l}</div>`).join(""),
+          speechText: formatted.speechText
+        };
       } else if (isPulled) {
         // Gardien retiré (ex: 6e attaquant ou fin de match)
         const lines = [
@@ -557,7 +599,10 @@
         if (ev.time) {
           lines.push(`<div class="sa-line">Le temps du retrait : <strong>${escapeHtml(ev.time)}</strong>${ev.period ? ` de la ${escapeHtml(ev.period)}` : ""}.</div>`);
         }
-        return lines.join("");
+        return {
+          html: lines.join(""),
+          speechText: cleanForSpeech(lines.join(" "))
+        };
       }
     }
 
@@ -572,13 +617,108 @@
     if (ev.time) {
       lines.push(`<div class="sa-line">Le temps du changement : <strong>${escapeHtml(ev.time)}</strong>${ev.period ? ` de la ${escapeHtml(ev.period)}` : ""}.</div>`);
     }
-    return lines.join("");
+    return {
+      html: lines.join(""),
+      speechText: cleanForSpeech(lines.join(" "))
+    };
   };
 
   const getTeamLogo = (side) => {
     const el = document.querySelector(`.score-${side}.score-logo .hi-logo`) || document.querySelector(`.score-${side}.score-logo`);
     return el?.style?.backgroundImage || "";
   };
+
+  // ---------- Synthèse vocale (Text-To-Speech) ----------
+
+  let currentUtterance = null;
+  let isSpeaking = false;
+
+  const stopSpeech = () => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    isSpeaking = false;
+    currentUtterance = null;
+    if (popover) {
+      const btn = popover.querySelector(".sa-tts-btn");
+      if (btn) {
+        btn.classList.remove("sa-speaking");
+        const icon = btn.querySelector(".sa-tts-icon");
+        if (icon) icon.className = "icon ion-volume-high sa-tts-icon";
+        const label = btn.querySelector(".sa-tts-label");
+        if (label) label.textContent = "Annoncer vocalement";
+      }
+    }
+  };
+
+  const getBestFrenchVoice = () => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return null;
+    const voices = window.speechSynthesis.getVoices() || [];
+    if (!voices.length) return null;
+    return (
+      voices.find((v) => v.lang === "fr-CA" || v.lang === "fr_CA") ||
+      voices.find((v) => v.lang && v.lang.toLowerCase().startsWith("fr")) ||
+      null
+    );
+  };
+
+  const playSpeech = (text, btn) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    stopSpeech();
+
+    if (!text) return;
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "fr-CA";
+    utterance.rate = 0.95;
+    utterance.pitch = 1.0;
+
+    const voice = getBestFrenchVoice();
+    if (voice) {
+      utterance.voice = voice;
+    }
+
+    utterance.onstart = () => {
+      isSpeaking = true;
+      if (btn) {
+        btn.classList.add("sa-speaking");
+        const icon = btn.querySelector(".sa-tts-icon");
+        if (icon) icon.className = "icon ion-stop sa-tts-icon";
+        const label = btn.querySelector(".sa-tts-label");
+        if (label) label.textContent = "Arrêter l'annonce";
+      }
+    };
+
+    utterance.onend = () => {
+      stopSpeech();
+    };
+
+    utterance.onerror = (err) => {
+      if (err.error !== "interrupted" && err.error !== "canceled") {
+        console.warn("[Spordle Annonceur] Synthèse vocale arrêtée:", err);
+      }
+      stopSpeech();
+    };
+
+    currentUtterance = utterance;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const toggleSpeech = (text, btn) => {
+    if (isSpeaking) {
+      stopSpeech();
+    } else {
+      playSpeech(text, btn);
+    }
+  };
+
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+  }
 
   const renderEvent = (summaryItem) => () => {
     const ev = readEvent(summaryItem);
@@ -587,6 +727,9 @@
     const isGoalie = ev.type === "goalie";
     const typeLabel = isGoal ? "BUT" : isGoalie ? "GARDIEN" : "PÉNALITÉ";
     const logoUrl = getTeamLogo(ev.side);
+    const eventRes = isGoal ? buildGoal(ev, summaryItem) : isGoalie ? buildGoalieChange(ev, summaryItem) : buildPenalty(ev, summaryItem);
+    const body = typeof eventRes === "object" && eventRes !== null ? eventRes.html : eventRes;
+    const rawSpeech = typeof eventRes === "object" && eventRes !== null && eventRes.speechText ? eventRes.speechText : body;
     return {
       type: ev.type,
       side: ev.side,
@@ -594,7 +737,8 @@
       team: ev.team,
       typeLabel,
       logoUrl,
-      body: isGoal ? buildGoal(ev, summaryItem) : isGoalie ? buildGoalieChange(ev, summaryItem) : buildPenalty(ev, summaryItem),
+      body,
+      speechText: cleanForSpeech(rawSpeech),
     };
   };
 
@@ -602,6 +746,7 @@
     const content = render();
     if (!content) return;
     ensureElements();
+    stopSpeech();
 
     pinned = isPinned;
     currentOpenItem = summaryItem;
@@ -632,9 +777,22 @@
         `</div>` +
       `</div>` +
       `<div class="sa-modal-footer">` +
-        `<span class="sa-hint-icon"><i class="icon ion-volume-high"></i> Annonce vocale</span>` +
+        `<button type="button" class="sa-tts-btn" aria-label="Annoncer vocalement" title="Lire l'annonce au micro (synthèse vocale québécoise)">` +
+          `<i class="icon ion-volume-high sa-tts-icon"></i>` +
+          `<span class="sa-tts-label">Annoncer vocalement</span>` +
+        `</button>` +
         `<span class="sa-hint-dismiss">Cliquer n'importe où, sur ✕ ou sur Échap pour fermer</span>` +
       `</div>`;
+
+    // Clic sur le bouton TTS
+    const ttsBtn = popover.querySelector(".sa-tts-btn");
+    if (ttsBtn) {
+      ttsBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        toggleSpeech(content.speechText, ttsBtn);
+      });
+    }
 
     // Clic sur le bouton X pour fermer immédiatement
     const closeBtn = popover.querySelector(".sa-modal-close-btn");
@@ -654,6 +812,7 @@
 
   const hidePopover = (force = false) => {
     if (pinned && !force) return;
+    stopSpeech();
     pinned = false;
     currentOpenItem = null;
     if (popover) {
@@ -666,7 +825,16 @@
   };
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") hidePopover(true);
+    if (e.key === "Escape") {
+      hidePopover(true);
+    } else if ((e.key === " " || e.code === "Space") && pinned && popover && popover.classList.contains("sa-visible")) {
+      if (["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName)) return;
+      const ttsBtn = popover.querySelector(".sa-tts-btn");
+      if (ttsBtn) {
+        e.preventDefault();
+        ttsBtn.click();
+      }
+    }
   });
 
   // ---------- Injection des icônes ----------

@@ -168,6 +168,35 @@
     return `Le temps ${pLabel.includes("prolongation") ? "du but" : ""} : ${t} de la ${pLabel}.`;
   };
 
+  /**
+   * Adapte phonétiquement un texte d'annonce pour une synthèse vocale (TTS) naturelle et fluide :
+   * - Développe les abréviations de périodes ("1re période" -> "première période")
+   * - Convertit les temps de jeu MM:SS en minutes/secondes parlées ("7:48" -> "7 minutes 48")
+   * - Remplace les deux-points isolés par des virgules pour des pauses orales naturelles
+   */
+  const cleanForSpeech = (text) => {
+    if (!text) return "";
+    return text
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\b1(?:re|er)\s+p[eé]riode\b/gi, "première période")
+      .replace(/\b2e\s+p[eé]riode\b/gi, "deuxième période")
+      .replace(/\b3e\s+p[eé]riode\b/gi, "troisième période")
+      .replace(/\b4e\s+p[eé]riode\b/gi, "quatrième période")
+      .replace(/\b00?:0?1\b/g, "1 seconde")
+      .replace(/\b00?:0?(\d+)\b/g, "$1 secondes")
+      .replace(/\b1:00\b/g, "1 minute")
+      .replace(/\b1:01\b/g, "1 minute et 1 seconde")
+      .replace(/\b1:0(\d)\b/g, "1 minute et $1 secondes")
+      .replace(/\b1:(\d{2})\b/g, "1 minute $1")
+      .replace(/\b(\d+):00\b/g, "$1 minutes")
+      .replace(/\b(\d+):01\b/g, "$1 minutes et 1 seconde")
+      .replace(/\b(\d+):0(\d)\b/g, "$1 minutes et $2 secondes")
+      .replace(/\b(\d+):(\d{2})\b/g, "$1 minutes $2")
+      .replace(/\s*:\s*/g, ", ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
   // =========================================================================
   // 3. MOTEUR DE DÉCODAGE DES CODES HOCKEY QUÉBEC
   // =========================================================================
@@ -368,7 +397,7 @@
       teamName: team,
       lines: [line1, line2, line3],
       htmlLines: [htmlLine1, htmlLine2, htmlLine3],
-      speechText: `${line1} ${line2} ${line3}`
+      speechText: cleanForSpeech(`${line1} ${line2} ${line3}`)
     };
   };
 
@@ -443,7 +472,7 @@
       teamName: team,
       lines,
       htmlLines,
-      speechText: lines.join(" ")
+      speechText: cleanForSpeech(lines.join(" "))
     };
   };
 
@@ -499,7 +528,7 @@
       teamName: team,
       lines,
       htmlLines,
-      speechText: lines.join(" ")
+      speechText: cleanForSpeech(lines.join(" "))
     };
   };
 
@@ -520,7 +549,8 @@
       titleCase,
       escapeHtml,
       getOrdinalMasc,
-      formatPeriodTime
+      formatPeriodTime,
+      cleanForSpeech
     }
   };
 });

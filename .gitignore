@@ -1,3 +1,7 @@
+# Dépendances Node
+node_modules/
+npm-debug.log*
+
 # Fichiers temporaires ou bundles générés
 *.zip
 .DS_Store
