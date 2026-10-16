@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Spordle Annonceur",
-  "version": "1.0.8",
+  "version": "1.0.10",
   "description": "Ajoute une icône 📢 sur chaque but et punition de la feuille de match Spordle Play pour afficher en gros le texte à annoncer.",
   "content_scripts": [
     {

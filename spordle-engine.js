@@ -391,13 +391,17 @@
     // Ligne 3 HTML
     const htmlLine3 = `Le temps du but : <strong>${escapeHtml(t)}</strong> de la ${escapeHtml(pLabel)}.`;
 
+    // Formatage avec pauses respiratoires pour la synthèse vocale
+    const speechLine1 = line1.replace(/,\s*$/, ".");
+    const speechLine2 = line2.charAt(0).toUpperCase() + line2.slice(1);
+
     return {
       type: "goal",
       title: `BUT — ${team.toUpperCase()}`,
       teamName: team,
       lines: [line1, line2, line3],
       htmlLines: [htmlLine1, htmlLine2, htmlLine3],
-      speechText: cleanForSpeech(`${line1} ${line2} ${line3}`)
+      speechText: cleanForSpeech(`${speechLine1} ${speechLine2} ${line3}`)
     };
   };
 
@@ -466,13 +470,19 @@
     lines.push(`Le temps de la pénalité : ${t} de la ${pLabel}.`);
     htmlLines.push(`Le temps de la pénalité : <strong>${escapeHtml(t)}</strong> de la ${escapeHtml(pLabel)}.`);
 
+    // Formatage avec pauses respiratoires pour la synthèse vocale
+    const speechLines = lines.map((l) => {
+      const s = l.trim().replace(/,\s*$/, ".");
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    });
+
     return {
       type: "penalty",
       title: `PÉNALITÉ — ${team.toUpperCase()}`,
       teamName: team,
       lines,
       htmlLines,
-      speechText: cleanForSpeech(lines.join(" "))
+      speechText: cleanForSpeech(speechLines.join(" "))
     };
   };
 
@@ -522,13 +532,19 @@
       htmlLines.push(`Le temps du changement : <strong>${escapeHtml(t)}</strong> de la ${escapeHtml(pLabel)}.`);
     }
 
+    // Formatage avec pauses respiratoires pour la synthèse vocale
+    const speechLines = lines.map((l) => {
+      const s = l.trim().replace(/,\s*$/, ".");
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    });
+
     return {
       type: "goalie",
       title: `GARDIEN — ${team.toUpperCase()}`,
       teamName: team,
       lines,
       htmlLines,
-      speechText: cleanForSpeech(lines.join(" "))
+      speechText: cleanForSpeech(speechLines.join(" "))
     };
   };
 
