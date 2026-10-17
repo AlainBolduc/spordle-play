@@ -863,6 +863,148 @@
     categoryEl.appendChild(btn);
 
     updateSwapButtonLabel();
+    setupWelcomeButton();
+  };
+
+  const getGoaliesFromSummary = () => {
+    let awayGoalie = null;
+    let homeGoalie = null;
+    const items = document.querySelectorAll(SUMMARY_SELECTOR);
+    items.forEach(item => {
+      const parsed = parseSummaryItem(item);
+      if (parsed && parsed.type === "goalie") {
+        if (parsed.isHome && !homeGoalie && parsed.goalie) {
+          homeGoalie = parsed.goalie;
+        } else if (!parsed.isHome && !awayGoalie && parsed.goalie) {
+          awayGoalie = parsed.goalie;
+        }
+      }
+    });
+    return {
+      away: awayGoalie || { number: "30", name: "Félix Tremblay" },
+      home: homeGoalie || { number: "33", name: "Jacob Gagnon" }
+    };
+  };
+
+  const setupWelcomeButton = () => {
+    if (document.getElementById("sa-welcome-btn")) return;
+    const categoryEl = document.querySelector(".game-category") || document.querySelector(".game-number");
+    if (!categoryEl) return;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.id = "sa-welcome-btn";
+    btn.className = "sa-welcome-btn";
+    btn.title = "Annoncer le mot de bienvenue officiel d'avant-match";
+    btn.innerHTML = `<span class="sa-welcome-icon">🎙️</span><span class="sa-welcome-label">Bienvenue</span>`;
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      openWelcomeModal();
+    });
+
+    categoryEl.appendChild(btn);
+  };
+
+  const openWelcomeModal = () => {
+    ensureElements();
+    pinned = true;
+
+    const catEl = document.querySelector(".game-category");
+    const rawCategory = catEl ? catEl.textContent.trim() : "M11 AA";
+    const awayTeam = getAwayTeam();
+    const homeTeam = getHomeTeam();
+
+    const COLORS = ["Blanc", "Bleu", "Rouge", "Noir", "Jaune", "Vert", "Orange", "Gris"];
+
+    let awayJersey = localStorage.getItem("sa_jersey_away") || "blanc";
+    let homeJersey = localStorage.getItem("sa_jersey_home") || "bleu";
+
+    const goalies = getGoaliesFromSummary();
+
+    const renderWelcome = () => {
+      const data = SpordleEngine.formatWelcomeMessage({
+        category: rawCategory,
+        awayTeam,
+        homeTeam,
+        awayJersey,
+        homeJersey,
+        awayGoalie: goalies.away,
+        homeGoalie: goalies.home
+      });
+
+      const buildColorChips = (side, activeColor) => {
+        return COLORS.map(c => {
+          const isActive = c.toLowerCase() === activeColor.toLowerCase();
+          return `<button type="button" class="sa-color-chip${isActive ? " sa-active" : ""}" data-side="${side}" data-color="${c.toLowerCase()}">${c}</button>`;
+        }).join("");
+      };
+
+      popover.className = "sa-visible sa-welcome sa-pinned";
+      popover.innerHTML =
+        `<div class="sa-modal-header bar bar-header bar-dark">` +
+          `<div class="sa-modal-badge sa-badge-welcome">` +
+            `<span class="sa-badge-dot"></span>` +
+            `<span class="sa-badge-text">AVANT-MATCH</span>` +
+          `</div>` +
+          `<div class="sa-modal-title">` +
+            `<span class="sa-team-name">MOT DE BIENVENUE OFFICIEL</span>` +
+          `</div>` +
+          `<button type="button" class="sa-modal-close-btn button button-stable button-clear" aria-label="Fermer">` +
+            `<i class="icon ion-close-round"></i>` +
+          `</button>` +
+        `</div>` +
+        `<div class="sa-modal-body">` +
+          `<div class="sa-modal-card">` +
+            `<div class="sa-welcome-toolbar">` +
+              `<div class="sa-welcome-config-group">` +
+                `<span>Chandail <strong>${escapeHtml(awayTeam)}</strong> :</span> ` +
+                buildColorChips("away", awayJersey) +
+              `</div>` +
+              `<div class="sa-welcome-config-group">` +
+                `<span>Chandail <strong>${escapeHtml(homeTeam)}</strong> :</span> ` +
+                buildColorChips("home", homeJersey) +
+              `</div>` +
+            `</div>` +
+            `<div class="sa-line">${data.htmlLines[0]}</div>` +
+            `<div class="sa-line">${data.htmlLines[1]}</div>` +
+            `<div class="sa-line">${data.htmlLines[2]}</div>` +
+          `</div>` +
+        `</div>` +
+        `<div class="sa-modal-footer">` +
+          `<span class="sa-hint-icon"><i class="icon ion-mic-a"></i> Prêt pour l'annonce au micro</span>` +
+          `<span class="sa-hint-dismiss">Cliquer n'importe où, sur ✕ ou sur Échap pour fermer</span>` +
+        `</div>`;
+
+      // Clics sur les pastilles de couleurs pour mise à jour immédiate
+      popover.querySelectorAll(".sa-color-chip").forEach(chip => {
+        chip.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const side = chip.dataset.side;
+          const color = chip.dataset.color;
+          if (side === "away") {
+            awayJersey = color;
+            localStorage.setItem("sa_jersey_away", color);
+          } else {
+            homeJersey = color;
+            localStorage.setItem("sa_jersey_home", color);
+          }
+          renderWelcome();
+        });
+      });
+
+      // Fermeture par bouton X
+      const closeBtn = popover.querySelector(".sa-modal-close-btn");
+      if (closeBtn) {
+        closeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          hidePopover(true);
+        });
+      }
+    };
+
+    renderWelcome();
+    backdrop.className = "sa-visible";
   };
 
   // Appliquer l'état initial dès le chargement
@@ -870,14 +1012,15 @@
 
   let scheduled = false;
   const observer = new MutationObserver((mutations) => {
-    // Ignorer les mutations générées par nos propres éléments (popover, backdrop, swap btn)
+    // Ignorer les mutations générées par nos propres éléments (popover, backdrop, swap btn, welcome btn)
     const onlyOurNodes = mutations.every((m) => {
       const el = m.target;
       return el && (
         el.id === "sa-popover" ||
         el.id === "sa-backdrop" ||
         el.id === "sa-swap-sides-btn" ||
-        (el.closest && (el.closest("#sa-popover") || el.closest("#sa-backdrop") || el.closest("#sa-swap-sides-btn")))
+        el.id === "sa-welcome-btn" ||
+        (el.closest && (el.closest("#sa-popover") || el.closest("#sa-backdrop") || el.closest("#sa-swap-sides-btn") || el.closest("#sa-welcome-btn")))
       );
     });
     if (onlyOurNodes) return;

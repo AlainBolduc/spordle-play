@@ -441,4 +441,101 @@
   }
 }
 
+/* ==========================================================
+   Bouton et modal du Mot de bienvenue d'avant-match
+   ========================================================== */
+
+.sa-welcome-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #2b2e33;
+  color: #dce2e3;
+  border: 1px solid #4a5058;
+  border-radius: 12px;
+  padding: 1px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  margin-left: 8px;
+  vertical-align: middle;
+  line-height: 1.5;
+  transition: all 0.15s ease;
+  outline: none;
+}
+.sa-welcome-btn:hover {
+  background: #373b40;
+  border-color: #9e77ed;
+  color: #d6bbfb;
+  transform: translateY(-1px);
+}
+.sa-welcome-btn:active {
+  transform: translateY(0);
+}
+.sa-welcome-btn .sa-welcome-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* Badge spécifique avant-match */
+#sa-popover .sa-modal-badge.sa-badge-welcome {
+  background-color: #3b2d54;
+  color: #d6bbfb;
+  border: 1px solid #6941c6;
+}
+#sa-popover .sa-modal-badge.sa-badge-welcome .sa-badge-dot {
+  background-color: #9e77ed;
+  box-shadow: 0 0 6px #9e77ed;
+}
+
+#sa-popover.sa-welcome .sa-modal-card {
+  border-left: 5px solid #9e77ed;
+}
+
+/* Barre de configuration rapide des chandails dans le modal de bienvenue */
+.sa-welcome-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 13px;
+  color: #a0a6b0;
+}
+.sa-welcome-config-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.sa-welcome-config-group strong {
+  color: #fff;
+  font-weight: 600;
+}
+.sa-color-chip {
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid #4a5058;
+  background: #202328;
+  color: #c9d1d9;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.sa-color-chip:hover {
+  background: #30363d;
+  color: #fff;
+  border-color: #ffc900;
+}
+.sa-color-chip.sa-active {
+  background: #ffc900;
+  color: #000;
+  border-color: #ffc900;
+  font-weight: 700;
+}
+
 

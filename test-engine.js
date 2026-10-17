@@ -386,6 +386,37 @@ test("Validation de l'ensemble des 66 événements de test-events.js", () => {
   assert.strictEqual(eventCount, 66, "Le catalogue doit contenir exactement 66 événements");
 });
 
+console.log("\n--- Tests du mot de bienvenue d'avant-match ---");
+
+test("Bienvenue 1 : Conversion catégorie U11 AA -> M11 AA", () => {
+  assert.strictEqual(engine.convertCategoryToQuebec("U11 AA"), "M11 AA");
+  assert.strictEqual(engine.convertCategoryToQuebec("U13 AAA"), "M13 AAA");
+  assert.strictEqual(engine.convertCategoryToQuebec("U15-BB"), "M15 BB");
+  assert.strictEqual(engine.convertCategoryToQuebec("U18 D1"), "M18 D1");
+  assert.strictEqual(engine.convertCategoryToQuebec("M11 A"), "M11 A");
+});
+
+test("Bienvenue 2 : Génération complète de l'annonce d'avant-match", () => {
+  const res = engine.formatWelcomeMessage({
+    category: "U11 AA",
+    awayTeam: "Remparts Est Richelieu",
+    homeTeam: "Remparts Ouest Richelieu",
+    awayJersey: "blanc",
+    homeJersey: "bleu",
+    awayGoalie: { number: "30", name: "FÉLIX TREMBLAY" },
+    homeGoalie: { number: "33", name: "JACOB GAGNON" }
+  });
+
+  assert.strictEqual(res.category, "M11 AA");
+  assert.strictEqual(res.lines[0], "Mesdames et messieurs, bienvenue à ce match de catégorie M11 AA, opposant en chandail blanc les Remparts Est Richelieu, et en chandail bleu les Remparts Ouest Richelieu.");
+  assert.strictEqual(res.lines[1], "Les gardiens en présence : du côté des Remparts Est Richelieu, le numéro 30, Félix Tremblay, et du côté des Remparts Ouest Richelieu, le numéro 33, Jacob Gagnon.");
+  assert.strictEqual(res.lines[2], "Sur ce, bonne chance aux deux équipes et bon match !");
+  assert.ok(res.htmlLines[0].includes("<strong>M11 AA</strong>"));
+  assert.ok(res.htmlLines[0].includes("<strong>blanc</strong>"));
+  assert.ok(res.htmlLines[1].includes("<strong>30</strong>"));
+  assert.ok(res.speechText.includes("double A"));
+});
+
 console.log(`\n=== RÉSULTATS : ${passed}/${total} tests réussis ===\n`);
 if (passed === total) {
   process.exit(0);
