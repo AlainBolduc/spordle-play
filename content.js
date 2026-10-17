@@ -667,13 +667,23 @@
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
+      if (typeof activeColorPicker !== "undefined" && activeColorPicker) {
+        if (typeof closeColorPicker === "function") closeColorPicker();
+        e.stopPropagation();
+        return;
+      }
       hidePopover(true);
-      if (typeof closeColorPicker === "function") closeColorPicker();
     }
   });
 
   document.addEventListener("click", (e) => {
-    if (typeof activeColorPicker !== "undefined" && activeColorPicker && !activeColorPicker.contains(e.target) && !e.target.closest(".sa-team-color-btn")) {
+    if (
+      typeof activeColorPicker !== "undefined" &&
+      activeColorPicker &&
+      !activeColorPicker.contains(e.target) &&
+      !e.target.closest(".sa-team-color-btn") &&
+      !e.target.closest(".sa-welcome-color-btn")
+    ) {
       if (typeof closeColorPicker === "function") closeColorPicker();
     }
   });
@@ -1309,7 +1319,7 @@
     }
   };
 
-  const openColorPicker = (anchorBtn, side) => {
+  const openColorPicker = (anchorBtn, side, onColorSelected) => {
     closeColorPicker();
 
     const teamName = getTeamName(side);
@@ -1334,7 +1344,7 @@
 
     pop.innerHTML = `
       <div class="sa-color-picker-title">
-        <span>Couleur — ${escapeHtml(side === "home" ? "Local" : "Visiteur")}</span>
+        <span>Couleur — ${escapeHtml(teamName || (side === "home" ? "Local" : "Visiteur"))}</span>
         <button type="button" class="button button-clear ion-close-round sa-color-picker-close" style="color: #adb5bd; font-size: 13px; min-width: 20px; height: 20px; line-height: 20px; padding: 0;"></button>
       </div>
       <div class="sa-color-picker-grid">
@@ -1346,13 +1356,21 @@
     document.body.appendChild(pop);
     const rect = anchorBtn.getBoundingClientRect();
     const popWidth = 220;
-    let left = rect.left + window.scrollX;
+    let left = rect.left;
     if (side === "away") {
-      left = Math.max(10, rect.right + window.scrollX - popWidth);
+      left = Math.max(10, rect.right - popWidth);
     } else {
-      left = Math.min(window.innerWidth - popWidth - 10, rect.left + window.scrollX);
+      left = Math.min(window.innerWidth - popWidth - 10, rect.left);
     }
-    const top = rect.bottom + window.scrollY + 6;
+    if (left < 10) left = 10;
+    if (left + popWidth > window.innerWidth - 10) {
+      left = window.innerWidth - popWidth - 10;
+    }
+
+    let top = rect.bottom + 6;
+    if (top + 230 > window.innerHeight) {
+      top = Math.max(10, rect.top - 230);
+    }
 
     pop.style.top = `${top}px`;
     pop.style.left = `${left}px`;
@@ -1369,6 +1387,9 @@
         const found = TEAM_COLOR_PALETTE.find((c) => c.hex.toLowerCase() === hex.toLowerCase());
         if (found) {
           setTeamColor(side, found);
+          if (typeof onColorSelected === "function") {
+            onColorSelected(found);
+          }
         }
         closeColorPicker();
       });
@@ -1377,6 +1398,9 @@
     pop.querySelector(".sa-color-reset-btn").addEventListener("click", (e) => {
       e.stopPropagation();
       setTeamColor(side, null);
+      if (typeof onColorSelected === "function") {
+        onColorSelected(null);
+      }
       closeColorPicker();
     });
 
@@ -1671,29 +1695,13 @@
         homeGoalie: goalies.home
       });
 
-      const buildColorChips = (side, currentColorObj, fallbackJersey) => {
-        const activeHex = currentColorObj?.hex?.toLowerCase();
-        const activeName = (currentColorObj?.spoken || currentColorObj?.name || fallbackJersey || "").toLowerCase();
+      const awayEffective = awayColorObj || parseTeamColor(awayJersey) || { hex: "#ffffff", name: "Blanc", border: "#ced4da" };
+      const awaySwatchStyle = `background-color: ${awayEffective.hex}; ${awayEffective.border ? `border: 1px solid ${awayEffective.border};` : ""}`;
+      const awayDisplayName = awayEffective.name || titleCase(awayJersey);
 
-        return TEAM_COLOR_PALETTE.map((col) => {
-          const isActive =
-            (activeHex && col.hex.toLowerCase() === activeHex) ||
-            (activeName && (
-              col.name.toLowerCase() === activeName ||
-              col.spoken.toLowerCase() === activeName ||
-              (activeName === "bleu" && col.name === "Bleu royal") ||
-              (activeName === "vert" && col.name === "Vert forêt") ||
-              (activeName === "jaune" && col.name === "Jaune or")
-            ));
-          const borderStyle = col.border ? `border: 1px solid ${col.border};` : "";
-          return (
-            `<button type="button" class="sa-color-chip${isActive ? " sa-active" : ""}" data-side="${side}" data-hex="${col.hex}">` +
-              `<span class="sa-chip-dot" style="background-color: ${col.hex}; ${borderStyle}"></span>` +
-              `<span>${escapeHtml(col.name)}</span>` +
-            `</button>`
-          );
-        }).join("");
-      };
+      const homeEffective = homeColorObj || parseTeamColor(homeJersey) || { hex: "#0046ad", name: "Bleu royal" };
+      const homeSwatchStyle = `background-color: ${homeEffective.hex}; ${homeEffective.border ? `border: 1px solid ${homeEffective.border};` : ""}`;
+      const homeDisplayName = homeEffective.name || titleCase(homeJersey);
 
       popover.className = "sa-visible sa-welcome sa-pinned";
       popover.innerHTML =
@@ -1714,11 +1722,19 @@
             `<div class="sa-welcome-toolbar">` +
               `<div class="sa-welcome-config-group">` +
                 `<span class="sa-welcome-label">Chandail <strong>${escapeHtml(awayTeam)}</strong> :</span> ` +
-                buildColorChips("away", awayColorObj, awayJersey) +
+                `<button type="button" class="sa-welcome-color-btn" data-side="away" title="Changer la couleur du chandail (${escapeHtml(awayTeam)})">` +
+                  `<span class="sa-team-color-swatch" style="${awaySwatchStyle}"></span>` +
+                  `<span class="sa-welcome-color-name">${escapeHtml(awayDisplayName)}</span>` +
+                  `<span class="sa-welcome-color-arrow">▾</span>` +
+                `</button>` +
               `</div>` +
               `<div class="sa-welcome-config-group">` +
                 `<span class="sa-welcome-label">Chandail <strong>${escapeHtml(homeTeam)}</strong> :</span> ` +
-                buildColorChips("home", homeColorObj, homeJersey) +
+                `<button type="button" class="sa-welcome-color-btn" data-side="home" title="Changer la couleur du chandail (${escapeHtml(homeTeam)})">` +
+                  `<span class="sa-team-color-swatch" style="${homeSwatchStyle}"></span>` +
+                  `<span class="sa-welcome-color-name">${escapeHtml(homeDisplayName)}</span>` +
+                  `<span class="sa-welcome-color-arrow">▾</span>` +
+                `</button>` +
               `</div>` +
             `</div>` +
             `<div class="sa-line">${data.htmlLines[0]}</div>` +
@@ -1731,21 +1747,27 @@
           `<span class="sa-hint-dismiss">Cliquer n'importe où, sur ✕ ou sur Échap pour fermer</span>` +
         `</div>`;
 
-      // Clics sur les pastilles de couleurs pour mise à jour immédiate
-      popover.querySelectorAll(".sa-color-chip").forEach((chip) => {
-        chip.addEventListener("click", (e) => {
+      // Clic sur les boutons de couleur pour ouvrir le color picker officiel
+      popover.querySelectorAll(".sa-welcome-color-btn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
           e.stopPropagation();
-          const side = chip.dataset.side;
-          const hex = chip.dataset.hex;
-          const found = TEAM_COLOR_PALETTE.find((c) => c.hex.toLowerCase() === hex.toLowerCase());
-          if (found) {
-            setTeamColor(side, found);
-            if (side === "away") {
-              awayColorObj = found;
-            } else {
-              homeColorObj = found;
+          e.preventDefault();
+          const side = btn.dataset.side;
+          if (activeColorPicker && activeColorPicker.dataset.side === side && activeColorPicker.dataset.context === "welcome") {
+            closeColorPicker();
+          } else {
+            openColorPicker(btn, side, (selectedColor) => {
+              if (side === "away") {
+                awayColorObj = selectedColor;
+              } else {
+                homeColorObj = selectedColor;
+              }
+              renderWelcome();
+            });
+            if (activeColorPicker) {
+              activeColorPicker.dataset.side = side;
+              activeColorPicker.dataset.context = "welcome";
             }
-            renderWelcome();
           }
         });
       });
@@ -1755,6 +1777,7 @@
       if (closeBtn) {
         closeBtn.addEventListener("click", (e) => {
           e.stopPropagation();
+          closeColorPicker();
           hidePopover(true);
         });
       }

@@ -496,9 +496,10 @@
 /* Barre de configuration rapide des chandails dans le modal de bienvenue */
 .sa-welcome-toolbar {
   display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-  gap: 10px !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 14px 24px !important;
   margin-bottom: 20px !important;
   padding-bottom: 16px !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -506,10 +507,9 @@
   color: #a0a6b0 !important;
 }
 .sa-welcome-config-group {
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
-  flex-wrap: wrap !important;
-  gap: 6px !important;
+  gap: 8px !important;
 }
 .sa-welcome-config-group strong {
   color: #fff !important;
@@ -517,46 +517,40 @@
 }
 .sa-welcome-label {
   display: inline-block !important;
-  margin-right: 4px !important;
   white-space: nowrap !important;
 }
-.sa-color-chip {
+.sa-welcome-color-btn {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 5px !important;
-  padding: 3px 8px !important;
-  border-radius: 12px !important;
-  font-size: 11px !important;
+  gap: 7px !important;
+  padding: 5px 12px !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
   font-weight: 600 !important;
   border: 1px solid #4a5058 !important;
   background: #202328 !important;
-  color: #c9d1d9 !important;
+  color: #fff !important;
   cursor: pointer !important;
   transition: all 0.15s ease !important;
-  white-space: nowrap !important;
+  outline: none !important;
 }
-.sa-chip-dot {
-  width: 9px !important;
-  height: 9px !important;
-  border-radius: 50% !important;
-  display: inline-block !important;
-  flex-shrink: 0 !important;
-  box-sizing: border-box !important;
-}
-.sa-color-chip:hover {
-  background: #30363d !important;
-  color: #fff !important;
+.sa-welcome-color-btn:hover {
+  background: #2b3038 !important;
   border-color: #ffc900 !important;
   transform: translateY(-1px) !important;
 }
-.sa-color-chip.sa-active {
-  background: #ffc900 !important;
-  color: #000 !important;
-  border-color: #ffc900 !important;
-  font-weight: 700 !important;
+.sa-welcome-color-btn .sa-team-color-swatch {
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 50% !important;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
 }
-.sa-color-chip.sa-active .sa-chip-dot {
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4) !important;
+.sa-welcome-color-btn .sa-welcome-color-arrow {
+  font-size: 10px !important;
+  color: #adb5bd !important;
+  margin-left: 2px !important;
 }
 
 /* ==========================================================================
@@ -628,8 +622,8 @@
 
 /* Palette Popover */
 .sa-color-picker-popover {
-  position: absolute !important;
-  z-index: 99999 !important;
+  position: fixed !important;
+  z-index: 2147483648 !important;
   background: #252831 !important;
   border: 1px solid #4a5058 !important;
   border-radius: 8px !important;
