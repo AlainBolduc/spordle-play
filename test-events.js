@@ -5,7 +5,10 @@
 const TEST_GAME_DATA = {
   "game": {
     "number": "1021",
-    "category": "M12 AA",
+    "division": "U12",
+    "category": "AA",
+    "homeDefaultColor": true,
+    "awayDefaultColor": true,
     "arena": "Glaces de la Rive-Sud - Glace 2",
     "date": "12 oct. 2026",
     "homeTeam": {
@@ -17,6 +20,40 @@ const TEST_GAME_DATA = {
       "name": "REMPARTS EST RICHELIEU",
       "shortName": "REMPARTS EST RICHELIEU",
       "logo": "assets/logos/remparts-est.png"
+    }
+  },
+  "homeTeam": {
+    "name": "REMPARTS OUEST RICHELIEU",
+    "shortName": "REMPARTS OUEST RICHELIEU",
+    "logo": "assets/logos/remparts-ouest.png",
+    "homeColor": "BLEU",
+    "awayColor": "BLANC",
+    "category": {
+      "id": "ff6437de-8fee-4641-b672-ecb91859aa0f",
+      "name": "U12 AA",
+      "nameFr": "M12 AA",
+      "i18n": {
+        "fr": {
+          "name": "M12 AA"
+        }
+      }
+    }
+  },
+  "awayTeam": {
+    "name": "REMPARTS EST RICHELIEU",
+    "shortName": "REMPARTS EST RICHELIEU",
+    "logo": "assets/logos/remparts-est.png",
+    "homeColor": "ROUGE",
+    "awayColor": "BLANC",
+    "category": {
+      "id": "ff6437de-8fee-4641-b672-ecb91859aa0f",
+      "name": "U12 AA",
+      "nameFr": "M12 AA",
+      "i18n": {
+        "fr": {
+          "name": "M12 AA"
+        }
+      }
     }
   },
   "periods": [

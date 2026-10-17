@@ -780,7 +780,154 @@
     injectTeamColorButtons();
   };
 
+  // ---------- Récupération des données officielles de l'API Spordle ----------
+
+  let cachedApiGameData = null;
+
+  document.addEventListener("spordle:game-data", (e) => {
+    if (e.detail) {
+      cachedApiGameData = e.detail;
+      applyTeamColors();
+    }
+  });
+
+  const injectPageBridge = () => {
+    if (document.getElementById("sa-page-bridge")) return;
+    const script = document.createElement("script");
+    script.id = "sa-page-bridge";
+    script.textContent = `
+      (() => {
+        const origFetch = window.fetch;
+        if (origFetch) {
+          window.fetch = async function(...args) {
+            const resp = await origFetch.apply(this, args);
+            try {
+              const url = (args[0] && args[0].url) || (typeof args[0] === "string" ? args[0] : "");
+              if (/scoresheets|games|game_data/i.test(url)) {
+                const clone = resp.clone();
+                clone.json().then(data => {
+                  if (data && (data.game || data.homeTeam || data.awayTeam)) {
+                    window.__SPORDLE_GAME_DATA__ = data;
+                    document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: data }));
+                  }
+                }).catch(() => {});
+              }
+            } catch (_) {}
+            return resp;
+          };
+        }
+
+        const origOpen = XMLHttpRequest.prototype.open;
+        const origSend = XMLHttpRequest.prototype.send;
+        XMLHttpRequest.prototype.open = function(method, url) {
+          this.__sa_url = url;
+          return origOpen.apply(this, arguments);
+        };
+        XMLHttpRequest.prototype.send = function() {
+          this.addEventListener("load", function() {
+            try {
+              if (this.__sa_url && /scoresheets|games|game_data/i.test(this.__sa_url)) {
+                const data = JSON.parse(this.responseText);
+                if (data && (data.game || data.homeTeam || data.awayTeam)) {
+                  window.__SPORDLE_GAME_DATA__ = data;
+                  document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: data }));
+                }
+              }
+            } catch (_) {}
+          });
+          return origSend.apply(this, arguments);
+        };
+
+        const checkAngular = () => {
+          try {
+            if (window.__SPORDLE_GAME_DATA__) return;
+            const el = document.querySelector("hi-scoresheet");
+            if (el && window.angular) {
+              const ctrl = window.angular.element(el).controller("hiScoresheet");
+              const scope = window.angular.element(el).scope();
+              const g = ctrl?.$game || scope?.$game || scope?.$ctrl?.$game;
+              if (g && (g.game || g.homeTeam || g.awayTeam)) {
+                window.__SPORDLE_GAME_DATA__ = g;
+                document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: g }));
+              }
+            }
+          } catch (_) {}
+        };
+        checkAngular();
+        setInterval(checkAngular, 1000);
+
+        if (window.__SPORDLE_GAME_DATA__) {
+          document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: window.__SPORDLE_GAME_DATA__ }));
+        } else if (window.TEST_GAME_DATA) {
+          document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: window.TEST_GAME_DATA }));
+        }
+      })();
+    `;
+    (document.head || document.documentElement).appendChild(script);
+  };
+
+  const getGameData = () => {
+    if (cachedApiGameData) return cachedApiGameData;
+    if (typeof window !== "undefined") {
+      if (window.__SPORDLE_GAME_DATA__) return window.__SPORDLE_GAME_DATA__;
+      if (window.TEST_GAME_DATA) return window.TEST_GAME_DATA;
+    }
+    return null;
+  };
+
   // ---------- Thématisation des couleurs d'équipes ----------
+
+  const COLOR_DICTIONARY = {
+    // Français
+    "bleu": { hex: "#0046ad", text: "#ffffff", name: "Bleu royal" },
+    "bleu royal": { hex: "#0046ad", text: "#ffffff", name: "Bleu royal" },
+    "bleu marin": { hex: "#041e42", text: "#ffffff", name: "Bleu marin" },
+    "marine": { hex: "#041e42", text: "#ffffff", name: "Bleu marin" },
+    "navy": { hex: "#041e42", text: "#ffffff", name: "Bleu marin" },
+    "bleu ciel": { hex: "#00a3e0", text: "#ffffff", name: "Bleu ciel" },
+    "ciel": { hex: "#00a3e0", text: "#ffffff", name: "Bleu ciel" },
+    "blanc": { hex: "#ffffff", text: "#111111", border: "#ced4da", name: "Blanc" },
+    "rouge": { hex: "#c8102e", text: "#ffffff", name: "Rouge" },
+    "noir": { hex: "#1a1a1a", text: "#ffffff", name: "Noir" },
+    "vert": { hex: "#005936", text: "#ffffff", name: "Vert forêt" },
+    "vert forêt": { hex: "#005936", text: "#ffffff", name: "Vert forêt" },
+    "vert kelly": { hex: "#00843d", text: "#ffffff", name: "Vert kelly" },
+    "vert lime": { hex: "#69be28", text: "#ffffff", name: "Vert lime" },
+    "lime": { hex: "#69be28", text: "#ffffff", name: "Vert lime" },
+    "jaune": { hex: "#f2a900", text: "#111111", name: "Jaune or" },
+    "or": { hex: "#f2a900", text: "#111111", name: "Jaune or" },
+    "jaune or": { hex: "#f2a900", text: "#111111", name: "Jaune or" },
+    "gold": { hex: "#f2a900", text: "#111111", name: "Jaune or" },
+    "orange": { hex: "#ea5b0c", text: "#ffffff", name: "Orange" },
+    "gris": { hex: "#6c757d", text: "#ffffff", name: "Gris" },
+    "argent": { hex: "#adb5bd", text: "#111111", name: "Argent" },
+    "silver": { hex: "#adb5bd", text: "#111111", name: "Argent" },
+    "bourgogne": { hex: "#6f263d", text: "#ffffff", name: "Bourgogne" },
+    "marron": { hex: "#6f263d", text: "#ffffff", name: "Bourgogne" },
+    "maroon": { hex: "#6f263d", text: "#ffffff", name: "Bourgogne" },
+    "mauve": { hex: "#552583", text: "#ffffff", name: "Mauve" },
+    "violet": { hex: "#552583", text: "#ffffff", name: "Mauve" },
+    "pourpre": { hex: "#552583", text: "#ffffff", name: "Mauve" },
+    // Anglais
+    "blue": { hex: "#0046ad", text: "#ffffff", name: "Bleu royal" },
+    "white": { hex: "#ffffff", text: "#111111", border: "#ced4da", name: "Blanc" },
+    "red": { hex: "#c8102e", text: "#ffffff", name: "Rouge" },
+    "black": { hex: "#1a1a1a", text: "#ffffff", name: "Noir" },
+    "green": { hex: "#005936", text: "#ffffff", name: "Vert forêt" },
+    "yellow": { hex: "#f2a900", text: "#111111", name: "Jaune or" },
+    "gray": { hex: "#6c757d", text: "#ffffff", name: "Gris" },
+    "grey": { hex: "#6c757d", text: "#ffffff", name: "Gris" },
+    "purple": { hex: "#552583", text: "#ffffff", name: "Mauve" }
+  };
+
+  const parseTeamColor = (raw) => {
+    if (!raw) return null;
+    const str = String(raw).trim().toLowerCase();
+    if (/^#[0-9a-f]{3,8}$/i.test(str)) {
+      return { hex: str, text: "#ffffff", name: "Couleur officielle" };
+    }
+    return COLOR_DICTIONARY[str] || null;
+  };
 
   const TEAM_COLOR_PALETTE = [
     { name: "Rouge", hex: "#c8102e", text: "#ffffff" },
@@ -804,6 +951,7 @@
     const teamName = getTeamName(side);
     const norm = normalizeTeamName(teamName);
     try {
+      // 1. Choix manuel explicite de l'utilisateur
       if (norm) {
         const raw = localStorage.getItem(`sa_team_color_${norm}`);
         if (raw) return JSON.parse(raw);
@@ -811,8 +959,22 @@
       const rawSide = localStorage.getItem(`sa_team_color_${getGameKey()}_${side}`);
       if (rawSide) return JSON.parse(rawSide);
     } catch (_) {}
+
+    // 2. Déduction automatique depuis l'API call Spordle (homeColor / awayColor)
+    const data = getGameData();
+    if (data) {
+      const isHome = side === "home";
+      const teamObj = isHome ? (data.homeTeam || data.game?.homeTeam) : (data.awayTeam || data.game?.awayTeam);
+      if (teamObj) {
+        const rawColor = teamObj.homeColor || teamObj.awayColor || teamObj.office?.color;
+        const parsed = parseTeamColor(rawColor);
+        if (parsed) return parsed;
+      }
+    }
+
     return null;
   };
+
 
   const setTeamColor = (side, colorObj) => {
     const teamName = getTeamName(side);
@@ -1112,6 +1274,7 @@
   };
 
   // Appliquer l'état initial dès le chargement
+  injectPageBridge();
   applySwapSidesState();
   applyTeamColors();
 
