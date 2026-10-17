@@ -948,7 +948,10 @@
         }
       })();
     `;
-    (document.head || document.documentElement).appendChild(script);
+    const target = document.head || document.documentElement || document.body;
+    if (target && typeof target.appendChild === "function") {
+      target.appendChild(script);
+    }
   };
 
   const getGameData = () => {
