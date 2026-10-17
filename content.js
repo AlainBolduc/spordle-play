@@ -866,6 +866,160 @@
     setupWelcomeButton();
   };
 
+  // ---------- Récupération des données officielles de l'API Spordle ----------
+
+  let cachedApiGameData = null;
+
+  document.addEventListener("spordle:game-data", (e) => {
+    if (e.detail) {
+      cachedApiGameData = e.detail;
+    }
+  });
+
+  const injectPageBridge = () => {
+    if (document.getElementById("sa-page-bridge")) return;
+    const script = document.createElement("script");
+    script.id = "sa-page-bridge";
+    script.textContent = `
+      (() => {
+        const origFetch = window.fetch;
+        if (origFetch) {
+          window.fetch = async function(...args) {
+            const resp = await origFetch.apply(this, args);
+            try {
+              const url = (args[0] && args[0].url) || (typeof args[0] === "string" ? args[0] : "");
+              if (/scoresheets|games|game_data/i.test(url)) {
+                const clone = resp.clone();
+                clone.json().then(data => {
+                  if (data && (data.game || data.homeTeam || data.awayTeam)) {
+                    window.__SPORDLE_GAME_DATA__ = data;
+                    document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: data }));
+                  }
+                }).catch(() => {});
+              }
+            } catch (_) {}
+            return resp;
+          };
+        }
+
+        const origOpen = XMLHttpRequest.prototype.open;
+        const origSend = XMLHttpRequest.prototype.send;
+        XMLHttpRequest.prototype.open = function(method, url) {
+          this.__sa_url = url;
+          return origOpen.apply(this, arguments);
+        };
+        XMLHttpRequest.prototype.send = function() {
+          this.addEventListener("load", function() {
+            try {
+              if (this.__sa_url && /scoresheets|games|game_data/i.test(this.__sa_url)) {
+                const data = JSON.parse(this.responseText);
+                if (data && (data.game || data.homeTeam || data.awayTeam)) {
+                  window.__SPORDLE_GAME_DATA__ = data;
+                  document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: data }));
+                }
+              }
+            } catch (_) {}
+          });
+          return origSend.apply(this, arguments);
+        };
+
+        const checkAngular = () => {
+          try {
+            if (window.__SPORDLE_GAME_DATA__) return;
+            const el = document.querySelector("hi-scoresheet");
+            if (el && window.angular) {
+              const ctrl = window.angular.element(el).controller("hiScoresheet");
+              const scope = window.angular.element(el).scope();
+              const g = ctrl?.$game || scope?.$game || scope?.$ctrl?.$game;
+              if (g && (g.game || g.homeTeam || g.awayTeam)) {
+                window.__SPORDLE_GAME_DATA__ = g;
+                document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: g }));
+              }
+            }
+          } catch (_) {}
+        };
+        checkAngular();
+        setInterval(checkAngular, 1000);
+
+        if (window.__SPORDLE_GAME_DATA__) {
+          document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: window.__SPORDLE_GAME_DATA__ }));
+        } else if (window.TEST_GAME_DATA) {
+          document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: window.TEST_GAME_DATA }));
+        }
+      })();
+    `;
+    (document.head || document.documentElement).appendChild(script);
+  };
+
+  const getGameData = () => {
+    if (cachedApiGameData) return cachedApiGameData;
+    if (typeof window !== "undefined") {
+      if (window.__SPORDLE_GAME_DATA__) return window.__SPORDLE_GAME_DATA__;
+      if (window.TEST_GAME_DATA) return window.TEST_GAME_DATA;
+    }
+    return null;
+  };
+
+  // Extrait la catégorie officielle depuis les données de l'appel API (i18n.fr.name ou nameFr)
+  const getGameCategoryName = () => {
+    const data = getGameData();
+    if (data) {
+      // 1. Priorité absolue : i18n officiel français de l'API Spordle
+      const frName =
+        data.homeTeam?.category?.i18n?.fr?.name ||
+        data.awayTeam?.category?.i18n?.fr?.name ||
+        data.homeTeam?.category?.nameFr ||
+        data.awayTeam?.category?.nameFr ||
+        data.game?.categoryFr;
+      if (frName && clean(frName)) return clean(frName);
+
+      // 2. Division + Classe avec i18n fr (ex: division "M12" + class "AA" -> "M12 AA")
+      const divFr =
+        data.homeTeam?.category?.division?.i18n?.fr?.name ||
+        data.awayTeam?.category?.division?.i18n?.fr?.name;
+      const classFr =
+        data.homeTeam?.category?.class?.i18n?.fr?.name ||
+        data.awayTeam?.category?.class?.i18n?.fr?.name ||
+        data.game?.category;
+      if (divFr && classFr) {
+        return `${clean(divFr)} ${clean(classFr)}`.trim();
+      }
+      if (divFr) return clean(divFr);
+
+      // 3. Category brut de l'API (ex: "U12 AA") -> conversion règle Québec Mxx
+      const rawCat = data.homeTeam?.category?.name || data.awayTeam?.category?.name || data.game?.category;
+      if (rawCat && typeof SpordleEngine !== "undefined" && SpordleEngine.convertCategoryToQuebec) {
+        return SpordleEngine.convertCategoryToQuebec(clean(rawCat));
+      }
+    }
+
+    // 4. Repli si l'API n'a pas encore répondu : conversion de l'en-tête DOM
+    const catEl = document.querySelector(".game-category");
+    const raw = catEl ? catEl.childNodes[0]?.textContent || catEl.textContent : "";
+    if (typeof SpordleEngine !== "undefined" && SpordleEngine.convertCategoryToQuebec) {
+      return SpordleEngine.convertCategoryToQuebec(clean(raw) || "M11 AA");
+    }
+    return clean(raw) || "M11 AA";
+  };
+
+  // Déduit les couleurs des chandails d'après les données de l'appel API
+  const getInitialJerseysFromApi = () => {
+    const data = getGameData();
+    let awayJersey = "blanc";
+    let homeJersey = "bleu";
+    if (data) {
+      const isHomeDefault = data.game?.homeDefaultColor !== false;
+      const isAwayDefault = data.game?.awayDefaultColor !== false;
+
+      const rawHomeColor = isHomeDefault ? (data.homeTeam?.homeColor || "BLEU") : (data.homeTeam?.awayColor || "BLANC");
+      const rawAwayColor = isAwayDefault ? (data.awayTeam?.awayColor || "BLANC") : (data.awayTeam?.homeColor || "BLEU");
+
+      if (rawHomeColor) homeJersey = clean(rawHomeColor).toLowerCase();
+      if (rawAwayColor) awayJersey = clean(rawAwayColor).toLowerCase();
+    }
+    return { awayJersey, homeJersey };
+  };
+
   const getGoaliesFromSummary = () => {
     let awayGoalie = null;
     let homeGoalie = null;
@@ -913,22 +1067,22 @@
     ensureElements();
     pinned = true;
 
-    const catEl = document.querySelector(".game-category");
-    const rawCategory = catEl ? catEl.textContent.trim() : "M11 AA";
+    // Catégorie issue des données de l'API (i18n.fr.name = "M12 AA")
+    const category = getGameCategoryName();
     const awayTeam = getTeamName("away");
     const homeTeam = getTeamName("home");
 
     const COLORS = ["Blanc", "Bleu", "Rouge", "Noir", "Jaune", "Vert", "Orange", "Gris"];
 
-    let awayJersey = localStorage.getItem("sa_jersey_away") || "blanc";
-    let homeJersey = localStorage.getItem("sa_jersey_home") || "bleu";
+    const apiJerseys = getInitialJerseysFromApi();
+    let awayJersey = localStorage.getItem("sa_jersey_away") || apiJerseys.awayJersey;
+    let homeJersey = localStorage.getItem("sa_jersey_home") || apiJerseys.homeJersey;
 
     const goalies = getGoaliesFromSummary();
 
-
     const renderWelcome = () => {
       const data = SpordleEngine.formatWelcomeMessage({
-        category: rawCategory,
+        category,
         awayTeam,
         homeTeam,
         awayJersey,
@@ -936,6 +1090,7 @@
         awayGoalie: goalies.away,
         homeGoalie: goalies.home
       });
+
 
       const buildColorChips = (side, activeColor) => {
         return COLORS.map(c => {
@@ -1012,6 +1167,7 @@
   };
 
   // Appliquer l'état initial dès le chargement
+  injectPageBridge();
   applySwapSidesState();
 
   let scheduled = false;
