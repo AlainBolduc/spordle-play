@@ -823,6 +823,18 @@
               <span class="sa-toggle-slider"></span>
             </div>
           </label>
+
+          <div class="sa-settings-divider"></div>
+
+          <div class="sa-settings-reset-box">
+            <div class="sa-settings-item-label">
+              <span class="sa-settings-item-title" style="color: #ff858d;">🔄 Réinitialiser ce match</span>
+              <span class="sa-settings-item-desc">Efface les couleurs choisies et rétablit les côtés par défaut</span>
+            </div>
+            <button type="button" class="sa-settings-reset-btn" id="sa-settings-clear-match">
+              Effacer
+            </button>
+          </div>
         </div>
         <div class="sa-settings-footer">
           <button type="button" class="sa-settings-btn sa-settings-btn-primary" id="sa-settings-save">Enregistrer</button>
@@ -840,6 +852,44 @@
 
     const closeBtn = overlay.querySelector(".sa-settings-close-btn");
     if (closeBtn) closeBtn.addEventListener("click", close);
+
+    const clearMatchBtn = overlay.querySelector("#sa-settings-clear-match");
+    if (clearMatchBtn) {
+      clearMatchBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        try {
+          const gameKey = getGameKey();
+          const awayName = getTeamName("away");
+          const homeName = getTeamName("home");
+          const normAway = normalizeTeamName(awayName);
+          const normHome = normalizeTeamName(homeName);
+
+          // Effacer les couleurs personnalisées pour ce match et ces équipes
+          localStorage.removeItem(`sa_team_color_${gameKey}_away`);
+          localStorage.removeItem(`sa_team_color_${gameKey}_home`);
+          if (normAway) localStorage.removeItem(`sa_team_color_${normAway}`);
+          if (normHome) localStorage.removeItem(`sa_team_color_${normHome}`);
+          localStorage.removeItem("sa_jersey_away");
+          localStorage.removeItem("sa_jersey_home");
+
+          // Effacer l'inversion des côtés pour ce match
+          localStorage.removeItem(getSwapStorageKey());
+
+          // Réinitialiser immédiatement dans le DOM
+          applySwapSidesState();
+          applyTeamColors();
+          updateSwapButtonLabel();
+          scan();
+
+          // Confirmation visuelle avant fermeture
+          clearMatchBtn.textContent = "✓ Effacé !";
+          clearMatchBtn.style.background = "#28a745";
+          setTimeout(() => {
+            close();
+          }, 450);
+        } catch (_) {}
+      });
+    }
 
     const saveBtn = overlay.querySelector("#sa-settings-save");
     if (saveBtn) {

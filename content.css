@@ -935,3 +935,42 @@ body.sa-has-home-color #sa-popover.sa-home .sa-modal-card {
   color: #fff !important;
 }
 
+.sa-settings-divider {
+  height: 1px !important;
+  background: #373b40 !important;
+  margin: 4px 0 !important;
+}
+
+.sa-settings-reset-box {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 10px 14px !important;
+  background: rgba(220, 53, 69, 0.08) !important;
+  border: 1px dashed rgba(220, 53, 69, 0.4) !important;
+  border-radius: 8px !important;
+  gap: 12px !important;
+}
+
+.sa-settings-reset-btn {
+  padding: 6px 12px !important;
+  background: #dc3545 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: background 0.15s ease, transform 0.1s ease !important;
+  flex-shrink: 0 !important;
+}
+
+.sa-settings-reset-btn:hover {
+  background: #bd2130 !important;
+}
+
+.sa-settings-reset-btn:active {
+  transform: scale(0.96) !important;
+}
+
