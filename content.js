@@ -859,35 +859,47 @@
     }
   };
 
-  const setupSettingsTrigger = () => {
-    const targetEl = document.querySelector(".game-number") || document.querySelector(".game-category");
-    if (!targetEl || targetEl.dataset.saSettingsBound) return;
-    targetEl.dataset.saSettingsBound = "true";
-    targetEl.style.cursor = "pointer";
-    targetEl.style.touchAction = "manipulation"; // Évite le délai et zoom du double-tap sur Safari iOS
-    targetEl.title = (targetEl.title ? targetEl.title + "\n" : "") + "Triple-tap pour ouvrir les options de Spordle Annonceur";
+  let globalTapTimes = [];
+  let globalLastTapHandled = 0;
 
-    let tapTimes = [];
-    let lastTapHandled = 0;
+  const setupSettingsTrigger = () => {
+    // 1. Amélioration visuelle si l'en-tête est présent
+    const targetEl = document.querySelector(".game-number") || document.querySelector(".game-category");
+    if (targetEl) {
+      targetEl.style.cursor = "pointer";
+      targetEl.style.touchAction = "manipulation"; // Évite le délai et zoom du double-tap sur Safari iOS
+      if (!targetEl.title || !targetEl.title.includes("Triple-tap")) {
+        targetEl.title = (targetEl.title ? targetEl.title + "\n" : "") + "Triple-tap pour ouvrir les options de Spordle Annonceur";
+      }
+    }
+
+    // 2. Délégation d'événements globale sur document : fonctionne à 100% même si Angular recrée le DOM
+    if (document.__saSettingsDelegationBound) return;
+    document.__saSettingsDelegationBound = true;
 
     const handleTap = (e) => {
+      const target = e.target;
+      if (!target) return;
+      const match = target.closest && (target.closest(".game-number") || target.closest(".game-category"));
+      if (!match) return;
+
       const now = Date.now();
-      if (now - lastTapHandled < 60) return; // Débouncing des événements tactiles synthétiques
-      lastTapHandled = now;
+      if (now - globalLastTapHandled < 60) return; // Débouncing des événements tactiles synthétiques
+      globalLastTapHandled = now;
 
-      tapTimes = tapTimes.filter((t) => now - t < 1000);
-      tapTimes.push(now);
+      globalTapTimes = globalTapTimes.filter((t) => now - t < 1000);
+      globalTapTimes.push(now);
 
-      if (tapTimes.length >= 3) {
-        tapTimes = [];
+      if (globalTapTimes.length >= 3) {
+        globalTapTimes = [];
         if (e && e.cancelable) e.preventDefault();
         if (e) e.stopPropagation();
         openSettingsModal();
       }
     };
 
-    targetEl.addEventListener("click", handleTap);
-    targetEl.addEventListener("touchend", handleTap, { passive: false });
+    document.addEventListener("click", handleTap, true);
+    document.addEventListener("touchend", handleTap, { passive: false, capture: true });
   };
 
   const scan = () => {
@@ -945,81 +957,83 @@
   });
 
   const injectPageBridge = () => {
-    if (document.getElementById("sa-page-bridge")) return;
-    const script = document.createElement("script");
-    script.id = "sa-page-bridge";
-    script.textContent = `
-      (() => {
-        const origFetch = window.fetch;
-        if (origFetch) {
-          window.fetch = async function(...args) {
-            const resp = await origFetch.apply(this, args);
-            try {
-              const url = (args[0] && args[0].url) || (typeof args[0] === "string" ? args[0] : "");
-              if (/scoresheets|games|game_data/i.test(url)) {
-                const clone = resp.clone();
-                clone.json().then(data => {
+    try {
+      if (document.getElementById("sa-page-bridge")) return;
+      const script = document.createElement("script");
+      script.id = "sa-page-bridge";
+      script.textContent = `
+        (() => {
+          const origFetch = window.fetch;
+          if (origFetch) {
+            window.fetch = async function(...args) {
+              const resp = await origFetch.apply(this, args);
+              try {
+                const url = (args[0] && args[0].url) || (typeof args[0] === "string" ? args[0] : "");
+                if (/scoresheets|games|game_data/i.test(url)) {
+                  const clone = resp.clone();
+                  clone.json().then(data => {
+                    if (data && (data.game || data.homeTeam || data.awayTeam)) {
+                      window.__SPORDLE_GAME_DATA__ = data;
+                      document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: data }));
+                    }
+                  }).catch(() => {});
+                }
+              } catch (_) {}
+              return resp;
+            };
+          }
+
+          const origOpen = XMLHttpRequest.prototype.open;
+          const origSend = XMLHttpRequest.prototype.send;
+          XMLHttpRequest.prototype.open = function(method, url) {
+            this.__sa_url = url;
+            return origOpen.apply(this, arguments);
+          };
+          XMLHttpRequest.prototype.send = function() {
+            this.addEventListener("load", function() {
+              try {
+                if (this.__sa_url && /scoresheets|games|game_data/i.test(this.__sa_url)) {
+                  const data = JSON.parse(this.responseText);
                   if (data && (data.game || data.homeTeam || data.awayTeam)) {
                     window.__SPORDLE_GAME_DATA__ = data;
                     document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: data }));
                   }
-                }).catch(() => {});
-              }
-            } catch (_) {}
-            return resp;
+                }
+              } catch (_) {}
+            });
+            return origSend.apply(this, arguments);
           };
-        }
 
-        const origOpen = XMLHttpRequest.prototype.open;
-        const origSend = XMLHttpRequest.prototype.send;
-        XMLHttpRequest.prototype.open = function(method, url) {
-          this.__sa_url = url;
-          return origOpen.apply(this, arguments);
-        };
-        XMLHttpRequest.prototype.send = function() {
-          this.addEventListener("load", function() {
+          const checkAngular = () => {
             try {
-              if (this.__sa_url && /scoresheets|games|game_data/i.test(this.__sa_url)) {
-                const data = JSON.parse(this.responseText);
-                if (data && (data.game || data.homeTeam || data.awayTeam)) {
-                  window.__SPORDLE_GAME_DATA__ = data;
-                  document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: data }));
+              if (window.__SPORDLE_GAME_DATA__) return;
+              const el = document.querySelector("hi-scoresheet");
+              if (el && window.angular) {
+                const ctrl = window.angular.element(el).controller("hiScoresheet");
+                const scope = window.angular.element(el).scope();
+                const g = ctrl?.$game || scope?.$game || scope?.$ctrl?.$game;
+                if (g && (g.game || g.homeTeam || g.awayTeam)) {
+                  window.__SPORDLE_GAME_DATA__ = g;
+                  document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: g }));
                 }
               }
             } catch (_) {}
-          });
-          return origSend.apply(this, arguments);
-        };
+          };
+          checkAngular();
+          setInterval(checkAngular, 1000);
 
-        const checkAngular = () => {
-          try {
-            if (window.__SPORDLE_GAME_DATA__) return;
-            const el = document.querySelector("hi-scoresheet");
-            if (el && window.angular) {
-              const ctrl = window.angular.element(el).controller("hiScoresheet");
-              const scope = window.angular.element(el).scope();
-              const g = ctrl?.$game || scope?.$game || scope?.$ctrl?.$game;
-              if (g && (g.game || g.homeTeam || g.awayTeam)) {
-                window.__SPORDLE_GAME_DATA__ = g;
-                document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: g }));
-              }
-            }
-          } catch (_) {}
-        };
-        checkAngular();
-        setInterval(checkAngular, 1000);
-
-        if (window.__SPORDLE_GAME_DATA__) {
-          document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: window.__SPORDLE_GAME_DATA__ }));
-        } else if (window.TEST_GAME_DATA) {
-          document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: window.TEST_GAME_DATA }));
-        }
-      })();
-    `;
-    const target = document.head || document.documentElement || document.body;
-    if (target && typeof target.appendChild === "function") {
-      target.appendChild(script);
-    }
+          if (window.__SPORDLE_GAME_DATA__) {
+            document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: window.__SPORDLE_GAME_DATA__ }));
+          } else if (window.TEST_GAME_DATA) {
+            document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: window.TEST_GAME_DATA }));
+          }
+        })();
+      `;
+      const target = document.head || document.documentElement || document.body;
+      if (target && typeof target.appendChild === "function") {
+        target.appendChild(script);
+      }
+    } catch (_) {}
   };
 
   const getGameData = () => {
@@ -1148,6 +1162,7 @@
   };
 
   const applyTeamColors = () => {
+    if (!document.body) return;
     const root = document.documentElement;
 
     if (!isFeatureEnabled("team_colors")) {
@@ -1393,6 +1408,7 @@
   };
 
   const applySwapSidesState = () => {
+    if (!document.body) return;
     if (isSidesSwappedForCurrentGame()) {
       document.body.classList.add("sa-swapped-sides");
     } else {
@@ -1666,43 +1682,68 @@
   };
 
   // Appliquer l'état initial dès le chargement
-  injectPageBridge();
-  applySwapSidesState();
-  applyTeamColors();
+  try {
+    injectPageBridge();
+  } catch (_) {}
+  try {
+    applySwapSidesState();
+    applyTeamColors();
+  } catch (_) {}
 
+  let scheduled = false;
   const observer = new MutationObserver((mutations) => {
-    // Ignorer les mutations générées par nos propres éléments (popover, backdrop, swap btn, welcome btn, color picker, settings modal)
-    const onlyOurNodes = mutations.every((m) => {
-      const el = m.target;
-      return el && (
-        el.id === "sa-popover" ||
-        el.id === "sa-backdrop" ||
-        el.id === "sa-swap-sides-btn" ||
-        el.id === "sa-welcome-btn" ||
-        el.id === "sa-color-picker" ||
-        el.id === "sa-settings-overlay" ||
-        (el.closest && (
-          el.closest("#sa-popover") ||
-          el.closest("#sa-backdrop") ||
-          el.closest("#sa-swap-sides-btn") ||
-          el.closest("#sa-welcome-btn") ||
-          el.closest("#sa-color-picker") ||
-          el.closest(".sa-team-color-btn") ||
-          el.closest("#sa-settings-overlay")
-        ))
-      );
-    });
-    if (onlyOurNodes) return;
+    try {
+      // Ignorer les mutations générées par nos propres éléments (popover, backdrop, swap btn, welcome btn, color picker, settings modal)
+      const onlyOurNodes = mutations.every((m) => {
+        const el = m.target;
+        return el && (
+          el.id === "sa-popover" ||
+          el.id === "sa-backdrop" ||
+          el.id === "sa-swap-sides-btn" ||
+          el.id === "sa-welcome-btn" ||
+          el.id === "sa-color-picker" ||
+          el.id === "sa-settings-overlay" ||
+          (el.closest && (
+            el.closest("#sa-popover") ||
+            el.closest("#sa-backdrop") ||
+            el.closest("#sa-swap-sides-btn") ||
+            el.closest("#sa-welcome-btn") ||
+            el.closest("#sa-color-picker") ||
+            el.closest(".sa-team-color-btn") ||
+            el.closest("#sa-settings-overlay")
+          ))
+        );
+      });
+      if (onlyOurNodes) return;
 
-    if (scheduled) return;
-    scheduled = true;
-    requestAnimationFrame(() => {
-      scheduled = false;
-      scan();
-    });
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        scan();
+      });
+    } catch (_) {}
   });
 
-  observer.observe(document.body, { childList: true, subtree: true });
+  const targetNode = document.body || document.documentElement;
+  if (targetNode) {
+    observer.observe(targetNode, { childList: true, subtree: true });
+  }
+
+  // Si le body n'était pas encore disponible lors du chargement initial
+  if (!document.body) {
+    document.addEventListener("DOMContentLoaded", () => {
+      try {
+        applySwapSidesState();
+        applyTeamColors();
+        if (document.body && document.body !== targetNode) {
+          observer.observe(document.body, { childList: true, subtree: true });
+        }
+      } catch (_) {}
+      scan();
+    });
+  }
+
   scan();
 })();
 
