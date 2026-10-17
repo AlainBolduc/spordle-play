@@ -666,8 +666,18 @@
   };
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") hidePopover(true);
+    if (e.key === "Escape") {
+      hidePopover(true);
+      if (typeof closeColorPicker === "function") closeColorPicker();
+    }
   });
+
+  document.addEventListener("click", (e) => {
+    if (typeof activeColorPicker !== "undefined" && activeColorPicker && !activeColorPicker.contains(e.target) && !e.target.closest(".sa-team-color-btn")) {
+      if (typeof closeColorPicker === "function") closeColorPicker();
+    }
+  });
+
 
   // ---------- Injection des icônes ----------
 
@@ -733,6 +743,147 @@
     summaryItem.classList.add("sa-has-btn");
   };
 
+  // ---------- Gestion des fonctionnalités expérimentales (Feature Flags) ----------
+
+  const isFeatureEnabled = (flag) => {
+    try {
+      if (typeof window !== "undefined" && window.location) {
+        const params = new URLSearchParams(window.location.search);
+        const featParam = params.get("features");
+        if (featParam === "all" || (featParam && featParam.split(",").includes(flag))) {
+          localStorage.setItem(`sa_feature_${flag}`, "true");
+          return true;
+        }
+        const singleParam = params.get(flag);
+        if (singleParam === "true" || singleParam === "1") {
+          localStorage.setItem(`sa_feature_${flag}`, "true");
+          return true;
+        }
+        if (params.get(`disable_${flag}`) === "true" || params.get(`disable_${flag}`) === "1") {
+          localStorage.removeItem(`sa_feature_${flag}`);
+          return false;
+        }
+      }
+      return localStorage.getItem(`sa_feature_${flag}`) === "true";
+    } catch (_) {
+      return false;
+    }
+  };
+
+  const setFeatureEnabled = (flag, enabled) => {
+    try {
+      if (enabled) {
+        localStorage.setItem(`sa_feature_${flag}`, "true");
+      } else {
+        localStorage.removeItem(`sa_feature_${flag}`);
+      }
+    } catch (_) {}
+  };
+
+  const openSettingsModal = () => {
+    const existing = document.getElementById("sa-settings-overlay");
+    if (existing) existing.remove();
+
+    const overlay = document.createElement("div");
+    overlay.id = "sa-settings-overlay";
+    overlay.className = "sa-settings-overlay";
+
+    const welcomeActive = isFeatureEnabled("welcome");
+    const colorsActive = isFeatureEnabled("team_colors");
+
+    overlay.innerHTML = `
+      <div class="sa-settings-dialog" role="dialog" aria-labelledby="sa-settings-title">
+        <div class="sa-settings-header">
+          <h3 id="sa-settings-title">
+            <span>⚙️</span> Spordle Annonceur — Options
+          </h3>
+          <button type="button" class="button button-clear ion-close-round sa-settings-close-btn" style="color: #adb5bd; font-size: 15px;"></button>
+        </div>
+        <div class="sa-settings-body">
+          <p class="sa-settings-intro">
+            Activez ou désactivez les fonctionnalités en cours de développement. Les options sont enregistrées sur cet appareil.
+          </p>
+          <label class="sa-settings-item">
+            <div class="sa-settings-item-label">
+              <span class="sa-settings-item-title">🎙️ Mot de bienvenue</span>
+              <span class="sa-settings-item-desc">Annonce officielle d'avant-match avec couleurs et gardiens</span>
+            </div>
+            <div class="sa-toggle-switch">
+              <input type="checkbox" id="sa-toggle-welcome"${welcomeActive ? " checked" : ""}>
+              <span class="sa-toggle-slider"></span>
+            </div>
+          </label>
+          <label class="sa-settings-item">
+            <div class="sa-settings-item-label">
+              <span class="sa-settings-item-title">🎨 Couleurs d'équipes</span>
+              <span class="sa-settings-item-desc">Pastilles de sélection et boutons d'action colorés</span>
+            </div>
+            <div class="sa-toggle-switch">
+              <input type="checkbox" id="sa-toggle-colors"${colorsActive ? " checked" : ""}>
+              <span class="sa-toggle-slider"></span>
+            </div>
+          </label>
+        </div>
+        <div class="sa-settings-footer">
+          <button type="button" class="sa-settings-btn sa-settings-btn-primary" id="sa-settings-save">Enregistrer</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const close = () => overlay.remove();
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) close();
+    });
+
+    const closeBtn = overlay.querySelector(".sa-settings-close-btn");
+    if (closeBtn) closeBtn.addEventListener("click", close);
+
+    const saveBtn = overlay.querySelector("#sa-settings-save");
+    if (saveBtn) {
+      saveBtn.addEventListener("click", () => {
+        const welcomeChecked = overlay.querySelector("#sa-toggle-welcome")?.checked || false;
+        const colorsChecked = overlay.querySelector("#sa-toggle-colors")?.checked || false;
+
+        setFeatureEnabled("welcome", welcomeChecked);
+        setFeatureEnabled("team_colors", colorsChecked);
+
+        close();
+
+        // Réappliquer immédiatement les fonctionnalités
+        applyTeamColors();
+        scan();
+      });
+    }
+  };
+
+  const setupSettingsTrigger = () => {
+    const targetEl = document.querySelector(".game-number") || document.querySelector(".game-category");
+    if (!targetEl || targetEl.dataset.saSettingsBound) return;
+    targetEl.dataset.saSettingsBound = "true";
+    targetEl.title = (targetEl.title ? targetEl.title + "\n" : "") + "Triple-clic pour ouvrir les options de Spordle Annonceur";
+
+    let clickCount = 0;
+    let clickTimer = null;
+
+    targetEl.addEventListener("click", (e) => {
+      clickCount++;
+      if (clickCount === 1) {
+        clickTimer = setTimeout(() => {
+          clickCount = 0;
+        }, 700);
+      } else if (clickCount >= 3) {
+        clearTimeout(clickTimer);
+        clickCount = 0;
+        e.stopPropagation();
+        e.preventDefault();
+        openSettingsModal();
+      }
+    });
+  };
+
   const scan = () => {
     const items = [...document.querySelectorAll(".summary-item")];
     items.forEach((item) => {
@@ -763,107 +914,17 @@
       }
     });
 
+    // Options expérimentales (triple clic sur .game-number ou .game-category)
+    setupSettingsTrigger();
+
     // Bouton d'inversion des côtés (Visiteur ⇄ Local)
     injectSwapSidesButton();
-  };
 
-  // ---------- Inversion des côtés (Visiteur ⇄ Local) ----------
-
-  // Extrait un identifiant unique pour le match en cours (URL ou numéro de match dans le DOM)
-  const getGameKey = () => {
-    // 1. Depuis l'URL de Spordle (ex: /scoresheets/933175/...)
-    const urlMatch = window.location.pathname.match(/\/scoresheets\/([^\/?#]+)/i) ||
-                     window.location.hash.match(/\/scoresheets\/([^\/?#]+)/i);
-    if (urlMatch && urlMatch[1]) {
-      return `game_${urlMatch[1]}`;
-    }
-
-    // 2. Depuis le numéro de match affiché dans le DOM (ex: "MATCH 1021" ou "MATCH 2007")
-    const gameNumEl = document.querySelector(".game-number");
-    if (gameNumEl) {
-      const text = (gameNumEl.textContent || "").trim();
-      const numMatch = text.match(/\b(?:MATCH|GAME)\s*#?\s*([A-Za-z0-9\-]+)/i);
-      if (numMatch && numMatch[1]) {
-        return `game_${numMatch[1]}`;
-      }
-    }
-
-    // 3. Repli si page statique ou demo sans identifiant
-    return "game_default";
-  };
-
-  const getSwapStorageKey = () => `sa_swap_sides_${getGameKey()}`;
-
-  const isSidesSwappedForCurrentGame = () => {
-    try {
-      return localStorage.getItem(getSwapStorageKey()) === "true";
-    } catch (_) {
-      return false;
-    }
-  };
-
-  const applySwapSidesState = () => {
-    if (isSidesSwappedForCurrentGame()) {
-      document.body.classList.add("sa-swapped-sides");
-    } else {
-      document.body.classList.remove("sa-swapped-sides");
-    }
-  };
-
-  const toggleSwapSides = () => {
-    const nextState = !isSidesSwappedForCurrentGame();
-    try {
-      if (nextState) {
-        localStorage.setItem(getSwapStorageKey(), "true");
-      } else {
-        localStorage.removeItem(getSwapStorageKey());
-      }
-    } catch (_) {}
-    applySwapSidesState();
-    updateSwapButtonLabel();
-  };
-
-  const updateSwapButtonLabel = () => {
-    const btn = document.getElementById("sa-swap-sides-btn");
-    if (!btn) return;
-    const isSwapped = isSidesSwappedForCurrentGame();
-    const labelSpan = btn.querySelector(".sa-swap-label");
-    if (labelSpan) {
-      labelSpan.textContent = isSwapped ? "Côtés inversés" : "Inverser côtés";
-    }
-    btn.title = isSwapped
-      ? "Disposition inversée : Local à gauche, Visiteur à droite.\nCliquez pour rétablir la disposition normale pour ce match."
-      : "Disposition normale : Visiteur à gauche, Local à droite.\nCliquez pour inverser les côtés pour correspondre à votre vue de la patinoire pour ce match.";
-  };
-
-  const injectSwapSidesButton = () => {
-    // Si le bouton existe déjà et est toujours attaché au DOM
-    const existing = document.getElementById("sa-swap-sides-btn");
-    if (existing) {
-      updateSwapButtonLabel();
-      return;
-    }
-
-    // Cible en priorité l'élément de catégorie (.game-category) ou le numéro de match (.game-number)
-    const categoryEl = document.querySelector(".game-category") || document.querySelector(".game-number");
-    if (!categoryEl) return;
-
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.id = "sa-swap-sides-btn";
-    btn.className = "sa-swap-sides-btn";
-    btn.innerHTML = `<span class="sa-swap-arrow">⇄</span><span class="sa-swap-label"></span>`;
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      toggleSwapSides();
-    });
-
-    // Inséré directement à l'intérieur à droite du texte de la catégorie
-    categoryEl.appendChild(btn);
-
-    updateSwapButtonLabel();
+    // Bouton du mot de bienvenue officiel
     setupWelcomeButton();
+
+    // Pastilles de couleurs des équipes
+    injectTeamColorButtons();
   };
 
   // ---------- Récupération des données officielles de l'API Spordle ----------
@@ -873,6 +934,7 @@
   document.addEventListener("spordle:game-data", (e) => {
     if (e.detail) {
       cachedApiGameData = e.detail;
+      applyTeamColors();
     }
   });
 
@@ -963,6 +1025,427 @@
     return null;
   };
 
+  // ---------- Thématisation des couleurs d'équipes ----------
+
+  const COLOR_DICTIONARY = {
+    // Français
+    "bleu": { hex: "#0046ad", text: "#ffffff", name: "Bleu royal" },
+    "bleu royal": { hex: "#0046ad", text: "#ffffff", name: "Bleu royal" },
+    "bleu marin": { hex: "#041e42", text: "#ffffff", name: "Bleu marin" },
+    "marine": { hex: "#041e42", text: "#ffffff", name: "Bleu marin" },
+    "navy": { hex: "#041e42", text: "#ffffff", name: "Bleu marin" },
+    "bleu ciel": { hex: "#00a3e0", text: "#ffffff", name: "Bleu ciel" },
+    "ciel": { hex: "#00a3e0", text: "#ffffff", name: "Bleu ciel" },
+    "blanc": { hex: "#ffffff", text: "#111111", border: "#ced4da", name: "Blanc" },
+    "rouge": { hex: "#c8102e", text: "#ffffff", name: "Rouge" },
+    "noir": { hex: "#1a1a1a", text: "#ffffff", name: "Noir" },
+    "vert": { hex: "#005936", text: "#ffffff", name: "Vert forêt" },
+    "vert forêt": { hex: "#005936", text: "#ffffff", name: "Vert forêt" },
+    "vert kelly": { hex: "#00843d", text: "#ffffff", name: "Vert kelly" },
+    "vert lime": { hex: "#69be28", text: "#ffffff", name: "Vert lime" },
+    "lime": { hex: "#69be28", text: "#ffffff", name: "Vert lime" },
+    "jaune": { hex: "#f2a900", text: "#111111", name: "Jaune or" },
+    "or": { hex: "#f2a900", text: "#111111", name: "Jaune or" },
+    "jaune or": { hex: "#f2a900", text: "#111111", name: "Jaune or" },
+    "gold": { hex: "#f2a900", text: "#111111", name: "Jaune or" },
+    "orange": { hex: "#ea5b0c", text: "#ffffff", name: "Orange" },
+    "gris": { hex: "#6c757d", text: "#ffffff", name: "Gris" },
+    "argent": { hex: "#adb5bd", text: "#111111", name: "Argent" },
+    "silver": { hex: "#adb5bd", text: "#111111", name: "Argent" },
+    "bourgogne": { hex: "#6f263d", text: "#ffffff", name: "Bourgogne" },
+    "marron": { hex: "#6f263d", text: "#ffffff", name: "Bourgogne" },
+    "maroon": { hex: "#6f263d", text: "#ffffff", name: "Bourgogne" },
+    "mauve": { hex: "#552583", text: "#ffffff", name: "Mauve" },
+    "violet": { hex: "#552583", text: "#ffffff", name: "Mauve" },
+    "pourpre": { hex: "#552583", text: "#ffffff", name: "Mauve" },
+    // Anglais
+    "blue": { hex: "#0046ad", text: "#ffffff", name: "Bleu royal" },
+    "white": { hex: "#ffffff", text: "#111111", border: "#ced4da", name: "Blanc" },
+    "red": { hex: "#c8102e", text: "#ffffff", name: "Rouge" },
+    "black": { hex: "#1a1a1a", text: "#ffffff", name: "Noir" },
+    "green": { hex: "#005936", text: "#ffffff", name: "Vert forêt" },
+    "yellow": { hex: "#f2a900", text: "#111111", name: "Jaune or" },
+    "gray": { hex: "#6c757d", text: "#ffffff", name: "Gris" },
+    "grey": { hex: "#6c757d", text: "#ffffff", name: "Gris" },
+    "purple": { hex: "#552583", text: "#ffffff", name: "Mauve" }
+  };
+
+  const parseTeamColor = (raw) => {
+    if (!raw) return null;
+    const str = String(raw).trim().toLowerCase();
+    if (/^#[0-9a-f]{3,8}$/i.test(str)) {
+      return { hex: str, text: "#ffffff", name: "Couleur officielle" };
+    }
+    return COLOR_DICTIONARY[str] || null;
+  };
+
+  const TEAM_COLOR_PALETTE = [
+    { name: "Rouge", hex: "#c8102e", text: "#ffffff" },
+    { name: "Bleu marin", hex: "#041e42", text: "#ffffff" },
+    { name: "Bleu royal", hex: "#0046ad", text: "#ffffff" },
+    { name: "Bleu ciel", hex: "#00a3e0", text: "#ffffff" },
+    { name: "Vert forêt", hex: "#005936", text: "#ffffff" },
+    { name: "Vert lime", hex: "#69be28", text: "#ffffff" },
+    { name: "Jaune or", hex: "#f2a900", text: "#111111" },
+    { name: "Orange", hex: "#ea5b0c", text: "#ffffff" },
+    { name: "Noir", hex: "#1a1a1a", text: "#ffffff" },
+    { name: "Blanc", hex: "#ffffff", text: "#111111", border: "#ced4da" },
+    { name: "Gris", hex: "#6c757d", text: "#ffffff" },
+    { name: "Bourgogne", hex: "#6f263d", text: "#ffffff" },
+  ];
+
+  const normalizeTeamName = (name) =>
+    (name || "").toLowerCase().replace(/[^a-z0-9]/g, "_");
+
+  const getTeamColor = (side) => {
+    const teamName = getTeamName(side);
+    const norm = normalizeTeamName(teamName);
+    try {
+      // 1. Choix manuel explicite de l'utilisateur
+      if (norm) {
+        const raw = localStorage.getItem(`sa_team_color_${norm}`);
+        if (raw) return JSON.parse(raw);
+      }
+      const rawSide = localStorage.getItem(`sa_team_color_${getGameKey()}_${side}`);
+      if (rawSide) return JSON.parse(rawSide);
+    } catch (_) {}
+
+    // 2. Déduction automatique depuis l'API call Spordle (homeColor / awayColor)
+    const data = getGameData();
+    if (data) {
+      const isHome = side === "home";
+      const teamObj = isHome ? (data.homeTeam || data.game?.homeTeam) : (data.awayTeam || data.game?.awayTeam);
+      if (teamObj) {
+        const rawColor = teamObj.homeColor || teamObj.awayColor || teamObj.office?.color;
+        const parsed = parseTeamColor(rawColor);
+        if (parsed) return parsed;
+      }
+    }
+
+    return null;
+  };
+
+
+  const setTeamColor = (side, colorObj) => {
+    const teamName = getTeamName(side);
+    const norm = normalizeTeamName(teamName);
+    try {
+      if (colorObj) {
+        if (norm) localStorage.setItem(`sa_team_color_${norm}`, JSON.stringify(colorObj));
+        localStorage.setItem(`sa_team_color_${getGameKey()}_${side}`, JSON.stringify(colorObj));
+      } else {
+        if (norm) localStorage.removeItem(`sa_team_color_${norm}`);
+        localStorage.removeItem(`sa_team_color_${getGameKey()}_${side}`);
+      }
+    } catch (_) {}
+    applyTeamColors();
+  };
+
+  const applyTeamColors = () => {
+    const root = document.documentElement;
+
+    if (!isFeatureEnabled("team_colors")) {
+      document.body.classList.remove("sa-has-away-color");
+      document.body.classList.remove("sa-has-home-color");
+      root.style.removeProperty("--sa-away-color");
+      root.style.removeProperty("--sa-away-text-color");
+      root.style.removeProperty("--sa-away-border-color");
+      root.style.removeProperty("--sa-home-color");
+      root.style.removeProperty("--sa-home-text-color");
+      root.style.removeProperty("--sa-home-border-color");
+      root.style.removeProperty("--sa-home-border-badge");
+      root.style.removeProperty("--sa-home-text-badge");
+      document.querySelectorAll(".sa-team-color-btn").forEach(el => el.remove());
+      closeColorPicker();
+      return;
+    }
+
+    const awayColor = getTeamColor("away");
+    const homeColor = getTeamColor("home");
+
+    if (awayColor) {
+      document.body.classList.add("sa-has-away-color");
+      root.style.setProperty("--sa-away-color", awayColor.hex);
+      root.style.setProperty("--sa-away-text-color", awayColor.text);
+      root.style.setProperty("--sa-away-border-color", awayColor.border || awayColor.hex);
+    } else {
+      document.body.classList.remove("sa-has-away-color");
+      root.style.removeProperty("--sa-away-color");
+      root.style.removeProperty("--sa-away-text-color");
+      root.style.removeProperty("--sa-away-border-color");
+    }
+
+    if (homeColor) {
+      document.body.classList.add("sa-has-home-color");
+      root.style.setProperty("--sa-home-color", homeColor.hex);
+      root.style.setProperty("--sa-home-text-color", homeColor.text);
+      root.style.setProperty("--sa-home-border-color", homeColor.border || homeColor.hex);
+      const isWhite = homeColor.hex.toLowerCase() === "#ffffff";
+      root.style.setProperty("--sa-home-border-badge", isWhite ? "#495057" : homeColor.hex);
+      root.style.setProperty("--sa-home-text-badge", isWhite ? "#212529" : homeColor.hex);
+    } else {
+      document.body.classList.remove("sa-has-home-color");
+      root.style.removeProperty("--sa-home-color");
+      root.style.removeProperty("--sa-home-text-color");
+      root.style.removeProperty("--sa-home-border-color");
+      root.style.removeProperty("--sa-home-border-badge");
+      root.style.removeProperty("--sa-home-text-badge");
+    }
+
+    updateTeamColorSwatches();
+  };
+
+  const updateTeamColorSwatches = () => {
+    ["away", "home"].forEach((side) => {
+      const btn = document.querySelector(`.sa-team-color-btn[data-side="${side}"]`);
+      if (!btn) return;
+      const color = getTeamColor(side);
+      const swatch = btn.querySelector(".sa-team-color-swatch");
+      if (swatch) {
+        if (color) {
+          swatch.classList.remove("sa-swatch-empty");
+          swatch.style.background = color.hex;
+          swatch.style.border = color.border ? `1px solid ${color.border}` : "none";
+          btn.title = `Couleur : ${color.name} (${side === "home" ? "Local" : "Visiteur"})\nCliquez pour changer`;
+        } else {
+          swatch.classList.add("sa-swatch-empty");
+          swatch.style.background = "";
+          swatch.style.border = "";
+          btn.title = `Choisir la couleur de l'équipe (${side === "home" ? "Local" : "Visiteur"})`;
+        }
+      }
+    });
+  };
+
+  let activeColorPicker = null;
+
+  const closeColorPicker = () => {
+    if (activeColorPicker) {
+      activeColorPicker.remove();
+      activeColorPicker = null;
+    }
+  };
+
+  const openColorPicker = (anchorBtn, side) => {
+    closeColorPicker();
+
+    const teamName = getTeamName(side);
+    const currentColor = getTeamColor(side);
+
+    const pop = document.createElement("div");
+    pop.className = "sa-color-picker-popover";
+    pop.id = "sa-color-picker";
+
+    let gridHtml = "";
+    TEAM_COLOR_PALETTE.forEach((col) => {
+      const isSelected = currentColor && currentColor.hex.toLowerCase() === col.hex.toLowerCase();
+      const borderStyle = col.border ? `border: 1px solid ${col.border};` : "";
+      gridHtml += `
+        <button type="button" class="sa-color-choice-btn${isSelected ? " selected" : ""}"
+                data-hex="${col.hex}"
+                title="${col.name}"
+                style="background-color: ${col.hex}; color: ${col.text}; ${borderStyle}">
+        </button>
+      `;
+    });
+
+    pop.innerHTML = `
+      <div class="sa-color-picker-title">
+        <span>Couleur — ${escapeHtml(side === "home" ? "Local" : "Visiteur")}</span>
+        <button type="button" class="button button-clear ion-close-round sa-color-picker-close" style="color: #adb5bd; font-size: 13px; min-width: 20px; height: 20px; line-height: 20px; padding: 0;"></button>
+      </div>
+      <div class="sa-color-picker-grid">
+        ${gridHtml}
+      </div>
+      <button type="button" class="sa-color-reset-btn">Réinitialiser (par défaut)</button>
+    `;
+
+    document.body.appendChild(pop);
+    const rect = anchorBtn.getBoundingClientRect();
+    const popWidth = 220;
+    let left = rect.left + window.scrollX;
+    if (side === "away") {
+      left = Math.max(10, rect.right + window.scrollX - popWidth);
+    } else {
+      left = Math.min(window.innerWidth - popWidth - 10, rect.left + window.scrollX);
+    }
+    const top = rect.bottom + window.scrollY + 6;
+
+    pop.style.top = `${top}px`;
+    pop.style.left = `${left}px`;
+
+    pop.querySelector(".sa-color-picker-close").addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeColorPicker();
+    });
+
+    pop.querySelectorAll(".sa-color-choice-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const hex = btn.dataset.hex;
+        const found = TEAM_COLOR_PALETTE.find((c) => c.hex.toLowerCase() === hex.toLowerCase());
+        if (found) {
+          setTeamColor(side, found);
+        }
+        closeColorPicker();
+      });
+    });
+
+    pop.querySelector(".sa-color-reset-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      setTeamColor(side, null);
+      closeColorPicker();
+    });
+
+    activeColorPicker = pop;
+  };
+
+  const injectTeamColorButtons = () => {
+    if (!isFeatureEnabled("team_colors")) {
+      document.querySelectorAll(".sa-team-color-btn").forEach(el => el.remove());
+      return;
+    }
+
+    // 1. Bouton Visiteur
+    const awayNameEl = document.querySelector(".score-away.score-name");
+    if (awayNameEl && !awayNameEl.querySelector('.sa-team-color-btn[data-side="away"]')) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "sa-team-color-btn";
+      btn.dataset.side = "away";
+      btn.innerHTML = `<span class="sa-team-color-swatch sa-swatch-empty"></span>`;
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (activeColorPicker && activeColorPicker.dataset.side === "away") {
+          closeColorPicker();
+        } else {
+          openColorPicker(btn, "away");
+          if (activeColorPicker) activeColorPicker.dataset.side = "away";
+        }
+      });
+      awayNameEl.appendChild(btn);
+    }
+
+    // 2. Bouton Local
+    const homeNameEl = document.querySelector(".score-home.score-name");
+    if (homeNameEl && !homeNameEl.querySelector('.sa-team-color-btn[data-side="home"]')) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "sa-team-color-btn";
+      btn.dataset.side = "home";
+      btn.innerHTML = `<span class="sa-team-color-swatch sa-swatch-empty"></span>`;
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (activeColorPicker && activeColorPicker.dataset.side === "home") {
+          closeColorPicker();
+        } else {
+          openColorPicker(btn, "home");
+          if (activeColorPicker) activeColorPicker.dataset.side = "home";
+        }
+      });
+      homeNameEl.insertBefore(btn, homeNameEl.firstChild);
+    }
+
+    updateTeamColorSwatches();
+  };
+
+  // ---------- Inversion des côtés (Visiteur ⇄ Local) ----------
+
+  // Extrait un identifiant unique pour le match en cours (URL ou numéro de match dans le DOM)
+  const getGameKey = () => {
+    // 1. Depuis l'URL de Spordle (ex: /scoresheets/933175/...)
+    const urlMatch = window.location.pathname.match(/\/scoresheets\/([^\/?#]+)/i) ||
+                     window.location.hash.match(/\/scoresheets\/([^\/?#]+)/i);
+    if (urlMatch && urlMatch[1]) {
+      return `game_${urlMatch[1]}`;
+    }
+
+    // 2. Depuis le numéro de match affiché dans le DOM (ex: "MATCH 1021" ou "MATCH 2007")
+    const gameNumEl = document.querySelector(".game-number");
+    if (gameNumEl) {
+      const text = (gameNumEl.textContent || "").trim();
+      const numMatch = text.match(/\b(?:MATCH|GAME)\s*#?\s*([A-Za-z0-9\-]+)/i);
+      if (numMatch && numMatch[1]) {
+        return `game_${numMatch[1]}`;
+      }
+    }
+
+    // 3. Repli si page statique ou demo sans identifiant
+    return "game_default";
+  };
+
+  const getSwapStorageKey = () => `sa_swap_sides_${getGameKey()}`;
+
+  const isSidesSwappedForCurrentGame = () => {
+    try {
+      return localStorage.getItem(getSwapStorageKey()) === "true";
+    } catch (_) {
+      return false;
+    }
+  };
+
+  const applySwapSidesState = () => {
+    if (isSidesSwappedForCurrentGame()) {
+      document.body.classList.add("sa-swapped-sides");
+    } else {
+      document.body.classList.remove("sa-swapped-sides");
+    }
+  };
+
+  const toggleSwapSides = () => {
+    const nextState = !isSidesSwappedForCurrentGame();
+    try {
+      if (nextState) {
+        localStorage.setItem(getSwapStorageKey(), "true");
+      } else {
+        localStorage.removeItem(getSwapStorageKey());
+      }
+    } catch (_) {}
+    applySwapSidesState();
+    updateSwapButtonLabel();
+  };
+
+  const updateSwapButtonLabel = () => {
+    const btn = document.getElementById("sa-swap-sides-btn");
+    if (!btn) return;
+    const isSwapped = isSidesSwappedForCurrentGame();
+    const labelSpan = btn.querySelector(".sa-swap-label");
+    if (labelSpan) {
+      labelSpan.textContent = isSwapped ? "Côtés inversés" : "Inverser côtés";
+    }
+    btn.title = isSwapped
+      ? "Disposition inversée : Local à gauche, Visiteur à droite.\nCliquez pour rétablir la disposition normale pour ce match."
+      : "Disposition normale : Visiteur à gauche, Local à droite.\nCliquez pour inverser les côtés pour correspondre à votre vue de la patinoire pour ce match.";
+  };
+
+  const injectSwapSidesButton = () => {
+    const existing = document.getElementById("sa-swap-sides-btn");
+    if (existing) {
+      updateSwapButtonLabel();
+      return;
+    }
+
+    const categoryEl = document.querySelector(".game-category") || document.querySelector(".game-number");
+    if (!categoryEl) return;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.id = "sa-swap-sides-btn";
+    btn.className = "sa-swap-sides-btn";
+    btn.innerHTML = `<span class="sa-swap-arrow">⇄</span><span class="sa-swap-label"></span>`;
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      toggleSwapSides();
+    });
+
+    categoryEl.appendChild(btn);
+    updateSwapButtonLabel();
+    setupWelcomeButton();
+  };
+
   // Extrait la catégorie officielle depuis les données de l'appel API (i18n.fr.name ou nameFr)
   const getGameCategoryName = () => {
     const data = getGameData();
@@ -1047,7 +1530,12 @@
   };
 
   const setupWelcomeButton = () => {
-    if (document.getElementById("sa-welcome-btn")) return;
+    const existing = document.getElementById("sa-welcome-btn");
+    if (!isFeatureEnabled("welcome")) {
+      if (existing) existing.remove();
+      return;
+    }
+    if (existing) return;
     const categoryEl = document.querySelector(".game-category") || document.querySelector(".game-number");
     if (!categoryEl) return;
 
@@ -1078,8 +1566,10 @@
     const COLORS = ["Blanc", "Bleu", "Rouge", "Noir", "Jaune", "Vert", "Orange", "Gris"];
 
     const apiJerseys = getInitialJerseysFromApi();
-    let awayJersey = localStorage.getItem("sa_jersey_away") || apiJerseys.awayJersey;
-    let homeJersey = localStorage.getItem("sa_jersey_home") || apiJerseys.homeJersey;
+    const awayColorObj = getTeamColor("away");
+    const homeColorObj = getTeamColor("home");
+    let awayJersey = localStorage.getItem("sa_jersey_away") || (awayColorObj ? awayColorObj.name.toLowerCase() : apiJerseys.awayJersey);
+    let homeJersey = localStorage.getItem("sa_jersey_home") || (homeColorObj ? homeColorObj.name.toLowerCase() : apiJerseys.homeJersey);
 
     const goalies = getGoaliesFromSummary();
 
@@ -1172,10 +1662,10 @@
   // Appliquer l'état initial dès le chargement
   injectPageBridge();
   applySwapSidesState();
+  applyTeamColors();
 
-  let scheduled = false;
   const observer = new MutationObserver((mutations) => {
-    // Ignorer les mutations générées par nos propres éléments (popover, backdrop, swap btn, welcome btn)
+    // Ignorer les mutations générées par nos propres éléments (popover, backdrop, swap btn, welcome btn, color picker, settings modal)
     const onlyOurNodes = mutations.every((m) => {
       const el = m.target;
       return el && (
@@ -1183,7 +1673,17 @@
         el.id === "sa-backdrop" ||
         el.id === "sa-swap-sides-btn" ||
         el.id === "sa-welcome-btn" ||
-        (el.closest && (el.closest("#sa-popover") || el.closest("#sa-backdrop") || el.closest("#sa-swap-sides-btn") || el.closest("#sa-welcome-btn")))
+        el.id === "sa-color-picker" ||
+        el.id === "sa-settings-overlay" ||
+        (el.closest && (
+          el.closest("#sa-popover") ||
+          el.closest("#sa-backdrop") ||
+          el.closest("#sa-swap-sides-btn") ||
+          el.closest("#sa-welcome-btn") ||
+          el.closest("#sa-color-picker") ||
+          el.closest(".sa-team-color-btn") ||
+          el.closest("#sa-settings-overlay")
+        ))
       );
     });
     if (onlyOurNodes) return;
@@ -1199,5 +1699,6 @@
   observer.observe(document.body, { childList: true, subtree: true });
   scan();
 })();
+
 
 
