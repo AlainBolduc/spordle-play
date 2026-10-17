@@ -1003,6 +1003,6 @@ const TEST_GAME_DATA = {
   ]
 };
 
-if (typeof module !== undefined && module.exports) {
+if (typeof module !== "undefined" && module.exports) {
   module.exports = TEST_GAME_DATA;
 }
