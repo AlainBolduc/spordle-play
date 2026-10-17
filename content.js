@@ -1099,69 +1099,69 @@
 
   const COLOR_DICTIONARY = {
     // Français
-    "bleu": { hex: "#0046ad", text: "#ffffff", name: "Bleu royal" },
-    "bleu royal": { hex: "#0046ad", text: "#ffffff", name: "Bleu royal" },
-    "bleu marin": { hex: "#041e42", text: "#ffffff", name: "Bleu marin" },
-    "marine": { hex: "#041e42", text: "#ffffff", name: "Bleu marin" },
-    "navy": { hex: "#041e42", text: "#ffffff", name: "Bleu marin" },
-    "bleu ciel": { hex: "#00a3e0", text: "#ffffff", name: "Bleu ciel" },
-    "ciel": { hex: "#00a3e0", text: "#ffffff", name: "Bleu ciel" },
-    "blanc": { hex: "#ffffff", text: "#111111", border: "#ced4da", name: "Blanc" },
-    "rouge": { hex: "#c8102e", text: "#ffffff", name: "Rouge" },
-    "noir": { hex: "#1a1a1a", text: "#ffffff", name: "Noir" },
-    "vert": { hex: "#005936", text: "#ffffff", name: "Vert forêt" },
-    "vert forêt": { hex: "#005936", text: "#ffffff", name: "Vert forêt" },
-    "vert kelly": { hex: "#00843d", text: "#ffffff", name: "Vert kelly" },
-    "vert lime": { hex: "#69be28", text: "#ffffff", name: "Vert lime" },
-    "lime": { hex: "#69be28", text: "#ffffff", name: "Vert lime" },
-    "jaune": { hex: "#f2a900", text: "#111111", name: "Jaune or" },
-    "or": { hex: "#f2a900", text: "#111111", name: "Jaune or" },
-    "jaune or": { hex: "#f2a900", text: "#111111", name: "Jaune or" },
-    "gold": { hex: "#f2a900", text: "#111111", name: "Jaune or" },
-    "orange": { hex: "#ea5b0c", text: "#ffffff", name: "Orange" },
-    "gris": { hex: "#6c757d", text: "#ffffff", name: "Gris" },
-    "argent": { hex: "#adb5bd", text: "#111111", name: "Argent" },
-    "silver": { hex: "#adb5bd", text: "#111111", name: "Argent" },
-    "bourgogne": { hex: "#6f263d", text: "#ffffff", name: "Bourgogne" },
-    "marron": { hex: "#6f263d", text: "#ffffff", name: "Bourgogne" },
-    "maroon": { hex: "#6f263d", text: "#ffffff", name: "Bourgogne" },
-    "mauve": { hex: "#552583", text: "#ffffff", name: "Mauve" },
-    "violet": { hex: "#552583", text: "#ffffff", name: "Mauve" },
-    "pourpre": { hex: "#552583", text: "#ffffff", name: "Mauve" },
+    "bleu": { hex: "#0046ad", text: "#ffffff", name: "Bleu royal", spoken: "bleu" },
+    "bleu royal": { hex: "#0046ad", text: "#ffffff", name: "Bleu royal", spoken: "bleu" },
+    "bleu marin": { hex: "#041e42", text: "#ffffff", name: "Bleu marin", spoken: "bleu marin" },
+    "marine": { hex: "#041e42", text: "#ffffff", name: "Bleu marin", spoken: "bleu marin" },
+    "navy": { hex: "#041e42", text: "#ffffff", name: "Bleu marin", spoken: "bleu marin" },
+    "bleu ciel": { hex: "#00a3e0", text: "#ffffff", name: "Bleu ciel", spoken: "bleu ciel" },
+    "ciel": { hex: "#00a3e0", text: "#ffffff", name: "Bleu ciel", spoken: "bleu ciel" },
+    "blanc": { hex: "#ffffff", text: "#111111", border: "#ced4da", name: "Blanc", spoken: "blanc" },
+    "rouge": { hex: "#c8102e", text: "#ffffff", name: "Rouge", spoken: "rouge" },
+    "noir": { hex: "#1a1a1a", text: "#ffffff", name: "Noir", spoken: "noir" },
+    "vert": { hex: "#005936", text: "#ffffff", name: "Vert forêt", spoken: "vert" },
+    "vert forêt": { hex: "#005936", text: "#ffffff", name: "Vert forêt", spoken: "vert" },
+    "vert kelly": { hex: "#00843d", text: "#ffffff", name: "Vert kelly", spoken: "vert" },
+    "vert lime": { hex: "#69be28", text: "#ffffff", name: "Vert lime", spoken: "vert lime" },
+    "lime": { hex: "#69be28", text: "#ffffff", name: "Vert lime", spoken: "vert lime" },
+    "jaune": { hex: "#f2a900", text: "#111111", name: "Jaune or", spoken: "jaune" },
+    "or": { hex: "#f2a900", text: "#111111", name: "Jaune or", spoken: "jaune" },
+    "jaune or": { hex: "#f2a900", text: "#111111", name: "Jaune or", spoken: "jaune" },
+    "gold": { hex: "#f2a900", text: "#111111", name: "Jaune or", spoken: "jaune" },
+    "orange": { hex: "#ea5b0c", text: "#ffffff", name: "Orange", spoken: "orange" },
+    "gris": { hex: "#6c757d", text: "#ffffff", name: "Gris", spoken: "gris" },
+    "argent": { hex: "#adb5bd", text: "#111111", name: "Argent", spoken: "argent" },
+    "silver": { hex: "#adb5bd", text: "#111111", name: "Argent", spoken: "argent" },
+    "bourgogne": { hex: "#6f263d", text: "#ffffff", name: "Bourgogne", spoken: "bourgogne" },
+    "marron": { hex: "#6f263d", text: "#ffffff", name: "Bourgogne", spoken: "bourgogne" },
+    "maroon": { hex: "#6f263d", text: "#ffffff", name: "Bourgogne", spoken: "bourgogne" },
+    "mauve": { hex: "#552583", text: "#ffffff", name: "Mauve", spoken: "mauve" },
+    "violet": { hex: "#552583", text: "#ffffff", name: "Mauve", spoken: "mauve" },
+    "pourpre": { hex: "#552583", text: "#ffffff", name: "Mauve", spoken: "mauve" },
     // Anglais
-    "blue": { hex: "#0046ad", text: "#ffffff", name: "Bleu royal" },
-    "white": { hex: "#ffffff", text: "#111111", border: "#ced4da", name: "Blanc" },
-    "red": { hex: "#c8102e", text: "#ffffff", name: "Rouge" },
-    "black": { hex: "#1a1a1a", text: "#ffffff", name: "Noir" },
-    "green": { hex: "#005936", text: "#ffffff", name: "Vert forêt" },
-    "yellow": { hex: "#f2a900", text: "#111111", name: "Jaune or" },
-    "gray": { hex: "#6c757d", text: "#ffffff", name: "Gris" },
-    "grey": { hex: "#6c757d", text: "#ffffff", name: "Gris" },
-    "purple": { hex: "#552583", text: "#ffffff", name: "Mauve" }
+    "blue": { hex: "#0046ad", text: "#ffffff", name: "Bleu royal", spoken: "bleu" },
+    "white": { hex: "#ffffff", text: "#111111", border: "#ced4da", name: "Blanc", spoken: "blanc" },
+    "red": { hex: "#c8102e", text: "#ffffff", name: "Rouge", spoken: "rouge" },
+    "black": { hex: "#1a1a1a", text: "#ffffff", name: "Noir", spoken: "noir" },
+    "green": { hex: "#005936", text: "#ffffff", name: "Vert forêt", spoken: "vert" },
+    "yellow": { hex: "#f2a900", text: "#111111", name: "Jaune or", spoken: "jaune" },
+    "gray": { hex: "#6c757d", text: "#ffffff", name: "Gris", spoken: "gris" },
+    "grey": { hex: "#6c757d", text: "#ffffff", name: "Gris", spoken: "gris" },
+    "purple": { hex: "#552583", text: "#ffffff", name: "Mauve", spoken: "mauve" }
   };
 
   const parseTeamColor = (raw) => {
     if (!raw) return null;
     const str = String(raw).trim().toLowerCase();
     if (/^#[0-9a-f]{3,8}$/i.test(str)) {
-      return { hex: str, text: "#ffffff", name: "Couleur officielle" };
+      return { hex: str, text: "#ffffff", name: "Couleur officielle", spoken: "officielle" };
     }
     return COLOR_DICTIONARY[str] || null;
   };
 
   const TEAM_COLOR_PALETTE = [
-    { name: "Rouge", hex: "#c8102e", text: "#ffffff" },
-    { name: "Bleu marin", hex: "#041e42", text: "#ffffff" },
-    { name: "Bleu royal", hex: "#0046ad", text: "#ffffff" },
-    { name: "Bleu ciel", hex: "#00a3e0", text: "#ffffff" },
-    { name: "Vert forêt", hex: "#005936", text: "#ffffff" },
-    { name: "Vert lime", hex: "#69be28", text: "#ffffff" },
-    { name: "Jaune or", hex: "#f2a900", text: "#111111" },
-    { name: "Orange", hex: "#ea5b0c", text: "#ffffff" },
-    { name: "Noir", hex: "#1a1a1a", text: "#ffffff" },
-    { name: "Blanc", hex: "#ffffff", text: "#111111", border: "#ced4da" },
-    { name: "Gris", hex: "#6c757d", text: "#ffffff" },
-    { name: "Bourgogne", hex: "#6f263d", text: "#ffffff" },
+    { name: "Blanc", hex: "#ffffff", text: "#111111", border: "#ced4da", spoken: "blanc" },
+    { name: "Bleu royal", hex: "#0046ad", text: "#ffffff", spoken: "bleu" },
+    { name: "Bleu marin", hex: "#041e42", text: "#ffffff", spoken: "bleu marin" },
+    { name: "Rouge", hex: "#c8102e", text: "#ffffff", spoken: "rouge" },
+    { name: "Noir", hex: "#1a1a1a", text: "#ffffff", spoken: "noir" },
+    { name: "Vert forêt", hex: "#005936", text: "#ffffff", spoken: "vert" },
+    { name: "Jaune or", hex: "#f2a900", text: "#111111", spoken: "jaune" },
+    { name: "Orange", hex: "#ea5b0c", text: "#ffffff", spoken: "orange" },
+    { name: "Gris", hex: "#6c757d", text: "#ffffff", spoken: "gris" },
+    { name: "Bourgogne", hex: "#6f263d", text: "#ffffff", spoken: "bourgogne" },
+    { name: "Bleu ciel", hex: "#00a3e0", text: "#ffffff", spoken: "bleu ciel" },
+    { name: "Vert lime", hex: "#69be28", text: "#ffffff", spoken: "vert lime" },
   ];
 
   const normalizeTeamName = (name) =>
@@ -1192,6 +1192,15 @@
       }
     }
 
+    // 3. Repli si sa_jersey_${side} a été défini précédemment
+    try {
+      const savedJersey = localStorage.getItem(`sa_jersey_${side}`);
+      if (savedJersey) {
+        const parsed = parseTeamColor(savedJersey);
+        if (parsed) return parsed;
+      }
+    } catch (_) {}
+
     return null;
   };
 
@@ -1201,11 +1210,14 @@
     const norm = normalizeTeamName(teamName);
     try {
       if (colorObj) {
+        const spoken = colorObj.spoken || colorObj.name.toLowerCase();
         if (norm) localStorage.setItem(`sa_team_color_${norm}`, JSON.stringify(colorObj));
         localStorage.setItem(`sa_team_color_${getGameKey()}_${side}`, JSON.stringify(colorObj));
+        localStorage.setItem(`sa_jersey_${side}`, spoken);
       } else {
         if (norm) localStorage.removeItem(`sa_team_color_${norm}`);
         localStorage.removeItem(`sa_team_color_${getGameKey()}_${side}`);
+        localStorage.removeItem(`sa_jersey_${side}`);
       }
     } catch (_) {}
     applyTeamColors();
@@ -1635,17 +1647,20 @@
     const awayTeam = getTeamName("away");
     const homeTeam = getTeamName("home");
 
-    const COLORS = ["Blanc", "Bleu", "Rouge", "Noir", "Jaune", "Vert", "Orange", "Gris"];
-
     const apiJerseys = getInitialJerseysFromApi();
-    const awayColorObj = getTeamColor("away");
-    const homeColorObj = getTeamColor("home");
-    let awayJersey = localStorage.getItem("sa_jersey_away") || (awayColorObj ? awayColorObj.name.toLowerCase() : apiJerseys.awayJersey);
-    let homeJersey = localStorage.getItem("sa_jersey_home") || (homeColorObj ? homeColorObj.name.toLowerCase() : apiJerseys.homeJersey);
+    let awayColorObj = getTeamColor("away");
+    let homeColorObj = getTeamColor("home");
 
     const goalies = getGoaliesFromSummary();
 
     const renderWelcome = () => {
+      const awayJersey = awayColorObj
+        ? (awayColorObj.spoken || awayColorObj.name.toLowerCase())
+        : (localStorage.getItem("sa_jersey_away") || apiJerseys.awayJersey);
+      const homeJersey = homeColorObj
+        ? (homeColorObj.spoken || homeColorObj.name.toLowerCase())
+        : (localStorage.getItem("sa_jersey_home") || apiJerseys.homeJersey);
+
       const data = SpordleEngine.formatWelcomeMessage({
         category,
         awayTeam,
@@ -1656,11 +1671,27 @@
         homeGoalie: goalies.home
       });
 
+      const buildColorChips = (side, currentColorObj, fallbackJersey) => {
+        const activeHex = currentColorObj?.hex?.toLowerCase();
+        const activeName = (currentColorObj?.spoken || currentColorObj?.name || fallbackJersey || "").toLowerCase();
 
-      const buildColorChips = (side, activeColor) => {
-        return COLORS.map(c => {
-          const isActive = c.toLowerCase() === activeColor.toLowerCase();
-          return `<button type="button" class="sa-color-chip${isActive ? " sa-active" : ""}" data-side="${side}" data-color="${c.toLowerCase()}">${c}</button>`;
+        return TEAM_COLOR_PALETTE.map((col) => {
+          const isActive =
+            (activeHex && col.hex.toLowerCase() === activeHex) ||
+            (activeName && (
+              col.name.toLowerCase() === activeName ||
+              col.spoken.toLowerCase() === activeName ||
+              (activeName === "bleu" && col.name === "Bleu royal") ||
+              (activeName === "vert" && col.name === "Vert forêt") ||
+              (activeName === "jaune" && col.name === "Jaune or")
+            ));
+          const borderStyle = col.border ? `border: 1px solid ${col.border};` : "";
+          return (
+            `<button type="button" class="sa-color-chip${isActive ? " sa-active" : ""}" data-side="${side}" data-hex="${col.hex}">` +
+              `<span class="sa-chip-dot" style="background-color: ${col.hex}; ${borderStyle}"></span>` +
+              `<span>${escapeHtml(col.name)}</span>` +
+            `</button>`
+          );
         }).join("");
       };
 
@@ -1682,12 +1713,12 @@
           `<div class="sa-modal-card">` +
             `<div class="sa-welcome-toolbar">` +
               `<div class="sa-welcome-config-group">` +
-                `<span>Chandail <strong>${escapeHtml(awayTeam)}</strong> :</span> ` +
-                buildColorChips("away", awayJersey) +
+                `<span class="sa-welcome-label">Chandail <strong>${escapeHtml(awayTeam)}</strong> :</span> ` +
+                buildColorChips("away", awayColorObj, awayJersey) +
               `</div>` +
               `<div class="sa-welcome-config-group">` +
-                `<span>Chandail <strong>${escapeHtml(homeTeam)}</strong> :</span> ` +
-                buildColorChips("home", homeJersey) +
+                `<span class="sa-welcome-label">Chandail <strong>${escapeHtml(homeTeam)}</strong> :</span> ` +
+                buildColorChips("home", homeColorObj, homeJersey) +
               `</div>` +
             `</div>` +
             `<div class="sa-line">${data.htmlLines[0]}</div>` +
@@ -1701,19 +1732,21 @@
         `</div>`;
 
       // Clics sur les pastilles de couleurs pour mise à jour immédiate
-      popover.querySelectorAll(".sa-color-chip").forEach(chip => {
+      popover.querySelectorAll(".sa-color-chip").forEach((chip) => {
         chip.addEventListener("click", (e) => {
           e.stopPropagation();
           const side = chip.dataset.side;
-          const color = chip.dataset.color;
-          if (side === "away") {
-            awayJersey = color;
-            localStorage.setItem("sa_jersey_away", color);
-          } else {
-            homeJersey = color;
-            localStorage.setItem("sa_jersey_home", color);
+          const hex = chip.dataset.hex;
+          const found = TEAM_COLOR_PALETTE.find((c) => c.hex.toLowerCase() === hex.toLowerCase());
+          if (found) {
+            setTeamColor(side, found);
+            if (side === "away") {
+              awayColorObj = found;
+            } else {
+              homeColorObj = found;
+            }
+            renderWelcome();
           }
-          renderWelcome();
         });
       });
 
