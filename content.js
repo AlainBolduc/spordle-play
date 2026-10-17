@@ -176,22 +176,23 @@
 
   // Trouve l'en-tête de période qui précède la ligne (ex: "1RE PÉRIODE - 10:00")
   const getPeriodLabel = (itemHost) => {
-    let el = itemHost.previousElementSibling;
+    if (itemHost && itemHost._saPeriod) return itemHost._saPeriod;
+    let el = itemHost ? itemHost.previousElementSibling : null;
     while (el) {
       if (el.classList && el.classList.contains("summary-period-header")) {
         const raw = clean(el.childNodes[0]?.textContent || el.textContent);
-        return raw.split(" - ")[0].toLowerCase();
+        const label = raw.split(" - ")[0].toLowerCase();
+        if (itemHost) itemHost._saPeriod = label;
+        return label;
       }
       el = el.previousElementSibling;
     }
-    return "";
+    return itemHost?._saPeriod || "";
   };
 
   // Le sommaire est affiché du plus récent au plus ancien (fusillade, prolongation, 3e, 2e, 1re).
   // Le rang d'un but = nombre de buts de la même équipe entre cette ligne et le bas de la liste.
   const goalRank = (summaryItem, side) => {
-    // Un filtre actif cache des lignes : le compte serait faux.
-    if (document.querySelector(".summary-filters .filter.selected")) return 0;
     const goals = [...document.querySelectorAll(".summary-item")].filter((item) => {
       const a = item.querySelector(".action");
       if (!a || !a.classList.contains("goal") || !a.classList.contains(side)) return false;
@@ -222,7 +223,6 @@
   // Calcule le n-ième but du même joueur dans le match pour son équipe
   const playerGoalRank = (summaryItem, side, playerNumber) => {
     if (!playerNumber) return 0;
-    if (document.querySelector(".summary-filters .filter.selected")) return 0;
 
     const host = summaryItem.closest(".summary-items") || summaryItem.closest("hi-summary-list") || document.body;
     const goals = [...host.querySelectorAll(".summary-item")].filter((item) => {
@@ -351,6 +351,8 @@
     return lines.join("");
   };
 
+  const companionPenaltyRegistry = new Map();
+
   // Retrouve toutes les lignes de pénalité associées au même joueur au même temps de match
   const findCompanionPenalties = (summaryItem, ev, player) => {
     if (!player || !player.number) return [summaryItem];
@@ -361,13 +363,28 @@
       return a && a.classList.contains("penalty");
     });
 
-    return allItems.filter((item) => {
+    const visibleCompanions = allItems.filter((item) => {
       const oEv = readEvent(item);
       if (!oEv) return false;
       if (oEv.period !== ev.period || oEv.time !== ev.time || oEv.side !== ev.side) return false;
       const parsed = parsePenaltyEvent(oEv.details);
       return parsed.player && parsed.player.number === player.number;
     });
+
+    const key = `${ev.side}_${ev.period}_${ev.time}_${player.number}`;
+    if (visibleCompanions.length > 1) {
+      companionPenaltyRegistry.set(key, visibleCompanions);
+      return visibleCompanions;
+    }
+
+    if (companionPenaltyRegistry.has(key)) {
+      const cached = companionPenaltyRegistry.get(key);
+      if (cached && cached.length > 1) {
+        return cached;
+      }
+    }
+
+    return visibleCompanions.length ? visibleCompanions : [summaryItem];
   };
 
   // Combine intelligemment les pénalités multiples d'un même joueur au même temps (ex: 2/4 + 4/4 ou Majeure + Extrême inconduite)
@@ -1015,86 +1032,6 @@
       applyTeamColors();
     }
   });
-
-  const injectPageBridge = () => {
-    try {
-      if (document.getElementById("sa-page-bridge")) return;
-      const script = document.createElement("script");
-      script.id = "sa-page-bridge";
-      script.textContent = `
-        (() => {
-          const origFetch = window.fetch;
-          if (origFetch) {
-            window.fetch = async function(...args) {
-              const resp = await origFetch.apply(this, args);
-              try {
-                const url = (args[0] && args[0].url) || (typeof args[0] === "string" ? args[0] : "");
-                if (/scoresheets|games|game_data/i.test(url)) {
-                  const clone = resp.clone();
-                  clone.json().then(data => {
-                    if (data && (data.game || data.homeTeam || data.awayTeam)) {
-                      window.__SPORDLE_GAME_DATA__ = data;
-                      document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: data }));
-                    }
-                  }).catch(() => {});
-                }
-              } catch (_) {}
-              return resp;
-            };
-          }
-
-          const origOpen = XMLHttpRequest.prototype.open;
-          const origSend = XMLHttpRequest.prototype.send;
-          XMLHttpRequest.prototype.open = function(method, url) {
-            this.__sa_url = url;
-            return origOpen.apply(this, arguments);
-          };
-          XMLHttpRequest.prototype.send = function() {
-            this.addEventListener("load", function() {
-              try {
-                if (this.__sa_url && /scoresheets|games|game_data/i.test(this.__sa_url)) {
-                  const data = JSON.parse(this.responseText);
-                  if (data && (data.game || data.homeTeam || data.awayTeam)) {
-                    window.__SPORDLE_GAME_DATA__ = data;
-                    document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: data }));
-                  }
-                }
-              } catch (_) {}
-            });
-            return origSend.apply(this, arguments);
-          };
-
-          const checkAngular = () => {
-            try {
-              if (window.__SPORDLE_GAME_DATA__) return;
-              const el = document.querySelector("hi-scoresheet");
-              if (el && window.angular) {
-                const ctrl = window.angular.element(el).controller("hiScoresheet");
-                const scope = window.angular.element(el).scope();
-                const g = ctrl?.$game || scope?.$game || scope?.$ctrl?.$game;
-                if (g && (g.game || g.homeTeam || g.awayTeam)) {
-                  window.__SPORDLE_GAME_DATA__ = g;
-                  document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: g }));
-                }
-              }
-            } catch (_) {}
-          };
-          checkAngular();
-          setInterval(checkAngular, 1000);
-
-          if (window.__SPORDLE_GAME_DATA__) {
-            document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: window.__SPORDLE_GAME_DATA__ }));
-          } else if (window.TEST_GAME_DATA) {
-            document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: window.TEST_GAME_DATA }));
-          }
-        })();
-      `;
-      const target = document.head || document.documentElement || document.body;
-      if (target && typeof target.appendChild === "function") {
-        target.appendChild(script);
-      }
-    } catch (_) {}
-  };
 
   const getGameData = () => {
     if (cachedApiGameData) return cachedApiGameData;
@@ -1789,9 +1726,6 @@
 
   // Appliquer l'état initial dès le chargement
   try {
-    injectPageBridge();
-  } catch (_) {}
-  try {
     applySwapSidesState();
     applyTeamColors();
   } catch (_) {}
@@ -1852,6 +1786,7 @@
 
   scan();
 })();
+
 
 
 

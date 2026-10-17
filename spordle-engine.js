@@ -282,9 +282,9 @@
    */
   const formatGoal = (goal) => {
     const team = clean(goal.teamName || "Équipe");
-    const count = goal.teamGoalCount || 1;
-    const ordinalMasc = getOrdinalMasc(count);
-    const countText = count === 1 ? "Le premier" : `Le ${ordinalMasc}`;
+    const count = goal.teamGoalCount > 0 ? goal.teamGoalCount : 0;
+    const ordinalMasc = count > 0 ? getOrdinalMasc(count) : "";
+    const countText = count === 1 ? "Le premier" : count > 1 ? `Le ${ordinalMasc}` : "Le";
 
     // Ligne 1 : Titre et compteur de buts
     let line1 = `${countText} but des ${team},`;
@@ -326,18 +326,23 @@
 
     // Ligne 3 : Temps
     const t = clean(goal.time || "").replace(/^0(\d)/, "$1");
-    let pLabel = "3e période";
+    let pLabel = "";
     const pStr = String(goal.period || "").trim().toLowerCase();
     if (pStr === "1" || pStr.includes("1re") || pStr.includes("1er")) pLabel = "1re période";
     else if (pStr === "2" || pStr.includes("2e")) pLabel = "2e période";
     else if (pStr === "3" || pStr.includes("3e")) pLabel = "3e période";
     else if (pStr === "ot" || pStr.includes("prolongation") || pStr === "4") pLabel = "période de prolongation";
 
-    const line3 = `Le temps du but : ${t} de la ${pLabel}.`;
+    const periodSuffix = pLabel ? ` de la ${pLabel}` : "";
+    const line3 = `Le temps du but : ${t}${periodSuffix}.`;
 
     // Ligne 1 HTML
-    let htmlLine1 = `Le <strong>${ordinalMasc}</strong> but des <strong>${escapeHtml(team)}</strong>,`;
-    if (count === 1) htmlLine1 = `Le <strong>premier</strong> but des <strong>${escapeHtml(team)}</strong>,`;
+    let htmlLine1 = count === 1
+      ? `Le <strong>premier</strong> but des <strong>${escapeHtml(team)}</strong>,`
+      : count > 1
+      ? `Le <strong>${ordinalMasc}</strong> but des <strong>${escapeHtml(team)}</strong>,`
+      : `Le but des <strong>${escapeHtml(team)}</strong>,`;
+
     if (goal.scorer && goal.scorer.goalCountInGame && goal.scorer.goalCountInGame >= 2) {
       const pOrd = getOrdinalMasc(goal.scorer.goalCountInGame);
       htmlLine1 = `${htmlLine1.slice(0, -1)}, son <strong>${pOrd}</strong> de la rencontre,`;
@@ -360,7 +365,8 @@
     }
 
     // Ligne 3 HTML
-    const htmlLine3 = `Le temps du but : <strong>${escapeHtml(t)}</strong> de la ${escapeHtml(pLabel)}.`;
+    const htmlPeriodSuffix = pLabel ? ` de la ${escapeHtml(pLabel)}` : "";
+    const htmlLine3 = `Le temps du but : <strong>${escapeHtml(t)}</strong>${htmlPeriodSuffix}.`;
 
     return {
       type: "goal",
@@ -427,15 +433,17 @@
 
     // Ligne Temps
     const t = clean(penalty.time || "").replace(/^0(\d)/, "$1");
-    let pLabel = "3e période";
+    let pLabel = "";
     const pStr = String(penalty.period || "").trim().toLowerCase();
     if (pStr === "1" || pStr.includes("1re") || pStr.includes("1er")) pLabel = "1re période";
     else if (pStr === "2" || pStr.includes("2e")) pLabel = "2e période";
     else if (pStr === "3" || pStr.includes("3e")) pLabel = "3e période";
     else if (pStr === "ot" || pStr.includes("prolongation") || pStr === "4") pLabel = "période de prolongation";
 
-    lines.push(`Le temps de la pénalité : ${t} de la ${pLabel}.`);
-    htmlLines.push(`Le temps de la pénalité : <strong>${escapeHtml(t)}</strong> de la ${escapeHtml(pLabel)}.`);
+    const periodSuffix = pLabel ? ` de la ${pLabel}` : "";
+    lines.push(`Le temps de la pénalité : ${t}${periodSuffix}.`);
+    const htmlPeriodSuffix = pLabel ? ` de la ${escapeHtml(pLabel)}` : "";
+    htmlLines.push(`Le temps de la pénalité : <strong>${escapeHtml(t)}</strong>${htmlPeriodSuffix}.`);
 
     return {
       type: "penalty",

@@ -121,6 +121,99 @@
     renderSummary(container, TEST_GAME_DATA);
   }
 
+  // Gestion interactive des filtres de demo.html
+  function setupFilters() {
+    const filterButtons = document.querySelectorAll(".summary-filters .filter");
+    if (!filterButtons.length) return;
+
+    let activeTeam = null; // 'away' | 'home' | null
+    let activeType = null; // 'goal' | 'penalty' | null
+    let activeOption = null; // 'minor' | 'major' | null
+
+    const optionFiltersContainer = document.querySelector(".summary-filters .filters.hidden") ||
+                                    document.querySelectorAll(".summary-filters .filters")[2];
+
+    function applyFilters() {
+      const items = document.querySelectorAll("hi-summary-item");
+      items.forEach((item) => {
+        let ev = null;
+        try {
+          ev = JSON.parse(item.dataset.event);
+        } catch (_) {}
+        if (!ev) return;
+
+        let visible = true;
+        if (activeTeam && ev.side !== activeTeam) visible = false;
+        if (activeType && ev.type !== activeType) visible = false;
+        if (activeType === "penalty" && activeOption) {
+          const sev = (ev.severity || "").toLowerCase();
+          if (activeOption === "minor" && !/mineure|minor/.test(sev)) visible = false;
+          if (activeOption === "major" && !/majeure|major/.test(sev)) visible = false;
+        }
+
+        if (visible) {
+          item.classList.remove("ng-hide");
+          item.style.display = "";
+        } else {
+          item.classList.add("ng-hide");
+          item.style.display = "none";
+        }
+      });
+
+      document.querySelectorAll(".summary-period-footer").forEach((footer) => {
+        footer.classList.remove("ng-hide");
+        footer.style.display = "";
+      });
+    }
+
+    filterButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const text = btn.textContent.trim().toUpperCase();
+        if (text === "VISITEUR") {
+          activeTeam = activeTeam === "away" ? null : "away";
+        } else if (text === "LOCAL") {
+          activeTeam = activeTeam === "home" ? null : "home";
+        } else if (text === "BUTS") {
+          activeType = activeType === "goal" ? null : "goal";
+          activeOption = null;
+        } else if (text === "PUNITIONS") {
+          activeType = activeType === "penalty" ? null : "penalty";
+          if (!activeType) activeOption = null;
+        } else if (text === "MINEURE") {
+          activeOption = activeOption === "minor" ? null : "minor";
+        } else if (text === "MAJEURE") {
+          activeOption = activeOption === "major" ? null : "major";
+        }
+
+        filterButtons.forEach((b) => {
+          const t = b.textContent.trim().toUpperCase();
+          if (t === "VISITEUR") b.classList.toggle("selected", activeTeam === "away");
+          if (t === "LOCAL") b.classList.toggle("selected", activeTeam === "home");
+          if (t === "BUTS") b.classList.toggle("selected", activeType === "goal");
+          if (t === "PUNITIONS") b.classList.toggle("selected", activeType === "penalty");
+          if (t === "MINEURE") b.classList.toggle("selected", activeOption === "minor");
+          if (t === "MAJEURE") b.classList.toggle("selected", activeOption === "major");
+        });
+
+        if (optionFiltersContainer) {
+          if (activeType === "penalty") {
+            optionFiltersContainer.classList.remove("hidden");
+          } else {
+            optionFiltersContainer.classList.add("hidden");
+          }
+        }
+
+        applyFilters();
+      });
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupFilters);
+  } else {
+    setupFilters();
+  }
+
   // Exposer les données de match synthétiques simulant la réponse de l'API Spordle
   if (typeof window !== "undefined") {
     window.__SPORDLE_GAME_DATA__ = TEST_GAME_DATA;

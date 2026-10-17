@@ -168,6 +168,33 @@ test("But 10 : Tour du chapeau (son troisième de la rencontre)", () => {
   assert.strictEqual(res.lines[0], "Le cinquième but des Remparts Est Richelieu, son troisième de la rencontre,");
 });
 
+test("But 11 : Rang de but non spécifié ou 0", () => {
+  const res = engine.formatGoal({
+    teamName: "Remparts Est Richelieu",
+    teamGoalCount: 0,
+    scorer: { name: "SARAH ZHANG", number: 25 },
+    assists: [],
+    time: "10:00",
+    period: "2"
+  });
+
+  assert.strictEqual(res.lines[0], "Le but des Remparts Est Richelieu,");
+  assert.strictEqual(res.htmlLines[0], "Le but des <strong>Remparts Est Richelieu</strong>,");
+});
+
+test("But 12 : Sans indication de période", () => {
+  const res = engine.formatGoal({
+    teamName: "Remparts Est Richelieu",
+    teamGoalCount: 1,
+    scorer: { name: "SARAH ZHANG", number: 25 },
+    assists: [],
+    time: "10:00"
+  });
+
+  assert.strictEqual(res.lines[2], "Le temps du but : 10:00.");
+  assert.strictEqual(res.htmlLines[2], "Le temps du but : <strong>10:00</strong>.");
+});
+
 // =========================================================================
 // TESTS : PÉNALITÉS (PENALTY ENGINE - HOCKEY QUÉBEC 2026-2027)
 // =========================================================================
