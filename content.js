@@ -863,21 +863,327 @@
     categoryEl.appendChild(btn);
 
     updateSwapButtonLabel();
+    setupWelcomeButton();
+  };
+
+  // ---------- Récupération des données officielles de l'API Spordle ----------
+
+  let cachedApiGameData = null;
+
+  document.addEventListener("spordle:game-data", (e) => {
+    if (e.detail) {
+      cachedApiGameData = e.detail;
+    }
+  });
+
+  const injectPageBridge = () => {
+    if (document.getElementById("sa-page-bridge")) return;
+    const script = document.createElement("script");
+    script.id = "sa-page-bridge";
+    script.textContent = `
+      (() => {
+        const origFetch = window.fetch;
+        if (origFetch) {
+          window.fetch = async function(...args) {
+            const resp = await origFetch.apply(this, args);
+            try {
+              const url = (args[0] && args[0].url) || (typeof args[0] === "string" ? args[0] : "");
+              if (/scoresheets|games|game_data/i.test(url)) {
+                const clone = resp.clone();
+                clone.json().then(data => {
+                  if (data && (data.game || data.homeTeam || data.awayTeam)) {
+                    window.__SPORDLE_GAME_DATA__ = data;
+                    document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: data }));
+                  }
+                }).catch(() => {});
+              }
+            } catch (_) {}
+            return resp;
+          };
+        }
+
+        const origOpen = XMLHttpRequest.prototype.open;
+        const origSend = XMLHttpRequest.prototype.send;
+        XMLHttpRequest.prototype.open = function(method, url) {
+          this.__sa_url = url;
+          return origOpen.apply(this, arguments);
+        };
+        XMLHttpRequest.prototype.send = function() {
+          this.addEventListener("load", function() {
+            try {
+              if (this.__sa_url && /scoresheets|games|game_data/i.test(this.__sa_url)) {
+                const data = JSON.parse(this.responseText);
+                if (data && (data.game || data.homeTeam || data.awayTeam)) {
+                  window.__SPORDLE_GAME_DATA__ = data;
+                  document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: data }));
+                }
+              }
+            } catch (_) {}
+          });
+          return origSend.apply(this, arguments);
+        };
+
+        const checkAngular = () => {
+          try {
+            if (window.__SPORDLE_GAME_DATA__) return;
+            const el = document.querySelector("hi-scoresheet");
+            if (el && window.angular) {
+              const ctrl = window.angular.element(el).controller("hiScoresheet");
+              const scope = window.angular.element(el).scope();
+              const g = ctrl?.$game || scope?.$game || scope?.$ctrl?.$game;
+              if (g && (g.game || g.homeTeam || g.awayTeam)) {
+                window.__SPORDLE_GAME_DATA__ = g;
+                document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: g }));
+              }
+            }
+          } catch (_) {}
+        };
+        checkAngular();
+        setInterval(checkAngular, 1000);
+
+        if (window.__SPORDLE_GAME_DATA__) {
+          document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: window.__SPORDLE_GAME_DATA__ }));
+        } else if (window.TEST_GAME_DATA) {
+          document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: window.TEST_GAME_DATA }));
+        }
+      })();
+    `;
+    const target = document.head || document.documentElement || document.body;
+    if (target && typeof target.appendChild === "function") {
+      target.appendChild(script);
+    }
+  };
+
+  const getGameData = () => {
+    if (cachedApiGameData) return cachedApiGameData;
+    if (typeof window !== "undefined") {
+      if (window.__SPORDLE_GAME_DATA__) return window.__SPORDLE_GAME_DATA__;
+      if (window.TEST_GAME_DATA) return window.TEST_GAME_DATA;
+    }
+    return null;
+  };
+
+  // Extrait la catégorie officielle depuis les données de l'appel API (i18n.fr.name ou nameFr)
+  const getGameCategoryName = () => {
+    const data = getGameData();
+    if (data) {
+      // 1. Priorité absolue : i18n officiel français de l'API Spordle
+      const frName =
+        data.homeTeam?.category?.i18n?.fr?.name ||
+        data.awayTeam?.category?.i18n?.fr?.name ||
+        data.homeTeam?.category?.nameFr ||
+        data.awayTeam?.category?.nameFr ||
+        data.game?.categoryFr;
+      if (frName && clean(frName)) return clean(frName);
+
+      // 2. Division + Classe avec i18n fr (ex: division "M12" + class "AA" -> "M12 AA")
+      const divFr =
+        data.homeTeam?.category?.division?.i18n?.fr?.name ||
+        data.awayTeam?.category?.division?.i18n?.fr?.name;
+      const classFr =
+        data.homeTeam?.category?.class?.i18n?.fr?.name ||
+        data.awayTeam?.category?.class?.i18n?.fr?.name ||
+        data.game?.category;
+      if (divFr && classFr) {
+        return `${clean(divFr)} ${clean(classFr)}`.trim();
+      }
+      if (divFr) return clean(divFr);
+
+      // 3. Category brut de l'API (ex: "U12 AA") -> conversion règle Québec Mxx
+      const rawCat = data.homeTeam?.category?.name || data.awayTeam?.category?.name || data.game?.category;
+      if (rawCat && typeof SpordleEngine !== "undefined" && SpordleEngine.convertCategoryToQuebec) {
+        return SpordleEngine.convertCategoryToQuebec(clean(rawCat));
+      }
+    }
+
+    // 4. Repli si l'API n'a pas encore répondu : conversion de l'en-tête DOM
+    const catEl = document.querySelector(".game-category");
+    const raw = catEl ? catEl.childNodes[0]?.textContent || catEl.textContent : "";
+    if (typeof SpordleEngine !== "undefined" && SpordleEngine.convertCategoryToQuebec) {
+      return SpordleEngine.convertCategoryToQuebec(clean(raw) || "M11 AA");
+    }
+    return clean(raw) || "M11 AA";
+  };
+
+  // Déduit les couleurs des chandails d'après les données de l'appel API
+  const getInitialJerseysFromApi = () => {
+    const data = getGameData();
+    let awayJersey = "blanc";
+    let homeJersey = "bleu";
+    if (data) {
+      const isHomeDefault = data.game?.homeDefaultColor !== false;
+      const isAwayDefault = data.game?.awayDefaultColor !== false;
+
+      const rawHomeColor = isHomeDefault ? (data.homeTeam?.homeColor || "BLEU") : (data.homeTeam?.awayColor || "BLANC");
+      const rawAwayColor = isAwayDefault ? (data.awayTeam?.awayColor || "BLANC") : (data.awayTeam?.homeColor || "BLEU");
+
+      if (rawHomeColor) homeJersey = clean(rawHomeColor).toLowerCase();
+      if (rawAwayColor) awayJersey = clean(rawAwayColor).toLowerCase();
+    }
+    return { awayJersey, homeJersey };
+  };
+
+  const getGoaliesFromSummary = () => {
+    let awayGoalie = null;
+    let homeGoalie = null;
+    const items = [...document.querySelectorAll(".summary-item")];
+    items.forEach((item) => {
+      const ev = readEvent(item);
+      if (ev && ev.type === "goalie") {
+        const players = parsePlayers(ev.details);
+        if (players.length) {
+          if (ev.side === "home" && !homeGoalie) {
+            homeGoalie = players[0];
+          } else if (ev.side === "away" && !awayGoalie) {
+            awayGoalie = players[0];
+          }
+        }
+      }
+    });
+    return {
+      away: awayGoalie || { number: "30", name: "Lily-Rose Boileau" },
+      home: homeGoalie || { number: "24", name: "Raphaelle Kanash" }
+    };
+  };
+
+  const setupWelcomeButton = () => {
+    if (document.getElementById("sa-welcome-btn")) return;
+    const categoryEl = document.querySelector(".game-category") || document.querySelector(".game-number");
+    if (!categoryEl) return;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.id = "sa-welcome-btn";
+    btn.className = "sa-welcome-btn";
+    btn.title = "Annoncer le mot de bienvenue officiel d'avant-match";
+    btn.innerHTML = `<span class="sa-welcome-icon">🎙️</span><span class="sa-welcome-label">Bienvenue</span>`;
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      openWelcomeModal();
+    });
+
+    categoryEl.appendChild(btn);
+  };
+
+  const openWelcomeModal = () => {
+    ensureElements();
+    pinned = true;
+
+    // Catégorie issue des données de l'API (i18n.fr.name = "M12 AA")
+    const category = getGameCategoryName();
+    const awayTeam = getTeamName("away");
+    const homeTeam = getTeamName("home");
+
+    const COLORS = ["Blanc", "Bleu", "Rouge", "Noir", "Jaune", "Vert", "Orange", "Gris"];
+
+    const apiJerseys = getInitialJerseysFromApi();
+    let awayJersey = localStorage.getItem("sa_jersey_away") || apiJerseys.awayJersey;
+    let homeJersey = localStorage.getItem("sa_jersey_home") || apiJerseys.homeJersey;
+
+    const goalies = getGoaliesFromSummary();
+
+    const renderWelcome = () => {
+      const data = SpordleEngine.formatWelcomeMessage({
+        category,
+        awayTeam,
+        homeTeam,
+        awayJersey,
+        homeJersey,
+        awayGoalie: goalies.away,
+        homeGoalie: goalies.home
+      });
+
+
+      const buildColorChips = (side, activeColor) => {
+        return COLORS.map(c => {
+          const isActive = c.toLowerCase() === activeColor.toLowerCase();
+          return `<button type="button" class="sa-color-chip${isActive ? " sa-active" : ""}" data-side="${side}" data-color="${c.toLowerCase()}">${c}</button>`;
+        }).join("");
+      };
+
+      popover.className = "sa-visible sa-welcome sa-pinned";
+      popover.innerHTML =
+        `<div class="sa-modal-header bar bar-header bar-dark">` +
+          `<div class="sa-modal-badge sa-badge-welcome">` +
+            `<span class="sa-badge-dot"></span>` +
+            `<span class="sa-badge-text">AVANT-MATCH</span>` +
+          `</div>` +
+          `<div class="sa-modal-title">` +
+            `<span class="sa-team-name">MOT DE BIENVENUE OFFICIEL</span>` +
+          `</div>` +
+          `<button type="button" class="sa-modal-close-btn button button-stable button-clear" aria-label="Fermer">` +
+            `<i class="icon ion-close-round"></i>` +
+          `</button>` +
+        `</div>` +
+        `<div class="sa-modal-body">` +
+          `<div class="sa-modal-card">` +
+            `<div class="sa-welcome-toolbar">` +
+              `<div class="sa-welcome-config-group">` +
+                `<span>Chandail <strong>${escapeHtml(awayTeam)}</strong> :</span> ` +
+                buildColorChips("away", awayJersey) +
+              `</div>` +
+              `<div class="sa-welcome-config-group">` +
+                `<span>Chandail <strong>${escapeHtml(homeTeam)}</strong> :</span> ` +
+                buildColorChips("home", homeJersey) +
+              `</div>` +
+            `</div>` +
+            `<div class="sa-line">${data.htmlLines[0]}</div>` +
+            `<div class="sa-line">${data.htmlLines[1]}</div>` +
+            `<div class="sa-line">${data.htmlLines[2]}</div>` +
+          `</div>` +
+        `</div>` +
+        `<div class="sa-modal-footer">` +
+          `<span class="sa-hint-icon"><i class="icon ion-mic-a"></i> Prêt pour l'annonce au micro</span>` +
+          `<span class="sa-hint-dismiss">Cliquer n'importe où, sur ✕ ou sur Échap pour fermer</span>` +
+        `</div>`;
+
+      // Clics sur les pastilles de couleurs pour mise à jour immédiate
+      popover.querySelectorAll(".sa-color-chip").forEach(chip => {
+        chip.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const side = chip.dataset.side;
+          const color = chip.dataset.color;
+          if (side === "away") {
+            awayJersey = color;
+            localStorage.setItem("sa_jersey_away", color);
+          } else {
+            homeJersey = color;
+            localStorage.setItem("sa_jersey_home", color);
+          }
+          renderWelcome();
+        });
+      });
+
+      // Fermeture par bouton X
+      const closeBtn = popover.querySelector(".sa-modal-close-btn");
+      if (closeBtn) {
+        closeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          hidePopover(true);
+        });
+      }
+    };
+
+    renderWelcome();
+    backdrop.className = "sa-visible";
   };
 
   // Appliquer l'état initial dès le chargement
+  injectPageBridge();
   applySwapSidesState();
 
   let scheduled = false;
   const observer = new MutationObserver((mutations) => {
-    // Ignorer les mutations générées par nos propres éléments (popover, backdrop, swap btn)
+    // Ignorer les mutations générées par nos propres éléments (popover, backdrop, swap btn, welcome btn)
     const onlyOurNodes = mutations.every((m) => {
       const el = m.target;
       return el && (
         el.id === "sa-popover" ||
         el.id === "sa-backdrop" ||
         el.id === "sa-swap-sides-btn" ||
-        (el.closest && (el.closest("#sa-popover") || el.closest("#sa-backdrop") || el.closest("#sa-swap-sides-btn")))
+        el.id === "sa-welcome-btn" ||
+        (el.closest && (el.closest("#sa-popover") || el.closest("#sa-backdrop") || el.closest("#sa-swap-sides-btn") || el.closest("#sa-welcome-btn")))
       );
     });
     if (onlyOurNodes) return;

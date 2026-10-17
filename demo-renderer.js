@@ -120,4 +120,12 @@
   if (container) {
     renderSummary(container, TEST_GAME_DATA);
   }
+
+  // Exposer les données de match synthétiques simulant la réponse de l'API Spordle
+  if (typeof window !== "undefined") {
+    window.__SPORDLE_GAME_DATA__ = TEST_GAME_DATA;
+    try {
+      document.dispatchEvent(new CustomEvent("spordle:game-data", { detail: TEST_GAME_DATA }));
+    } catch (_) {}
+  }
 })();

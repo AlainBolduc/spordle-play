@@ -504,6 +504,82 @@
   };
 
   // =========================================================================
+  // 5.5. MOT DE BIENVENUE D'AVANT-MATCH (WELCOME ANNOUNCEMENT)
+  // =========================================================================
+
+  /**
+   * Convertit une catégorie Hockey Canada (U11, U13, etc.) en nomenclature officielle Hockey Québec (M11, M13, etc.)
+   */
+  const convertCategoryToQuebec = (catStr) => {
+    if (!catStr) return "M11";
+    let cleaned = clean(catStr);
+    cleaned = cleaned.replace(/\b[Uu][\s-]?(\d{1,2})[-]/g, "M$1 ");
+    cleaned = cleaned.replace(/\b[Uu][\s-]?(\d{1,2})\b/g, "M$1");
+    cleaned = clean(cleaned);
+    return cleaned;
+  };
+
+  /**
+   * Adapte phonétiquement la catégorie pour la synthèse vocale (TTS québécois)
+   */
+  const phonetizeCategory = (catStr) => {
+    if (!catStr) return "";
+    let s = clean(catStr);
+    s = s.replace(/\bM(\d{1,2})\b/g, "M $1");
+    s = s.replace(/\bAAA\b/g, "triple A");
+    s = s.replace(/\bAA\b/g, "double A");
+    s = s.replace(/\bBB\b/g, "double B");
+    s = s.replace(/\bCC\b/g, "double C");
+    return s;
+  };
+
+  /**
+   * Formate l'annonce officielle d'avant-match : Mot de bienvenue
+   */
+  const formatWelcomeMessage = (options = {}) => {
+    const rawCategory = options.category || "M11 AA";
+    const category = convertCategoryToQuebec(rawCategory);
+    const categorySpoken = phonetizeCategory(category);
+
+    const awayTeam = clean(options.awayTeam || "Visiteurs");
+    const homeTeam = clean(options.homeTeam || "Locaux");
+
+    const awayJersey = clean(options.awayJersey || "blanc").toLowerCase();
+    const homeJersey = clean(options.homeJersey || "bleu").toLowerCase();
+
+    const awayGoalieNum = clean(String(options.awayGoalie?.number || options.awayGoalieNumber || "30"));
+    const awayGoalieName = titleCase(options.awayGoalie?.name || options.awayGoalieName || "Félix Tremblay");
+
+    const homeGoalieNum = clean(String(options.homeGoalie?.number || options.homeGoalieNumber || "33"));
+    const homeGoalieName = titleCase(options.homeGoalie?.name || options.homeGoalieName || "Jacob Gagnon");
+
+    const line1 = `Mesdames et messieurs, bienvenue à ce match de catégorie ${category}, opposant en chandail ${awayJersey} les ${awayTeam}, et en chandail ${homeJersey} les ${homeTeam}.`;
+    const line2 = `Les gardiens en présence : du côté des ${awayTeam}, le numéro ${awayGoalieNum}, ${awayGoalieName}, et du côté des ${homeTeam}, le numéro ${homeGoalieNum}, ${homeGoalieName}.`;
+    const line3 = `Sur ce, bonne chance aux deux équipes et bon match !`;
+
+    const htmlLine1 = `Mesdames et messieurs, bienvenue à ce match de catégorie <strong>${escapeHtml(category)}</strong>, opposant en chandail <strong>${escapeHtml(awayJersey)}</strong> les <strong>${escapeHtml(awayTeam)}</strong>, et en chandail <strong>${escapeHtml(homeJersey)}</strong> les <strong>${escapeHtml(homeTeam)}</strong>.`;
+    const htmlLine2 = `Les gardiens en présence : du côté des <strong>${escapeHtml(awayTeam)}</strong>, le numéro <strong>${escapeHtml(awayGoalieNum)}</strong>, <strong>${escapeHtml(awayGoalieName)}</strong>, et du côté des <strong>${escapeHtml(homeTeam)}</strong>, le numéro <strong>${escapeHtml(homeGoalieNum)}</strong>, <strong>${escapeHtml(homeGoalieName)}</strong>.`;
+    const htmlLine3 = `Sur ce, bonne chance aux deux équipes et bon match !`;
+
+    const speechText = `Mesdames et messieurs, bienvenue à ce match de catégorie ${categorySpoken}. Opposant en chandail ${awayJersey} les ${awayTeam}, et en chandail ${homeJersey} les ${homeTeam}. Les gardiens en présence : du côté des ${awayTeam}, le numéro ${awayGoalieNum}, ${awayGoalieName}. Et du côté des ${homeTeam}, le numéro ${homeGoalieNum}, ${homeGoalieName}. Sur ce, bonne chance aux deux équipes et bon match !`;
+
+    return {
+      type: "welcome",
+      title: "AVANT-MATCH — MOT DE BIENVENUE",
+      category,
+      awayTeam,
+      homeTeam,
+      awayJersey,
+      homeJersey,
+      awayGoalie: { number: awayGoalieNum, name: awayGoalieName },
+      homeGoalie: { number: homeGoalieNum, name: homeGoalieName },
+      lines: [line1, line2, line3],
+      htmlLines: [htmlLine1, htmlLine2, htmlLine3],
+      speechText
+    };
+  };
+
+  // =========================================================================
   // 6. EXPORT DU MODULE
   // =========================================================================
 
@@ -515,12 +591,15 @@
     formatGoal,
     formatPenalty,
     formatGoalieChange,
+    formatWelcomeMessage,
+    convertCategoryToQuebec,
     utils: {
       clean,
       titleCase,
       escapeHtml,
       getOrdinalMasc,
-      formatPeriodTime
+      formatPeriodTime,
+      phonetizeCategory
     }
   };
 });
