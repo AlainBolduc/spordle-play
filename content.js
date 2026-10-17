@@ -863,25 +863,31 @@
     const targetEl = document.querySelector(".game-number") || document.querySelector(".game-category");
     if (!targetEl || targetEl.dataset.saSettingsBound) return;
     targetEl.dataset.saSettingsBound = "true";
-    targetEl.title = (targetEl.title ? targetEl.title + "\n" : "") + "Triple-clic pour ouvrir les options de Spordle Annonceur";
+    targetEl.style.cursor = "pointer";
+    targetEl.style.touchAction = "manipulation"; // Évite le délai et zoom du double-tap sur Safari iOS
+    targetEl.title = (targetEl.title ? targetEl.title + "\n" : "") + "Triple-tap pour ouvrir les options de Spordle Annonceur";
 
-    let clickCount = 0;
-    let clickTimer = null;
+    let tapTimes = [];
+    let lastTapHandled = 0;
 
-    targetEl.addEventListener("click", (e) => {
-      clickCount++;
-      if (clickCount === 1) {
-        clickTimer = setTimeout(() => {
-          clickCount = 0;
-        }, 700);
-      } else if (clickCount >= 3) {
-        clearTimeout(clickTimer);
-        clickCount = 0;
-        e.stopPropagation();
-        e.preventDefault();
+    const handleTap = (e) => {
+      const now = Date.now();
+      if (now - lastTapHandled < 60) return; // Débouncing des événements tactiles synthétiques
+      lastTapHandled = now;
+
+      tapTimes = tapTimes.filter((t) => now - t < 1000);
+      tapTimes.push(now);
+
+      if (tapTimes.length >= 3) {
+        tapTimes = [];
+        if (e && e.cancelable) e.preventDefault();
+        if (e) e.stopPropagation();
         openSettingsModal();
       }
-    });
+    };
+
+    targetEl.addEventListener("click", handleTap);
+    targetEl.addEventListener("touchend", handleTap, { passive: false });
   };
 
   const scan = () => {
