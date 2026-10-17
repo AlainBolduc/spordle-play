@@ -869,20 +869,23 @@
   const getGoaliesFromSummary = () => {
     let awayGoalie = null;
     let homeGoalie = null;
-    const items = document.querySelectorAll(SUMMARY_SELECTOR);
-    items.forEach(item => {
-      const parsed = parseSummaryItem(item);
-      if (parsed && parsed.type === "goalie") {
-        if (parsed.isHome && !homeGoalie && parsed.goalie) {
-          homeGoalie = parsed.goalie;
-        } else if (!parsed.isHome && !awayGoalie && parsed.goalie) {
-          awayGoalie = parsed.goalie;
+    const items = [...document.querySelectorAll(".summary-item")];
+    items.forEach((item) => {
+      const ev = readEvent(item);
+      if (ev && ev.type === "goalie") {
+        const players = parsePlayers(ev.details);
+        if (players.length) {
+          if (ev.side === "home" && !homeGoalie) {
+            homeGoalie = players[0];
+          } else if (ev.side === "away" && !awayGoalie) {
+            awayGoalie = players[0];
+          }
         }
       }
     });
     return {
-      away: awayGoalie || { number: "30", name: "Félix Tremblay" },
-      home: homeGoalie || { number: "33", name: "Jacob Gagnon" }
+      away: awayGoalie || { number: "30", name: "Lily-Rose Boileau" },
+      home: homeGoalie || { number: "24", name: "Raphaelle Kanash" }
     };
   };
 
@@ -912,8 +915,8 @@
 
     const catEl = document.querySelector(".game-category");
     const rawCategory = catEl ? catEl.textContent.trim() : "M11 AA";
-    const awayTeam = getAwayTeam();
-    const homeTeam = getHomeTeam();
+    const awayTeam = getTeamName("away");
+    const homeTeam = getTeamName("home");
 
     const COLORS = ["Blanc", "Bleu", "Rouge", "Noir", "Jaune", "Vert", "Orange", "Gris"];
 
@@ -921,6 +924,7 @@
     let homeJersey = localStorage.getItem("sa_jersey_home") || "bleu";
 
     const goalies = getGoaliesFromSummary();
+
 
     const renderWelcome = () => {
       const data = SpordleEngine.formatWelcomeMessage({
