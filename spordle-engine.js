@@ -28,7 +28,7 @@
     B: { code: "B", name: "Majeure", minutes: 5, french: "5 minutes" },
     C: { code: "C", name: "Inconduite", minutes: 10, french: "10 minutes d'inconduite" },
     D: { code: "D", name: "Extrême inconduite", minutes: 0, isEjection: true, french: "extrême inconduite de partie" },
-    E: { code: "E", name: "Punition de match", minutes: 5, isEjection: true, french: "5 minutes et punition de match" },
+    E: { code: "E", name: "Punition de match", minutes: 5, isEjection: true, french: "punition de match et 5 minutes" },
     F: { code: "F", name: "Tir de punition", minutes: 0, isPenaltyShot: true, french: "tir de punition" }
   };
 
@@ -168,12 +168,53 @@
     return `Le temps ${pLabel.includes("prolongation") ? "du but" : ""} : ${t} de la ${pLabel}.`;
   };
 
+  /**
+   * Convertit une infraction en verbe d'action au passé composé pour l'annonce d'un tir de punition
+   * Ex: "avoir fait trébucher" -> "a fait trébucher", "coup de bâton" -> "a donné un coup de bâton"
+   */
+  const formatPenaltyShotAction = (infractionSpoken) => {
+    const s = clean(infractionSpoken).toLowerCase();
+    if (/^avoir\s+/i.test(s)) {
+      return s.replace(/^avoir\s+/i, "a ");
+    }
+    const actionMap = {
+      "coup de bâton": "a donné un coup de bâton",
+      "double échec": "a donné un double échec",
+      "bâton trop élevé": "a porté son bâton trop élevé",
+      "assaut": "a commis un assaut",
+      "mise en échec par derrière": "a donné une mise en échec par derrière",
+      "mise en échec corporelle": "a donné une mise en échec corporelle",
+      "contact avec la tête": "a fait un contact avec la tête",
+      "rudesse": "a fait de la rudesse",
+      "obstruction": "a fait de l'obstruction",
+      "refus de se mettre au jeu": "a refusé de se mettre au jeu"
+    };
+    if (actionMap[s]) return actionMap[s];
+    return `a été pénalisé pour ${s}`;
+  };
+
+  /**
+   * Détecte si le joueur pénalisé est un entraîneur ou officiel d'équipe (E1-E5, ENT, Entraîneur, Coach)
+   */
+  const isCoachMember = (penalty) => {
+    if (!penalty) return false;
+    if (penalty.isCoach) return true;
+    const p = penalty.penalizedPlayer;
+    if (!p) return false;
+    if (p.isCoach || p.role === "coach") return true;
+    const numStr = String(p.number || "").trim();
+    if (/^(?:E[1-5]|ENT|COACH|ENTRA[IÎ]NEUR|AC|HC|GER|G[EÉ]R)$/i.test(numStr)) return true;
+    const nameStr = String(p.name || "").trim();
+    if (/\b(?:entra[iî]neur|coach|adjoint|g[eé]rant)\b/i.test(nameStr)) return true;
+    return false;
+  };
+
   // =========================================================================
   // 3. MOTEUR DE DÉCODAGE DES CODES HOCKEY QUÉBEC
   // =========================================================================
 
   /**
-   * Décode un code comme "A22", "B40", "A80", "A22/G"
+   * Décode un code comme "A22", "B40", "A80", "A22/G", "F53"
    */
   const parsePenaltyCode = (codeStr) => {
     if (!codeStr) return null;
@@ -194,6 +235,7 @@
       modifier: mod,
       isGoaliePenalty: mod === "G",
       isAfterWhistle: mod === "S",
+      isNonCarrier: mod === "NP",
       severity,
       infraction
     };
@@ -213,7 +255,7 @@
     // Infraction principale parlée (priorité à la première connue)
     const primaryInfraction = parsedCodes[0].infraction.spoken;
 
-    // Règles de combinaison officielles Hockey Québec
+    // Règles de combinaison officielles Hockey Québec (Manuel des officiels hors glace)
     if (key === "A+A") {
       return { durationText: "4 minutes", spokenInfraction: primaryInfraction };
     }
@@ -227,7 +269,7 @@
       return { durationText: "2 minutes et extrême inconduite de partie", spokenInfraction: primaryInfraction };
     }
     if (key === "B+E" || key === "E+B") {
-      return { durationText: "5 minutes et punition de match", spokenInfraction: primaryInfraction };
+      return { durationText: "punition de match et 5 minutes", spokenInfraction: primaryInfraction };
     }
     if (key === "A+A+D") {
       return { durationText: "4 minutes et extrême inconduite de partie", spokenInfraction: primaryInfraction };
@@ -266,7 +308,7 @@
   // =========================================================================
 
   /**
-   * Génère l'annonce complète d'un but.
+   * Génère l'annonce complète d'un but selon le Manuel des officiels hors glace.
    * 
    * @param {Object} goal
    *   - teamName: string (ex: "Remparts Est Richelieu")
@@ -274,11 +316,11 @@
    *   - scorer: { name: string, number: string|number, goalCountInGame?: number }
    *   - assists: Array<{ name: string, number: string|number }>
    *   - isPowerplay?: boolean (Avantage numérique)
-   *   - isShorthanded?: boolean (Infériorité numérique)
+   *   - isShorthanded?: boolean (Désavantage numérique)
    *   - isEmptyNet?: boolean (Filet désert)
    *   - isPenaltyShot?: boolean (Tir de punition)
    *   - time: string (ex: "07:48")
-   *   - period: string|number (ex: "3" ou "3e période")
+   *   - period?: string|number (conservé pour compatibilité mais non affiché dans le temps du but)
    */
   const formatGoal = (goal) => {
     const team = clean(goal.teamName || "Équipe");
@@ -286,55 +328,48 @@
     const ordinalMasc = count > 0 ? getOrdinalMasc(count) : "";
     const countText = count === 1 ? "Le premier" : count > 1 ? `Le ${ordinalMasc}` : "Le";
 
-    // Ligne 1 : Titre et compteur de buts
+    // Ligne 1 : Titre et compteur de buts (équipe + nième du joueur)
     let line1 = `${countText} but des ${team},`;
     if (goal.scorer && goal.scorer.goalCountInGame && goal.scorer.goalCountInGame >= 2) {
       const playerOrdinal = getOrdinalMasc(goal.scorer.goalCountInGame);
       line1 = `${countText} but des ${team}, son ${playerOrdinal} de la rencontre,`;
     }
 
-    // Situation spéciale intégrée
+    // Situation spéciale intégrée (avec « désavantage numérique » selon le manuel)
     const specParts = [];
     if (goal.isPenaltyShot) {
       specParts.push("sur un tir de punition");
     } else {
-      if (goal.isShorthanded) specParts.push("en infériorité numérique");
+      if (goal.isShorthanded) specParts.push("en désavantage numérique");
       if (goal.isPowerplay) specParts.push("en avantage numérique");
       if (goal.isEmptyNet) specParts.push("dans un filet désert");
     }
     const specPhrase = specParts.length > 0 ? ` ${specParts.join(" ")}` : "";
 
     // Buteur et aides sur la même phrase (Ligne 2)
+    // Manuel : « marqué sans aide par le numéro (# + nom). » / « marqué par le numéro (# et nom) avec l'aide du numéro (# et nom) et du numéro (# et nom). »
     let line2 = "";
     const sNum = goal.scorer ? String(goal.scorer.number).trim() : "?";
     const sName = goal.scorer ? titleCase(goal.scorer.name) : "Inconnu";
 
     const assists = Array.isArray(goal.assists) ? goal.assists.filter((a) => a && a.name) : [];
     if (assists.length === 0) {
-      line2 = `marqué${specPhrase} par le numéro ${sNum}, ${sName}, sans aide.`;
+      line2 = `marqué${specPhrase} sans aide par le numéro ${sNum}, ${sName}.`;
     } else if (assists.length === 1) {
       const a1Num = String(assists[0].number).trim();
       const a1Name = titleCase(assists[0].name);
-      line2 = `marqué${specPhrase} par le numéro ${sNum}, ${sName}, assisté du numéro ${a1Num}, ${a1Name}.`;
+      line2 = `marqué${specPhrase} par le numéro ${sNum}, ${sName}, avec l'aide du numéro ${a1Num}, ${a1Name}.`;
     } else {
       const a1Num = String(assists[0].number).trim();
       const a1Name = titleCase(assists[0].name);
       const a2Num = String(assists[1].number).trim();
       const a2Name = titleCase(assists[1].name);
-      line2 = `marqué${specPhrase} par le numéro ${sNum}, ${sName}, assisté du numéro ${a1Num}, ${a1Name}, et du numéro ${a2Num}, ${a2Name}.`;
+      line2 = `marqué${specPhrase} par le numéro ${sNum}, ${sName}, avec l'aide du numéro ${a1Num}, ${a1Name}, et du numéro ${a2Num}, ${a2Name}.`;
     }
 
-    // Ligne 3 : Temps
+    // Ligne 3 : Temps du but (sans période, selon le manuel : « Le temps du but : (minute et seconde). »)
     const t = clean(goal.time || "").replace(/^0(\d)/, "$1");
-    let pLabel = "";
-    const pStr = String(goal.period || "").trim().toLowerCase();
-    if (pStr === "1" || pStr.includes("1re") || pStr.includes("1er")) pLabel = "1re période";
-    else if (pStr === "2" || pStr.includes("2e")) pLabel = "2e période";
-    else if (pStr === "3" || pStr.includes("3e")) pLabel = "3e période";
-    else if (pStr === "ot" || pStr.includes("prolongation") || pStr === "4") pLabel = "période de prolongation";
-
-    const periodSuffix = pLabel ? ` de la ${pLabel}` : "";
-    const line3 = `Le temps du but : ${t}${periodSuffix}.`;
+    const line3 = `Le temps du but : ${t}.`;
 
     // Ligne 1 HTML
     let htmlLine1 = count === 1
@@ -351,22 +386,21 @@
     // Ligne 2 HTML
     let htmlLine2 = "";
     if (assists.length === 0) {
-      htmlLine2 = `marqué${specPhrase} par le numéro <strong>${escapeHtml(sNum)}</strong>, ${escapeHtml(sName)}, sans aide.`;
+      htmlLine2 = `marqué${specPhrase} sans aide par le numéro <strong>${escapeHtml(sNum)}</strong>, ${escapeHtml(sName)}.`;
     } else if (assists.length === 1) {
       const a1Num = String(assists[0].number).trim();
       const a1Name = titleCase(assists[0].name);
-      htmlLine2 = `marqué${specPhrase} par le numéro <strong>${escapeHtml(sNum)}</strong>, ${escapeHtml(sName)}, assisté du numéro <strong>${escapeHtml(a1Num)}</strong>, ${escapeHtml(a1Name)}.`;
+      htmlLine2 = `marqué${specPhrase} par le numéro <strong>${escapeHtml(sNum)}</strong>, ${escapeHtml(sName)}, avec l'aide du numéro <strong>${escapeHtml(a1Num)}</strong>, ${escapeHtml(a1Name)}.`;
     } else {
       const a1Num = String(assists[0].number).trim();
       const a1Name = titleCase(assists[0].name);
       const a2Num = String(assists[1].number).trim();
       const a2Name = titleCase(assists[1].name);
-      htmlLine2 = `marqué${specPhrase} par le numéro <strong>${escapeHtml(sNum)}</strong>, ${escapeHtml(sName)}, assisté du numéro <strong>${escapeHtml(a1Num)}</strong>, ${escapeHtml(a1Name)}, et du numéro <strong>${escapeHtml(a2Num)}</strong>, ${escapeHtml(a2Name)}.`;
+      htmlLine2 = `marqué${specPhrase} par le numéro <strong>${escapeHtml(sNum)}</strong>, ${escapeHtml(sName)}, avec l'aide du numéro <strong>${escapeHtml(a1Num)}</strong>, ${escapeHtml(a1Name)}, et du numéro <strong>${escapeHtml(a2Num)}</strong>, ${escapeHtml(a2Name)}.`;
     }
 
     // Ligne 3 HTML
-    const htmlPeriodSuffix = pLabel ? ` de la ${escapeHtml(pLabel)}` : "";
-    const htmlLine3 = `Le temps du but : <strong>${escapeHtml(t)}</strong>${htmlPeriodSuffix}.`;
+    const htmlLine3 = `Le temps du but : <strong>${escapeHtml(t)}</strong>.`;
 
     return {
       type: "goal",
@@ -383,7 +417,7 @@
   // =========================================================================
 
   /**
-   * Génère l'annonce complète d'une pénalité (simple ou combinée).
+   * Génère l'annonce complète d'une pénalité (simple, combinée, coïncidente, tir de punition, ou entraîneur).
    */
   const formatPenalty = (penalty) => {
     const team = clean(penalty.teamName || "Équipe");
@@ -391,7 +425,149 @@
     const lines = [];
     const htmlLines = [];
 
-    // Ligne 1 : Équipe
+    // Décodage des codes éventuels
+    let durationText = penalty.durationDescription || "2 minutes";
+    let infractionText = penalty.infractionDescription ? penalty.infractionDescription.toLowerCase() : "infraction";
+    let parsedCodes = [];
+
+    if (Array.isArray(penalty.codes) && penalty.codes.length > 0) {
+      parsedCodes = penalty.codes.map(parsePenaltyCode).filter(Boolean);
+      if (parsedCodes.length > 0) {
+        const resolved = resolvePenaltyCombination(parsedCodes);
+        durationText = resolved.durationText;
+        infractionText = resolved.spokenInfraction;
+      }
+    }
+
+    // Formatage de la période et du temps
+    const t = clean(penalty.time || "").replace(/^0(\d)/, "$1");
+    let pLabel = "";
+    const pStr = String(penalty.period || "").trim().toLowerCase();
+    if (pStr === "1" || pStr.includes("1re") || pStr.includes("1er")) pLabel = "1re période";
+    else if (pStr === "2" || pStr.includes("2e")) pLabel = "2e période";
+    else if (pStr === "3" || pStr.includes("3e")) pLabel = "3e période";
+    else if (pStr === "ot" || pStr.includes("prolongation") || pStr === "4") pLabel = "période de prolongation";
+
+    const periodSuffix = pLabel ? ` de la ${pLabel}` : "";
+    const htmlPeriodSuffix = pLabel ? ` de la ${escapeHtml(pLabel)}` : "";
+
+    // CAS SPÉCIAL 1 : Extrême inconduite décernée à un membre du groupe d'entraîneurs (Manuel p. 42)
+    const hasGameMisconduct =
+      parsedCodes.some((c) => c.prefix === "D") ||
+      /extr[eê]me\s*inconduite|grossi[eè]re\s*inconduite|game\s*misconduct/i.test(
+        `${durationText} ${penalty.severity || ""}`
+      );
+
+    if (isCoachMember(penalty) && hasGameMisconduct) {
+      const warnLine1 = "Ne pas annoncer au micro — Extrême inconduite à un entraîneur";
+      const warnLine2 = "Si la pénalité d'extrême inconduite est donnée à un membre du groupe d'entraîneurs, ne jamais l'annoncer.";
+      return {
+        type: "penalty",
+        isDoNotAnnounce: true,
+        title: `PÉNALITÉ — ${team.toUpperCase()}`,
+        teamName: team,
+        lines: [warnLine1, warnLine2],
+        htmlLines: [
+          `<strong>⚠️ ${escapeHtml(warnLine1)}</strong>`,
+          escapeHtml(warnLine2)
+        ],
+        speechText: ""
+      };
+    }
+
+    // CAS SPÉCIAL 2 : Tir de punition décerné (Code F — Manuel p. 42)
+    const isPenaltyShotCode =
+      !!penalty.isPenaltyShot ||
+      (parsedCodes.length > 0 && parsedCodes.every((c) => c.prefix === "F"));
+
+    if (isPenaltyShotCode) {
+      const awardedTeam = clean(penalty.awardedTeamName || "l'équipe adverse");
+      const actionPhrase = formatPenaltyShotAction(infractionText);
+
+      if (penalty.penalizedPlayer && penalty.penalizedPlayer.name) {
+        const pNum = String(penalty.penalizedPlayer.number).trim();
+        const pName = titleCase(penalty.penalizedPlayer.name);
+        lines.push(`Un tir de punition est accordé aux ${awardedTeam}`);
+        lines.push(`puisque le numéro ${pNum}, ${pName}, des ${team} ${actionPhrase}.`);
+        htmlLines.push(`Un tir de punition est accordé aux <strong>${escapeHtml(awardedTeam)}</strong>`);
+        htmlLines.push(
+          `puisque le numéro <strong>${escapeHtml(pNum)}</strong>, ${escapeHtml(pName)}, des <strong>${escapeHtml(team)}</strong> ${escapeHtml(actionPhrase)}.`
+        );
+      } else {
+        lines.push(`Un tir de punition est accordé aux ${awardedTeam}`);
+        lines.push(`puisque les ${team} ${actionPhrase}.`);
+        htmlLines.push(`Un tir de punition est accordé aux <strong>${escapeHtml(awardedTeam)}</strong>`);
+        htmlLines.push(`puisque les <strong>${escapeHtml(team)}</strong> ${escapeHtml(actionPhrase)}.`);
+      }
+
+      const shooter = penalty.shooterPlayer || penalty.servedByPlayer;
+      if (shooter && shooter.name) {
+        const sNum = String(shooter.number).trim();
+        const sName = titleCase(shooter.name);
+        lines.push(`Le tir sera effectué par le numéro ${sNum}, ${sName}.`);
+        htmlLines.push(`Le tir sera effectué par le numéro <strong>${escapeHtml(sNum)}</strong>, ${escapeHtml(sName)}.`);
+      }
+
+      if (t) {
+        lines.push(`Le temps de la pénalité : ${t}${periodSuffix}.`);
+        htmlLines.push(`Le temps de la pénalité : <strong>${escapeHtml(t)}</strong>${htmlPeriodSuffix}.`);
+      }
+
+      return {
+        type: "penalty",
+        title: `TIR DE PUNITION — ${awardedTeam.toUpperCase()}`,
+        teamName: team,
+        lines,
+        htmlLines,
+        speechText: lines.join(" ")
+      };
+    }
+
+    // CAS SPÉCIAL 3 : Deux punitions pareilles / coïncidentes (Manuel p. 42)
+    if (penalty.coincidentWith && penalty.coincidentWith.penalizedPlayer && penalty.penalizedPlayer) {
+      const other = penalty.coincidentWith;
+      const isCurrentAway = penalty.side === "away" || other.side === "home";
+      const awayEntry = isCurrentAway
+        ? { teamName: team, player: penalty.penalizedPlayer }
+        : { teamName: clean(other.teamName || "Visiteur"), player: other.penalizedPlayer };
+      const homeEntry = isCurrentAway
+        ? { teamName: clean(other.teamName || "Local"), player: other.penalizedPlayer }
+        : { teamName: team, player: penalty.penalizedPlayer };
+
+      const aNum = String(awayEntry.player.number).trim();
+      const aName = titleCase(awayEntry.player.name);
+      const hNum = String(homeEntry.player.number).trim();
+      const hName = titleCase(homeEntry.player.name);
+
+      lines.push(`Pénalité aux ${awayEntry.teamName}, au numéro ${aNum}, ${aName},`);
+      lines.push(`et aux ${homeEntry.teamName}, au numéro ${hNum}, ${hName},`);
+      lines.push(`${durationText} chacun pour ${infractionText}.`);
+
+      htmlLines.push(
+        `Pénalité aux <strong>${escapeHtml(awayEntry.teamName)}</strong>, au numéro <strong>${escapeHtml(aNum)}</strong>, ${escapeHtml(aName)},`
+      );
+      htmlLines.push(
+        `et aux <strong>${escapeHtml(homeEntry.teamName)}</strong>, au numéro <strong>${escapeHtml(hNum)}</strong>, ${escapeHtml(hName)},`
+      );
+      htmlLines.push(`<strong>${escapeHtml(durationText)} chacun</strong> pour ${escapeHtml(infractionText)}.`);
+
+      if (t) {
+        lines.push(`Le temps de la pénalité : ${t}${periodSuffix}.`);
+        htmlLines.push(`Le temps de la pénalité : <strong>${escapeHtml(t)}</strong>${htmlPeriodSuffix}.`);
+      }
+
+      return {
+        type: "penalty",
+        isCoincident: true,
+        title: `PÉNALITÉS PAREILLES — ${awayEntry.teamName.toUpperCase()} / ${homeEntry.teamName.toUpperCase()}`,
+        teamName: team,
+        lines,
+        htmlLines,
+        speechText: lines.join(" ")
+      };
+    }
+
+    // CAS STANDARD : Pénalité d'équipe (banc) ou de joueur
     if (isBench) {
       lines.push(`Pénalité de banc aux ${team},`);
       htmlLines.push(`Pénalité de banc aux <strong>${escapeHtml(team)}</strong>,`);
@@ -403,19 +579,6 @@
         const pName = titleCase(penalty.penalizedPlayer.name);
         lines.push(`au numéro ${pNum}, ${pName},`);
         htmlLines.push(`au numéro <strong>${escapeHtml(pNum)}</strong>, ${escapeHtml(pName)},`);
-      }
-    }
-
-    // Résolution durée & infraction
-    let durationText = penalty.durationDescription || "2 minutes";
-    let infractionText = penalty.infractionDescription || "infraction";
-
-    if (Array.isArray(penalty.codes) && penalty.codes.length > 0) {
-      const parsed = penalty.codes.map(parsePenaltyCode).filter(Boolean);
-      if (parsed.length > 0) {
-        const resolved = resolvePenaltyCombination(parsed);
-        durationText = resolved.durationText;
-        infractionText = resolved.spokenInfraction;
       }
     }
 
@@ -432,17 +595,7 @@
     }
 
     // Ligne Temps
-    const t = clean(penalty.time || "").replace(/^0(\d)/, "$1");
-    let pLabel = "";
-    const pStr = String(penalty.period || "").trim().toLowerCase();
-    if (pStr === "1" || pStr.includes("1re") || pStr.includes("1er")) pLabel = "1re période";
-    else if (pStr === "2" || pStr.includes("2e")) pLabel = "2e période";
-    else if (pStr === "3" || pStr.includes("3e")) pLabel = "3e période";
-    else if (pStr === "ot" || pStr.includes("prolongation") || pStr === "4") pLabel = "période de prolongation";
-
-    const periodSuffix = pLabel ? ` de la ${pLabel}` : "";
     lines.push(`Le temps de la pénalité : ${t}${periodSuffix}.`);
-    const htmlPeriodSuffix = pLabel ? ` de la ${escapeHtml(pLabel)}` : "";
     htmlLines.push(`Le temps de la pénalité : <strong>${escapeHtml(t)}</strong>${htmlPeriodSuffix}.`);
 
     return {
@@ -456,12 +609,11 @@
   };
 
   /**
-   * 5b. FORMATAGE D'UN CHANGEMENT DE GARDIEN DE BUT
+   * 5b. FORMATAGE D'UN CHANGEMENT DE GARDIEN DE BUT (Manuel p. 43)
    * 
    * Règle d'annonce :
-   * « Changement de gardien de but du côté de [Équipe]. »
-   * « Maintenant devant le filet : le numéro [X, Prénom Nom]. »
-   * « Le temps du changement : [MM:SS] de la [Xe période]. » (si le temps est spécifié)
+   * « Changement de gardien de but pour les [Équipe], »
+   * « maintenant devant le filet le numéro [X, Prénom Nom]. »
    */
   const formatGoalieChange = (goalieEvent) => {
     const lines = [];
@@ -470,35 +622,44 @@
     const team = clean(goalieEvent.teamName || "l'équipe");
     const num = goalieEvent.goalie ? String(goalieEvent.goalie.number || "").trim() : "";
     const name = goalieEvent.goalie ? titleCase(goalieEvent.goalie.name || "") : "";
+    const rawDetails = clean(goalieEvent.details || "");
 
-    // Ligne 1 : Annonce de l'équipe
-    lines.push(`Changement de gardien de but du côté des ${team},`);
-    htmlLines.push(`Changement de gardien de but du côté des <strong>${escapeHtml(team)}</strong>,`);
+    const isEmptyNet =
+      !!goalieEvent.isEmptyNet ||
+      !!goalieEvent.isPulled ||
+      /empty\s*net|filet\s*d[eé]sert|aucun\s*gardien|no\s*goalie|retir[eé]\s*du\s*filet|pulled|sorti\s*du\s*filet/i.test(
+        `${name} ${rawDetails}`
+      ) ||
+      (!num && !name);
+
+    if (isEmptyNet) {
+      const warnLine1 = "Ne pas annoncer au micro — Filet désert";
+      const warnLine2 = "Il n'y a pas d'annonce à faire pour un filet désert (gardien retiré).";
+      return {
+        type: "goalie",
+        isDoNotAnnounce: true,
+        title: `GARDIEN — ${team.toUpperCase()}`,
+        teamName: team,
+        lines: [warnLine1, warnLine2],
+        htmlLines: [
+          `<strong>⚠️ ${escapeHtml(warnLine1)}</strong>`,
+          escapeHtml(warnLine2)
+        ],
+        speechText: ""
+      };
+    }
+
+    // Ligne 1 : Annonce de l'équipe (selon le manuel : « Changement de gardien de but pour les (équipe) »)
+    lines.push(`Changement de gardien de but pour les ${team},`);
+    htmlLines.push(`Changement de gardien de but pour les <strong>${escapeHtml(team)}</strong>,`);
 
     // Ligne 2 : Nouveau gardien devant le filet
     if (num && name) {
-      lines.push(`maintenant devant le filet : le numéro ${num}, ${name}.`);
-      htmlLines.push(`maintenant devant le filet : le numéro <strong>${escapeHtml(num)}</strong>, ${escapeHtml(name)}.`);
-    } else if (name) {
-      lines.push(`maintenant devant le filet : ${name}.`);
-      htmlLines.push(`maintenant devant le filet : <strong>${escapeHtml(name)}</strong>.`);
+      lines.push(`maintenant devant le filet le numéro ${num}, ${name}.`);
+      htmlLines.push(`maintenant devant le filet le numéro <strong>${escapeHtml(num)}</strong>, ${escapeHtml(name)}.`);
     } else {
-      lines.push(`maintenant devant le filet.`);
-      htmlLines.push(`maintenant devant le filet.`);
-    }
-
-    // Ligne 3 : Temps du changement
-    if (goalieEvent.time) {
-      const t = clean(goalieEvent.time).replace(/^0(\d)/, "$1");
-      let pLabel = "3e période";
-      const pStr = String(goalieEvent.period || "").trim().toLowerCase();
-      if (pStr === "1" || pStr.includes("1re") || pStr.includes("1er")) pLabel = "1re période";
-      else if (pStr === "2" || pStr.includes("2e")) pLabel = "2e période";
-      else if (pStr === "3" || pStr.includes("3e")) pLabel = "3e période";
-      else if (pStr === "ot" || pStr.includes("prolongation") || pStr === "4") pLabel = "période de prolongation";
-
-      lines.push(`Le temps du changement : ${t} de la ${pLabel}.`);
-      htmlLines.push(`Le temps du changement : <strong>${escapeHtml(t)}</strong> de la ${escapeHtml(pLabel)}.`);
+      lines.push(`maintenant devant le filet ${name}.`);
+      htmlLines.push(`maintenant devant le filet <strong>${escapeHtml(name)}</strong>.`);
     }
 
     return {
@@ -512,7 +673,7 @@
   };
 
   // =========================================================================
-  // 5.5. MOT DE BIENVENUE D'AVANT-MATCH (WELCOME ANNOUNCEMENT)
+  // 5.5. MOT DE BIENVENUE D'AVANT-MATCH (WELCOME ANNOUNCEMENT - Manuel p. 41)
   // =========================================================================
 
   /**
@@ -542,12 +703,33 @@
   };
 
   /**
-   * Formate l'annonce officielle d'avant-match : Mot de bienvenue
+   * Détermine la salutation appropriée selon l'heure ("Bonjour", "Bon après-midi", "Bonsoir")
+   */
+  const getGreetingForHour = (hour) => {
+    if (typeof hour !== "number" || Number.isNaN(hour)) return "Bonjour";
+    if (hour < 12) return "Bonjour";
+    if (hour < 18) return "Bon après-midi";
+    return "Bonsoir";
+  };
+
+  /**
+   * Formate l'annonce officielle d'avant-match selon le Manuel des officiels hors glace (p. 41)
    */
   const formatWelcomeMessage = (options = {}) => {
     const rawCategory = options.category || "M11 AA";
     const category = convertCategoryToQuebec(rawCategory);
     const categorySpoken = phonetizeCategory(category);
+
+    const greeting = clean(options.greeting || getGreetingForHour(options.hour));
+    const rawArena = clean(options.arena || "");
+    let arenaText = "";
+    let arenaHtml = "";
+    if (rawArena) {
+      const startsWithArena = /^ar[eé]na\b/i.test(rawArena);
+      const cleanArenaName = startsWithArena ? clean(rawArena.replace(/^ar[eé]na\s+/i, "")) : rawArena;
+      arenaText = ` à l'aréna ${cleanArenaName}`;
+      arenaHtml = ` à l'aréna <strong>${escapeHtml(cleanArenaName)}</strong>`;
+    }
 
     const awayTeam = clean(options.awayTeam || "Visiteurs");
     const homeTeam = clean(options.homeTeam || "Locaux");
@@ -561,19 +743,61 @@
     const homeGoalieNum = clean(String(options.homeGoalie?.number || options.homeGoalieNumber || "33"));
     const homeGoalieName = titleCase(options.homeGoalie?.name || options.homeGoalieName || "Jacob Gagnon");
 
-    const line1 = `Mesdames et messieurs, bienvenue à ce match de catégorie ${category}, opposant en chandail ${awayJersey} les ${awayTeam}, et en chandail ${homeJersey} les ${homeTeam}.`;
-    const line2 = `Les gardiens en présence : du côté des ${awayTeam}, le numéro ${awayGoalieNum}, ${awayGoalieName}, et du côté des ${homeTeam}, le numéro ${homeGoalieNum}, ${homeGoalieName}.`;
-    const line3 = `Sur ce, bonne chance aux deux équipes et bon match !`;
+    // Ligne 1 : Salutation, aréna, division/classe, équipes et couleurs de chandails
+    const line1 = `${greeting} mesdames et messieurs et bienvenue${arenaText} à cette rencontre de la division ${category}, entre les ${awayTeam} en chandail ${awayJersey} et les ${homeTeam} en chandail ${homeJersey}.`;
+    const htmlLine1 = `${escapeHtml(greeting)} mesdames et messieurs et bienvenue${arenaHtml} à cette rencontre de la division <strong>${escapeHtml(category)}</strong>, entre les <strong>${escapeHtml(awayTeam)}</strong> en chandail <strong>${escapeHtml(awayJersey)}</strong> et les <strong>${escapeHtml(homeTeam)}</strong> en chandail <strong>${escapeHtml(homeJersey)}</strong>.`;
 
-    const htmlLine1 = `Mesdames et messieurs, bienvenue à ce match de catégorie <strong>${escapeHtml(category)}</strong>, opposant en chandail <strong>${escapeHtml(awayJersey)}</strong> les <strong>${escapeHtml(awayTeam)}</strong>, et en chandail <strong>${escapeHtml(homeJersey)}</strong> les <strong>${escapeHtml(homeTeam)}</strong>.`;
-    const htmlLine2 = `Les gardiens en présence : du côté des <strong>${escapeHtml(awayTeam)}</strong>, le numéro <strong>${escapeHtml(awayGoalieNum)}</strong>, <strong>${escapeHtml(awayGoalieName)}</strong>, et du côté des <strong>${escapeHtml(homeTeam)}</strong>, le numéro <strong>${escapeHtml(homeGoalieNum)}</strong>, <strong>${escapeHtml(homeGoalieName)}</strong>.`;
-    const htmlLine3 = `Sur ce, bonne chance aux deux équipes et bon match !`;
+    // Ligne 2 : Gardiens de but partants
+    const line2 = `Les gardiens de but partant : pour les ${awayTeam}, le numéro ${awayGoalieNum}, ${awayGoalieName} et pour les ${homeTeam}, le numéro ${homeGoalieNum}, ${homeGoalieName}.`;
+    const htmlLine2 = `Les gardiens de but partant : pour les <strong>${escapeHtml(awayTeam)}</strong>, le numéro <strong>${escapeHtml(awayGoalieNum)}</strong>, <strong>${escapeHtml(awayGoalieName)}</strong> et pour les <strong>${escapeHtml(homeTeam)}</strong>, le numéro <strong>${escapeHtml(homeGoalieNum)}</strong>, <strong>${escapeHtml(homeGoalieName)}</strong>.`;
 
-    const speechText = `Mesdames et messieurs, bienvenue à ce match de catégorie ${categorySpoken}. Opposant en chandail ${awayJersey} les ${awayTeam}, et en chandail ${homeJersey} les ${homeTeam}. Les gardiens en présence : du côté des ${awayTeam}, le numéro ${awayGoalieNum}, ${awayGoalieName}. Et du côté des ${homeTeam}, le numéro ${homeGoalieNum}, ${homeGoalieName}. Sur ce, bonne chance aux deux équipes et bon match !`;
+    const lines = [line1, line2];
+    const htmlLines = [htmlLine1, htmlLine2];
+    const speechParts = [
+      `${greeting} mesdames et messieurs et bienvenue${arenaText} à cette rencontre de la division ${categorySpoken}, entre les ${awayTeam} en chandail ${awayJersey} et les ${homeTeam} en chandail ${homeJersey}.`,
+      line2
+    ];
+
+    // Ligne 3 (optionnelle) : Les officiels pour cette rencontre
+    const officials = options.officials;
+    if (officials && (officials.referee || (Array.isArray(officials.linesmen) && officials.linesmen.length > 0))) {
+      const refName = clean(officials.referee || "");
+      const linesmen = Array.isArray(officials.linesmen) ? officials.linesmen.map(clean).filter(Boolean) : [];
+      let offLine = "";
+      let offHtml = "";
+
+      if (refName && linesmen.length >= 2) {
+        offLine = `Les officiels pour cette rencontre : l'arbitre en chef ${refName}, ses adjoints, les juges de lignes ${linesmen[0]} et ${linesmen[1]}.`;
+        offHtml = `Les officiels pour cette rencontre : l'arbitre en chef <strong>${escapeHtml(refName)}</strong>, ses adjoints, les juges de lignes <strong>${escapeHtml(linesmen[0])}</strong> et <strong>${escapeHtml(linesmen[1])}</strong>.`;
+      } else if (refName && linesmen.length === 1) {
+        offLine = `Les officiels pour cette rencontre : l'arbitre en chef ${refName}, et le juge de lignes ${linesmen[0]}.`;
+        offHtml = `Les officiels pour cette rencontre : l'arbitre en chef <strong>${escapeHtml(refName)}</strong>, et le juge de lignes <strong>${escapeHtml(linesmen[0])}</strong>.`;
+      } else if (refName) {
+        offLine = `Les officiels pour cette rencontre : l'arbitre en chef ${refName}.`;
+        offHtml = `Les officiels pour cette rencontre : l'arbitre en chef <strong>${escapeHtml(refName)}</strong>.`;
+      } else if (linesmen.length >= 2) {
+        offLine = `Les officiels pour cette rencontre : les juges de lignes ${linesmen[0]} et ${linesmen[1]}.`;
+        offHtml = `Les officiels pour cette rencontre : les juges de lignes <strong>${escapeHtml(linesmen[0])}</strong> et <strong>${escapeHtml(linesmen[1])}</strong>.`;
+      }
+
+      if (offLine) {
+        lines.push(offLine);
+        htmlLines.push(offHtml);
+        speechParts.push(offLine);
+      }
+    }
+
+    // Ligne finale : Formule de clôture du manuel
+    const closingLine = `Bon match mesdames messieurs et bonne chance aux deux équipes.`;
+    lines.push(closingLine);
+    htmlLines.push(closingLine);
+    speechParts.push(closingLine);
 
     return {
       type: "welcome",
       title: "AVANT-MATCH — MOT DE BIENVENUE",
+      greeting,
+      arena: rawArena,
       category,
       awayTeam,
       homeTeam,
@@ -581,9 +805,9 @@
       homeJersey,
       awayGoalie: { number: awayGoalieNum, name: awayGoalieName },
       homeGoalie: { number: homeGoalieNum, name: homeGoalieName },
-      lines: [line1, line2, line3],
-      htmlLines: [htmlLine1, htmlLine2, htmlLine3],
-      speechText
+      lines,
+      htmlLines,
+      speechText: speechParts.join(" ")
     };
   };
 
@@ -607,6 +831,9 @@
       escapeHtml,
       getOrdinalMasc,
       formatPeriodTime,
+      formatPenaltyShotAction,
+      isCoachMember,
+      getGreetingForHour,
       phonetizeCategory
     }
   };

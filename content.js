@@ -25,14 +25,16 @@
   // "05:44" -> "5:44"
   const formatTime = (t) => clean(t).replace(/^0(\d)/, "$1");
 
-  // Extrait les joueurs au format "NOM PRÉNOM (77)"
+  // Extrait les joueurs ou entraîneurs au format "NOM PRÉNOM (77)" ou "NOM PRÉNOM (E1)" / "(ENT)"
   const parsePlayers = (text) => {
     const players = [];
-    const re = /([^,():]+?)\s*\((\d+)\)/g;
+    const re = /([^,():]+?)\s*\((\d+|E[1-5]|ENT|COACH|ENTRA[IÎ]NEUR(?:[\s\-]CHEF|[\s\-]ADJOINT)?|AC|HC|G[EÉ]R(?:ANT)?)\)/gi;
     let m;
     while ((m = re.exec(text))) {
       const name = m[1].replace(/^[\s\-–—]+/, "");
-      players.push({ name: titleCase(name), number: m[2] });
+      const num = m[2];
+      const isCoach = /^(?:E[1-5]|ENT|COACH|ENTRA|AC|HC|G[EÉ]R)/i.test(num);
+      players.push({ name: titleCase(name), number: num, isCoach });
     }
     return players;
   };
@@ -56,19 +58,24 @@
     [/majeure|major/i, "5 minutes"],
     [/extr[eê]me\s*inconduite|game\s*misconduct/i, "extrême inconduite de partie"],
     [/inconduite\s*de\s*match/i, "inconduite de match"],
-    [/p[eé]nalit[eé]\s*de\s*match|match\s*penalty/i, "5 minutes et pénalité de match"],
+    [/p[eé]nalit[eé]\s*de\s*match|punition\s*de\s*match|match\s*penalty/i, "punition de match et 5 minutes"],
+    [/tir\s*de\s*(?:punition|p[eé]nalit[eé])|penalty\s*shot/i, "tir de punition"],
     [/grossi[eè]re/i, "grossière inconduite"],
     [/inconduite|misconduct/i, "10 minutes"],
   ];
+
+  const escapeRegExp = (str) => String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   // Extrait les informations de pénalité : joueur fautif, purgeur, sévérité, infraction
   // Gère :
   // - "LILY-ROSE BOILEAU (30) - SERVI: MILA BEAUREGARD (15) - A22 - Coup de bâton (Mineure)"
   // - "Punition de banc: RAPHAELLE KANASH (24) - A80 - Trop de joueurs sur la patinoire (Mineure)"
   // - "ALEXE ROUSSON (99) - A48 - Contact avec la tête (Mineure 4/4)"
+  // - "SERGE BELIVEAU (E1) - D61 - Abus verbal envers un officiel (Extrême inconduite)"
   const parsePenaltyEvent = (details) => {
     const cleaned = cleanPenaltyDetails(details);
     const isBench = /\b(?:banc|bench)\b/i.test(cleaned);
+    const isCoachPrefix = /^(?:entra[iî]neur|coach)\s*[:\-–—]/i.test(cleaned);
 
     // Extraction d'un éventuel joueur purgeur via "- SERVI: NOM (NUM)" ou "SERVED / PURGÉ"
     let servedBy = null;
@@ -97,14 +104,20 @@
       // Pour une pénalité normale : le premier joueur est le fautif
       if (players.length > 0) {
         player = players[0];
+      } else if (isCoachPrefix) {
+        const coachMatch = s.match(/^(?:entra[iî]neur|coach)\s*[:\-–—]?\s*([^-–—()]+)/i);
+        if (coachMatch) {
+          player = { name: titleCase(coachMatch[1]), number: "ENT", isCoach: true };
+          s = s.slice(coachMatch[0].length).trim();
+        }
       }
     }
 
     // On retire le joueur fautif ou purgeur du début pour ne garder que l'infraction et la sévérité
-    if (player) {
-      s = s.replace(new RegExp(`^[^()]+?\\(${player.number}\\)`), "").trim();
-    } else if (isBench && servedBy) {
-      s = s.replace(new RegExp(`^[^()]+?\\(${servedBy.number}\\)`), "").trim();
+    if (player && player.number) {
+      s = s.replace(new RegExp(`^[^()]+?\\(${escapeRegExp(player.number)}\\)`, "i"), "").trim();
+    } else if (isBench && servedBy && servedBy.number) {
+      s = s.replace(new RegExp(`^[^()]+?\\(${escapeRegExp(servedBy.number)}\\)`, "i"), "").trim();
     }
 
     s = clean(s).replace(/^[\-–—:,\s]+/, "").replace(/[\-–—:,\s]+$/, "");
@@ -123,9 +136,11 @@
     const infraction = parts.join(" - ");
     const found = DURATIONS.find(([re]) => re.test(severity));
     const duration = found ? found[1] : (severity ? "" : "2 minutes");
+    const isCoach = isCoachPrefix || !!(player && player.isCoach);
 
     return {
       isBench,
+      isCoach,
       player,
       servedBy,
       code,
@@ -263,9 +278,11 @@
 
   const timeSentence = (ev) => {
     if (!ev.time) return "";
+    if (ev.type === "goal") {
+      return `Le temps du but : <strong>${escapeHtml(ev.time)}</strong>.`;
+    }
     const period = ev.period ? ` de la ${escapeHtml(ev.period)}` : "";
-    const label = ev.type === "penalty" ? "Le temps de la pénalité" : "Le temps du but";
-    return `${label} : <strong>${escapeHtml(ev.time)}</strong>${period}.`;
+    return `Le temps de la pénalité : <strong>${escapeHtml(ev.time)}</strong>${period}.`;
   };
 
   const buildGoal = (ev, summaryItem) => {
@@ -315,7 +332,7 @@
     // Construction de la mention spéciale intégrée directement dans la phrase du but
     const modifiers = [];
     if (isShortHanded) {
-      modifiers.push("en infériorité numérique");
+      modifiers.push("en désavantage numérique");
     } else if (isPowerPlay) {
       modifiers.push("en avantage numérique");
     } else if (isPenaltyShot) {
@@ -327,15 +344,14 @@
     }
 
     const modStr = modifiers.length ? ` ${modifiers.join(" ")}` : "";
-    const verb = `marqué${modStr} par le`;
 
     if (scorer) {
-      let scorerAndAssists = `${verb} ${playerHtml(scorer)}, `;
+      let scorerAndAssists = "";
       if (assists.length) {
         const parts = assists.map((a) => `du ${playerHtml(a)}`);
-        scorerAndAssists += `assisté ${parts.join(", et ")}.`;
+        scorerAndAssists = `marqué${modStr} par le ${playerHtml(scorer)}, avec l'aide ${parts.join(", et ")}.`;
       } else {
-        scorerAndAssists += `sans aide.`;
+        scorerAndAssists = `marqué${modStr} sans aide par le ${playerHtml(scorer)}.`;
       }
       lines.push(`<div class="sa-line">${scorerAndAssists}</div>`);
     } else if (cleanDetails) {
@@ -352,6 +368,7 @@
   };
 
   const companionPenaltyRegistry = new Map();
+  const coincidentPenaltyRegistry = new Map();
 
   // Retrouve toutes les lignes de pénalité associées au même joueur au même temps de match
   const findCompanionPenalties = (summaryItem, ev, player) => {
@@ -385,6 +402,68 @@
     }
 
     return visibleCompanions.length ? visibleCompanions : [summaryItem];
+  };
+
+  // Détecte deux punitions pareilles (coïncidentes) entre un joueur visiteur et un joueur local au même temps
+  const findCoincidentOpponentPenalty = (summaryItem, ev, player, myCodes, myPenInfo) => {
+    if (!player || !player.number || player.isCoach || myPenInfo.isBench || myPenInfo.isCoach) return null;
+    if (myCodes.some((c) => /^F/i.test(c))) return null;
+
+    const mySig = myCodes.length > 0
+      ? [...myCodes].map((c) => c.toUpperCase()).sort().join("+")
+      : `${(myPenInfo.duration || "").toLowerCase()}_${(myPenInfo.infraction || "").toLowerCase()}`;
+    if (!mySig) return null;
+
+    const oppSide = ev.side === "home" ? "away" : "home";
+    const host = summaryItem.closest(".summary-items") || summaryItem.closest("hi-summary-list") || document.body;
+    const allItems = [...host.querySelectorAll(".summary-item")].filter((item) => {
+      const a = item.querySelector(".action");
+      return a && a.classList.contains("penalty");
+    });
+
+    // Regrouper les pénalités de l'équipe adverse au même temps par joueur
+    const oppGroups = new Map();
+    allItems.forEach((item) => {
+      const oEv = readEvent(item);
+      if (!oEv || oEv.side !== oppSide || oEv.period !== ev.period || oEv.time !== ev.time) return;
+      const parsed = parsePenaltyEvent(oEv.details);
+      if (!parsed.player || !parsed.player.number || parsed.player.isCoach || parsed.isBench || parsed.isCoach) return;
+      const pNum = parsed.player.number;
+      if (!oppGroups.has(pNum)) {
+        oppGroups.set(pNum, { player: parsed.player, codes: [], penInfo: parsed, items: [] });
+      }
+      const grp = oppGroups.get(pNum);
+      if (parsed.code) grp.codes.push(parsed.code);
+      grp.items.push(item);
+    });
+
+    const matchingOpp = [];
+    oppGroups.forEach((grp) => {
+      const oppSig = grp.codes.length > 0
+        ? [...grp.codes].map((c) => c.toUpperCase()).sort().join("+")
+        : `${(grp.penInfo.duration || "").toLowerCase()}_${(grp.penInfo.infraction || "").toLowerCase()}`;
+      if (oppSig === mySig) {
+        matchingOpp.push(grp);
+      }
+    });
+
+    const cacheKey = `${ev.period}_${ev.time}_${ev.side}_${player.number}_${mySig}`;
+    if (matchingOpp.length === 1) {
+      const match = {
+        teamName: getTeamName(oppSide),
+        penalizedPlayer: matchingOpp[0].player,
+        side: oppSide,
+        items: matchingOpp[0].items
+      };
+      coincidentPenaltyRegistry.set(cacheKey, match);
+      return match;
+    }
+
+    if (coincidentPenaltyRegistry.has(cacheKey)) {
+      return coincidentPenaltyRegistry.get(cacheKey);
+    }
+
+    return null;
   };
 
   // Combine intelligemment les pénalités multiples d'un même joueur au même temps (ex: 2/4 + 4/4 ou Majeure + Extrême inconduite)
@@ -457,14 +536,24 @@
         if (parsed.code) codes.push(parsed.code);
       });
 
+      const oppSide = ev.side === "home" ? "away" : "home";
+      const coincidentWith = summaryItem && penInfo.player
+        ? findCoincidentOpponentPenalty(summaryItem, ev, penInfo.player, codes, penInfo)
+        : null;
+
       const formatted = SpordleEngine.formatPenalty({
         teamName: ev.team,
+        side: ev.side,
+        awardedTeamName: getTeamName(oppSide),
         isBenchMinor: penInfo.isBench,
+        isCoach: penInfo.isCoach,
         penalizedPlayer: penInfo.player,
         servedByPlayer: penInfo.servedBy,
+        coincidentWith,
         codes: codes.length > 0 ? codes : undefined,
         infractionDescription: penInfo.infraction,
         durationDescription: penInfo.duration,
+        severity: penInfo.severity,
         time: ev.time,
         period: ev.period,
       });
@@ -549,45 +638,46 @@
     }
   };
 
-  const buildGoalieChange = (ev, summaryItem) => {
-    // Format attendu de ev.details : "ANAELLE LEMIEUX (33) - Mis dans le filet" ou "Retiré du filet"
-    const isIntoNet = /mis\s*dans\s*le\s*filet|in\s*net|entr[eé]/i.test(ev.details);
-    const isPulled = /retir[eé]\s*du\s*filet|pulled|out/i.test(ev.details);
+  const isEmptyNetGoalieEvent = (details) => {
+    const d = clean(details || "");
+    if (!d) return true;
+    if (/empty\s*net|filet\s*d[eé]sert|aucun\s*gardien|no\s*goalie|retir[eé]\s*du\s*filet|pulled|sorti\s*du\s*filet/i.test(d)) {
+      return true;
+    }
+    return parsePlayers(d).length === 0;
+  };
 
+  const buildGoalieChange = (ev, summaryItem) => {
     const players = parsePlayers(ev.details);
     const goalie = players.length ? players[0] : null;
+    const emptyNet = isEmptyNetGoalieEvent(ev.details);
 
     if (typeof SpordleEngine !== "undefined" && SpordleEngine.formatGoalieChange) {
-      if (isIntoNet) {
-        const formatted = SpordleEngine.formatGoalieChange({
-          teamName: ev.team,
-          goalie,
-          time: ev.time,
-          period: ev.period
-        });
-        return formatted.htmlLines.map((l) => `<div class="sa-line">${l}</div>`).join("");
-      } else if (isPulled) {
-        // Gardien retiré (ex: 6e attaquant ou fin de match)
-        const lines = [
-          `<div class="sa-line">Le gardien de but des <strong>${escapeHtml(ev.team)}</strong> est retiré de son filet.</div>`
-        ];
-        if (ev.time) {
-          lines.push(`<div class="sa-line">Le temps du retrait : <strong>${escapeHtml(ev.time)}</strong>${ev.period ? ` de la ${escapeHtml(ev.period)}` : ""}.</div>`);
-        }
-        return lines.join("");
-      }
+      const formatted = SpordleEngine.formatGoalieChange({
+        teamName: ev.team,
+        goalie,
+        details: ev.details,
+        isEmptyNet: emptyNet,
+        time: ev.time,
+        period: ev.period
+      });
+      return formatted.htmlLines.map((l) => `<div class="sa-line">${l}</div>`).join("");
     }
 
-    // Fallback direct
+    if (emptyNet) {
+      return (
+        `<div class="sa-line"><strong>⚠️ Ne pas annoncer au micro — Filet désert</strong></div>` +
+        `<div class="sa-line">Il n'y a pas d'annonce à faire pour un filet désert (gardien retiré).</div>`
+      );
+    }
+
+    // Fallback direct (sans temps, selon le manuel)
     const numStr = goalie ? `le numéro <strong>${escapeHtml(goalie.number)}</strong>, ${escapeHtml(goalie.name)}` : "";
     const lines = [
-      `<div class="sa-line">Changement de gardien de but du côté des <strong>${escapeHtml(ev.team)}</strong>,</div>`
+      `<div class="sa-line">Changement de gardien de but pour les <strong>${escapeHtml(ev.team)}</strong>,</div>`
     ];
     if (numStr) {
-      lines.push(`<div class="sa-line">maintenant devant le filet : ${numStr}.</div>`);
-    }
-    if (ev.time) {
-      lines.push(`<div class="sa-line">Le temps du changement : <strong>${escapeHtml(ev.time)}</strong>${ev.period ? ` de la ${escapeHtml(ev.period)}` : ""}.</div>`);
+      lines.push(`<div class="sa-line">maintenant devant le filet ${numStr}.</div>`);
     }
     return lines.join("");
   };
@@ -983,12 +1073,22 @@
     const items = [...document.querySelectorAll(".summary-item")];
     items.forEach((item) => {
       const action = item.querySelector(".action");
-      if (action && (action.classList.contains("goal") || action.classList.contains("penalty") || action.classList.contains("goalie"))) {
+      if (!action) return;
+      if (action.classList.contains("goalie")) {
+        const detailsText = item.querySelector(".details")?.textContent || "";
+        if (isEmptyNetGoalieEvent(detailsText)) {
+          const existingBtn = item.querySelector(`.${BTN_CLASS}`);
+          if (existingBtn) existingBtn.remove();
+          item.classList.remove("sa-has-btn");
+          return;
+        }
+      }
+      if (action.classList.contains("goal") || action.classList.contains("penalty") || action.classList.contains("goalie")) {
         decorate(item);
       }
     });
 
-    // Marquer visuellement les pénalités combinées du même joueur au même temps
+    // Marquer visuellement les pénalités combinées (même joueur ou punitions pareilles coïncidentes)
     items.forEach((item) => {
       const action = item.querySelector(".action");
       if (action && action.classList.contains("penalty")) {
@@ -997,10 +1097,23 @@
           const penInfo = parsePenaltyEvent(ev.details);
           if (penInfo.player) {
             const companions = findCompanionPenalties(item, ev, penInfo.player);
-            if (companions.length > 1) {
+            const itemsToCombine = companions.length ? companions : [item];
+            const codes = [];
+            itemsToCombine.forEach((cItem) => {
+              const oEv = cItem === item ? ev : readEvent(cItem);
+              const parsed = parsePenaltyEvent(oEv.details);
+              if (parsed.code) codes.push(parsed.code);
+            });
+            const coincident = findCoincidentOpponentPenalty(item, ev, penInfo.player, codes, penInfo);
+
+            if (companions.length > 1 || coincident) {
               item.classList.add("sa-penalty-linked");
               const btn = item.querySelector(`.${BTN_CLASS}`);
-              if (btn) btn.title = "Pénalité combinée — Afficher / masquer le texte de l'annonceur";
+              if (btn) {
+                btn.title = coincident
+                  ? "Punitions pareilles (coïncidentes) — Afficher / masquer le texte de l'annonceur"
+                  : "Pénalité combinée — Afficher / masquer le texte de l'annonceur";
+              }
             } else {
               item.classList.remove("sa-penalty-linked");
             }
@@ -1554,10 +1667,10 @@
   const getGoaliesFromSummary = () => {
     let awayGoalie = null;
     let homeGoalie = null;
-    const items = [...document.querySelectorAll(".summary-item")];
+    const items = [...document.querySelectorAll(".summary-item")].reverse();
     items.forEach((item) => {
       const ev = readEvent(item);
-      if (ev && ev.type === "goalie") {
+      if (ev && ev.type === "goalie" && !isEmptyNetGoalieEvent(ev.details)) {
         const players = parsePlayers(ev.details);
         if (players.length) {
           if (ev.side === "home" && !homeGoalie) {
@@ -1599,12 +1712,39 @@
     categoryEl.appendChild(btn);
   };
 
+  const getGameArenaName = () => {
+    const data = getGameData();
+    if (data) {
+      const arena =
+        data.arena?.name ||
+        data.game?.arena?.name ||
+        (typeof data.game?.arena === "string" ? data.game.arena : "") ||
+        (typeof data.arena === "string" ? data.arena : "");
+      if (arena && clean(arena)) return clean(arena);
+    }
+    return "";
+  };
+
+  const getGameOfficials = () => {
+    const data = getGameData();
+    if (!data) return null;
+    if (data.officials && (data.officials.referee || data.officials.linesmen)) {
+      return data.officials;
+    }
+    if (data.game?.officials && (data.game.officials.referee || data.game.officials.linesmen)) {
+      return data.game.officials;
+    }
+    return null;
+  };
+
   const openWelcomeModal = () => {
     ensureElements();
     pinned = true;
 
     // Catégorie issue des données de l'API (i18n.fr.name = "M12 AA")
     const category = getGameCategoryName();
+    const arena = getGameArenaName();
+    const officials = getGameOfficials();
     const awayTeam = getTeamName("away");
     const homeTeam = getTeamName("home");
 
@@ -1623,6 +1763,9 @@
         : (localStorage.getItem("sa_jersey_home") || apiJerseys.homeJersey);
 
       const data = SpordleEngine.formatWelcomeMessage({
+        hour: new Date().getHours(),
+        arena,
+        officials,
         category,
         awayTeam,
         homeTeam,
@@ -1639,6 +1782,8 @@
       const homeEffective = homeColorObj || parseTeamColor(homeJersey) || { hex: "#0046ad", name: "Bleu royal" };
       const homeSwatchStyle = `background-color: ${homeEffective.hex}; ${homeEffective.border ? `border: 1px solid ${homeEffective.border};` : ""}`;
       const homeDisplayName = homeEffective.name || titleCase(homeJersey);
+
+      const linesHtml = data.htmlLines.map((l) => `<div class="sa-line">${l}</div>`).join("");
 
       popover.className = "sa-visible sa-welcome sa-pinned";
       popover.innerHTML =
@@ -1674,9 +1819,7 @@
                 `</button>` +
               `</div>` +
             `</div>` +
-            `<div class="sa-line">${data.htmlLines[0]}</div>` +
-            `<div class="sa-line">${data.htmlLines[1]}</div>` +
-            `<div class="sa-line">${data.htmlLines[2]}</div>` +
+            linesHtml +
           `</div>` +
         `</div>` +
         `<div class="sa-modal-footer">` +

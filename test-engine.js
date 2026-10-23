@@ -37,8 +37,8 @@ test("But 1 : Forces égales avec 2 passes", () => {
   });
 
   assert.strictEqual(res.lines[0], "Le premier but des Remparts Est Richelieu,");
-  assert.strictEqual(res.lines[1], "marqué par le numéro 25, Sarah Zhang, assisté du numéro 99, Alexe Rousson, et du numéro 32, Victoria Joseph.");
-  assert.strictEqual(res.lines[2], "Le temps du but : 13:37 de la 3e période.");
+  assert.strictEqual(res.lines[1], "marqué par le numéro 25, Sarah Zhang, avec l'aide du numéro 99, Alexe Rousson, et du numéro 32, Victoria Joseph.");
+  assert.strictEqual(res.lines[2], "Le temps du but : 13:37.");
 });
 
 test("But 2 : Forces égales avec 1 passe", () => {
@@ -52,8 +52,8 @@ test("But 2 : Forces égales avec 1 passe", () => {
   });
 
   assert.strictEqual(res.lines[0], "Le deuxième but des Express Rive-Sud,");
-  assert.strictEqual(res.lines[1], "marqué par le numéro 74, Loïc Poulin, assisté du numéro 4, Jacob Lapierre.");
-  assert.strictEqual(res.lines[2], "Le temps du but : 9:34 de la 1re période.");
+  assert.strictEqual(res.lines[1], "marqué par le numéro 74, Loïc Poulin, avec l'aide du numéro 4, Jacob Lapierre.");
+  assert.strictEqual(res.lines[2], "Le temps du but : 9:34.");
 });
 
 test("But 3 : Sans aide", () => {
@@ -67,7 +67,7 @@ test("But 3 : Sans aide", () => {
   });
 
   assert.strictEqual(res.lines[0], "Le quatrième but des Remparts Ouest Richelieu,");
-  assert.strictEqual(res.lines[1], "marqué par le numéro 10, Abigail Hanley, sans aide.");
+  assert.strictEqual(res.lines[1], "marqué sans aide par le numéro 10, Abigail Hanley.");
 });
 
 test("But 4 : Avantage numérique [AN]", () => {
@@ -81,10 +81,10 @@ test("But 4 : Avantage numérique [AN]", () => {
     period: "1"
   });
 
-  assert.strictEqual(res.lines[1], "marqué en avantage numérique par le numéro 23, Luna Zhang, assisté du numéro 24, Raphaelle Kanash.");
+  assert.strictEqual(res.lines[1], "marqué en avantage numérique par le numéro 23, Luna Zhang, avec l'aide du numéro 24, Raphaelle Kanash.");
 });
 
-test("But 5 : Infériorité numérique [DN / IN]", () => {
+test("But 5 : Désavantage numérique [DN / IN]", () => {
   const res = engine.formatGoal({
     teamName: "Remparts Ouest Richelieu",
     teamGoalCount: 3,
@@ -95,7 +95,7 @@ test("But 5 : Infériorité numérique [DN / IN]", () => {
     period: "1"
   });
 
-  assert.strictEqual(res.lines[1], "marqué en infériorité numérique par le numéro 14, Juliette Lambert, sans aide.");
+  assert.strictEqual(res.lines[1], "marqué en désavantage numérique sans aide par le numéro 14, Juliette Lambert.");
 });
 
 test("But 6 : Filet désert [FD]", () => {
@@ -109,10 +109,10 @@ test("But 6 : Filet désert [FD]", () => {
     period: "3"
   });
 
-  assert.strictEqual(res.lines[1], "marqué dans un filet désert par le numéro 26, Zelda Bouthillier, sans aide.");
+  assert.strictEqual(res.lines[1], "marqué dans un filet désert sans aide par le numéro 26, Zelda Bouthillier.");
 });
 
-test("But 7 : Combo Infériorité + Filet désert [DN + FD]", () => {
+test("But 7 : Combo Désavantage + Filet désert [DN + FD]", () => {
   const res = engine.formatGoal({
     teamName: "Remparts Est Richelieu",
     teamGoalCount: 4,
@@ -124,7 +124,7 @@ test("But 7 : Combo Infériorité + Filet désert [DN + FD]", () => {
     period: "3"
   });
 
-  assert.strictEqual(res.lines[1], "marqué en infériorité numérique dans un filet désert par le numéro 25, Shaid Zerbish, sans aide.");
+  assert.strictEqual(res.lines[1], "marqué en désavantage numérique dans un filet désert sans aide par le numéro 25, Shaid Zerbish.");
 });
 
 test("But 8 : Tir de punition", () => {
@@ -138,7 +138,7 @@ test("But 8 : Tir de punition", () => {
     period: "3"
   });
 
-  assert.strictEqual(res.lines[1], "marqué sur un tir de punition par le numéro 21, Liliane Tousignant, sans aide.");
+  assert.strictEqual(res.lines[1], "marqué sur un tir de punition sans aide par le numéro 21, Liliane Tousignant.");
 });
 
 test("But 9 : 2e but du même joueur (son deuxième de la rencontre)", () => {
@@ -152,7 +152,7 @@ test("But 9 : 2e but du même joueur (son deuxième de la rencontre)", () => {
   });
 
   assert.strictEqual(res.lines[0], "Le troisième but des Remparts Est Richelieu, son deuxième de la rencontre,");
-  assert.strictEqual(res.lines[1], "marqué par le numéro 25, Sarah Zhang, assisté du numéro 32, Victoria Joseph.");
+  assert.strictEqual(res.lines[1], "marqué par le numéro 25, Sarah Zhang, avec l'aide du numéro 32, Victoria Joseph.");
 });
 
 test("But 10 : Tour du chapeau (son troisième de la rencontre)", () => {
@@ -182,13 +182,14 @@ test("But 11 : Rang de but non spécifié ou 0", () => {
   assert.strictEqual(res.htmlLines[0], "Le but des <strong>Remparts Est Richelieu</strong>,");
 });
 
-test("But 12 : Sans indication de période", () => {
+test("But 12 : Temps du but sans mention de période", () => {
   const res = engine.formatGoal({
     teamName: "Remparts Est Richelieu",
     teamGoalCount: 1,
     scorer: { name: "SARAH ZHANG", number: 25 },
     assists: [],
-    time: "10:00"
+    time: "10:00",
+    period: "2"
   });
 
   assert.strictEqual(res.lines[2], "Le temps du but : 10:00.");
@@ -300,7 +301,7 @@ test("Pénalité 7 : Mineure + Inconduite A83+C83 (Refus mesurage)", () => {
   assert.strictEqual(res.lines[2], "2 minutes et 10 minutes d'inconduite pour refus de se soumettre à un mesurage.");
 });
 
-test("Pénalité 8 : Punition de match E32+B32 (Tentative de blesser)", () => {
+test("Pénalité 8 : Punition de match E32+B32 (Tentative de blesser — ordre du manuel)", () => {
   const res = engine.formatPenalty({
     teamName: "Express Rive-Sud",
     penalizedPlayer: { name: "MAXIME GAGNON", number: 12 },
@@ -309,7 +310,7 @@ test("Pénalité 8 : Punition de match E32+B32 (Tentative de blesser)", () => {
     period: "3"
   });
 
-  assert.strictEqual(res.lines[2], "5 minutes et punition de match pour tentative de blesser.");
+  assert.strictEqual(res.lines[2], "punition de match et 5 minutes pour tentative de blesser.");
 });
 
 test("Pénalité 9 : Gardien de but A22/G (Suffixe /G)", () => {
@@ -327,12 +328,65 @@ test("Pénalité 9 : Gardien de but A22/G (Suffixe /G)", () => {
   assert.strictEqual(res.lines[3], "La pénalité sera purgée par le numéro 14, Juliette Lambert.");
 });
 
+test("Pénalité 10 : Extrême inconduite à un entraîneur (E1 D61) -> Avertissement Ne pas annoncer", () => {
+  const res = engine.formatPenalty({
+    teamName: "Remparts Est Richelieu",
+    penalizedPlayer: { name: "SERGE BELIVEAU", number: "E1", isCoach: true },
+    codes: ["D61"],
+    time: "12:30",
+    period: "3"
+  });
+
+  assert.strictEqual(res.isDoNotAnnounce, true);
+  assert.strictEqual(res.lines[0], "Ne pas annoncer au micro — Extrême inconduite à un entraîneur");
+  assert.ok(res.htmlLines[0].includes("Ne pas annoncer au micro"));
+});
+
+test("Pénalité 11 : Deux punitions pareilles / coïncidentes (Visiteur + Local)", () => {
+  const res = engine.formatPenalty({
+    teamName: "Remparts Ouest Richelieu",
+    side: "home",
+    penalizedPlayer: { name: "SAMUEL NADEAU", number: 19 },
+    coincidentWith: {
+      teamName: "Remparts Est Richelieu",
+      side: "away",
+      penalizedPlayer: { name: "FÉLIX DUPUIS", number: 8 }
+    },
+    codes: ["A47"],
+    time: "10:15",
+    period: "2"
+  });
+
+  assert.strictEqual(res.isCoincident, true);
+  assert.strictEqual(res.lines[0], "Pénalité aux Remparts Est Richelieu, au numéro 8, Félix Dupuis,");
+  assert.strictEqual(res.lines[1], "et aux Remparts Ouest Richelieu, au numéro 19, Samuel Nadeau,");
+  assert.strictEqual(res.lines[2], "2 minutes chacun pour rudesse.");
+  assert.strictEqual(res.lines[3], "Le temps de la pénalité : 10:15 de la 2e période.");
+});
+
+test("Pénalité 12 : Tir de punition décerné (Code F53)", () => {
+  const res = engine.formatPenalty({
+    teamName: "Remparts Ouest Richelieu",
+    awardedTeamName: "Remparts Est Richelieu",
+    penalizedPlayer: { name: "JEAN-LUC MERCIER", number: 17 },
+    shooterPlayer: { name: "SARAH ZHANG", number: 25 },
+    codes: ["F53"],
+    time: "15:00",
+    period: "3"
+  });
+
+  assert.strictEqual(res.lines[0], "Un tir de punition est accordé aux Remparts Est Richelieu");
+  assert.strictEqual(res.lines[1], "puisque le numéro 17, Jean-Luc Mercier, des Remparts Ouest Richelieu a fait trébucher.");
+  assert.strictEqual(res.lines[2], "Le tir sera effectué par le numéro 25, Sarah Zhang.");
+  assert.strictEqual(res.lines[3], "Le temps de la pénalité : 15:00 de la 3e période.");
+});
+
 // =========================================================================
 // TESTS : GARDIENS DE BUT (GOALIE ENGINE)
 // =========================================================================
 console.log("\n--- Tests du moteur de gardiens de but ---");
 
-test("Gardien 1 : Changement de gardien de but standard", () => {
+test("Gardien 1 : Changement de gardien de but standard (sans temps selon le manuel)", () => {
   const res = engine.formatGoalieChange({
     teamName: "Remparts Ouest Richelieu",
     goalie: { name: "NATHAN BOLDUC", number: 33 },
@@ -340,20 +394,30 @@ test("Gardien 1 : Changement de gardien de but standard", () => {
     period: "2"
   });
 
-  assert.strictEqual(res.lines[0], "Changement de gardien de but du côté des Remparts Ouest Richelieu,");
-  assert.strictEqual(res.lines[1], "maintenant devant le filet : le numéro 33, Nathan Bolduc.");
-  assert.strictEqual(res.lines[2], "Le temps du changement : 10:00 de la 2e période.");
+  assert.strictEqual(res.lines[0], "Changement de gardien de but pour les Remparts Ouest Richelieu,");
+  assert.strictEqual(res.lines[1], "maintenant devant le filet le numéro 33, Nathan Bolduc.");
+  assert.strictEqual(res.lines.length, 2);
 });
 
-test("Gardien 2 : Changement de gardien sans temps", () => {
+test("Gardien 2 : Changement de gardien sans temps fourni", () => {
   const res = engine.formatGoalieChange({
     teamName: "Express Rive-Sud",
     goalie: { name: "CHARLIE HEBERT", number: 1 }
   });
 
-  assert.strictEqual(res.lines[0], "Changement de gardien de but du côté des Express Rive-Sud,");
-  assert.strictEqual(res.lines[1], "maintenant devant le filet : le numéro 1, Charlie Hebert.");
+  assert.strictEqual(res.lines[0], "Changement de gardien de but pour les Express Rive-Sud,");
+  assert.strictEqual(res.lines[1], "maintenant devant le filet le numéro 1, Charlie Hebert.");
   assert.strictEqual(res.lines.length, 2);
+});
+
+test("Gardien 3 : Empty net / Filet désert / Gardien retiré -> Aucune annonce", () => {
+  const res = engine.formatGoalieChange({
+    teamName: "Remparts Ouest Richelieu",
+    details: "Empty net - Mis dans le filet"
+  });
+
+  assert.strictEqual(res.isDoNotAnnounce, true);
+  assert.strictEqual(res.lines[0], "Ne pas annoncer au micro — Filet désert");
 });
 
 // =========================================================================
@@ -423,21 +487,29 @@ test("Bienvenue 1 : Conversion catégorie U11 AA -> M11 AA", () => {
   assert.strictEqual(engine.convertCategoryToQuebec("M11 A"), "M11 A");
 });
 
-test("Bienvenue 2 : Génération complète de l'annonce d'avant-match", () => {
+test("Bienvenue 2 : Génération complète de l'annonce d'avant-match (avec aréna et officiels)", () => {
   const res = engine.formatWelcomeMessage({
+    hour: 19,
+    arena: "Glaces de la Rive-Sud",
     category: "U11 AA",
     awayTeam: "Remparts Est Richelieu",
     homeTeam: "Remparts Ouest Richelieu",
     awayJersey: "blanc",
     homeJersey: "bleu",
     awayGoalie: { number: "30", name: "FÉLIX TREMBLAY" },
-    homeGoalie: { number: "33", name: "JACOB GAGNON" }
+    homeGoalie: { number: "33", name: "JACOB GAGNON" },
+    officials: {
+      referee: "Marc Lavoie",
+      linesmen: ["Sophie Côté", "Éric Bélanger"]
+    }
   });
 
   assert.strictEqual(res.category, "M11 AA");
-  assert.strictEqual(res.lines[0], "Mesdames et messieurs, bienvenue à ce match de catégorie M11 AA, opposant en chandail blanc les Remparts Est Richelieu, et en chandail bleu les Remparts Ouest Richelieu.");
-  assert.strictEqual(res.lines[1], "Les gardiens en présence : du côté des Remparts Est Richelieu, le numéro 30, Félix Tremblay, et du côté des Remparts Ouest Richelieu, le numéro 33, Jacob Gagnon.");
-  assert.strictEqual(res.lines[2], "Sur ce, bonne chance aux deux équipes et bon match !");
+  assert.strictEqual(res.greeting, "Bonsoir");
+  assert.strictEqual(res.lines[0], "Bonsoir mesdames et messieurs et bienvenue à l'aréna Glaces de la Rive-Sud à cette rencontre de la division M11 AA, entre les Remparts Est Richelieu en chandail blanc et les Remparts Ouest Richelieu en chandail bleu.");
+  assert.strictEqual(res.lines[1], "Les gardiens de but partant : pour les Remparts Est Richelieu, le numéro 30, Félix Tremblay et pour les Remparts Ouest Richelieu, le numéro 33, Jacob Gagnon.");
+  assert.strictEqual(res.lines[2], "Les officiels pour cette rencontre : l'arbitre en chef Marc Lavoie, ses adjoints, les juges de lignes Sophie Côté et Éric Bélanger.");
+  assert.strictEqual(res.lines[3], "Bon match mesdames messieurs et bonne chance aux deux équipes.");
   assert.ok(res.htmlLines[0].includes("<strong>M11 AA</strong>"));
   assert.ok(res.htmlLines[0].includes("<strong>blanc</strong>"));
   assert.ok(res.htmlLines[1].includes("<strong>30</strong>"));

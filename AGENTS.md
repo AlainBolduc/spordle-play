@@ -42,28 +42,28 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
 
 ---
 
-## 3. Spécifications fonctionnelles et règles de texte
+## 3. Spécifications fonctionnelles et règles de texte (Manuel des officiels hors glace)
 
-### A. Annonce d'un but (`buildGoal`)
+### A. Annonce d'un but (`buildGoal` / `formatGoal`)
 1. **Rang ordinal du but** : Calculé par rapport à l'équipe (« Le premier but », « Le deuxième but », « Le troisième but », etc.).
 2. **Nom d'équipe réel** : Ne jamais afficher « Local » ou « Visiteur » ; extraire le nom officiel (`Express Rive-Sud 7`, etc.) via `.score-home` / `.score-away`.
 3. **Joueur et passes** :
    - But & passes sur la **même ligne** (aucun saut de ligne entre le marqueur et les aides/sans aide) :
-     - Avec aides : « **marqué [situation spéciale] par le numéro X, [Nom Prénom], assisté du numéro Y, [Nom Prénom], et du numéro Z, [Nom Prénom].** »
-     - Sans aide : « **marqué [situation spéciale] par le numéro X, [Nom Prénom], sans aide.** »
+     - Avec aides : « **marqué [situation spéciale] par le numéro X, [Nom Prénom], avec l'aide du numéro Y, [Nom Prénom], et du numéro Z, [Nom Prénom].** »
+     - Sans aide : « **marqué [situation spéciale] sans aide par le numéro X, [Nom Prénom].** » (`sans aide` placé avant `par le numéro`).
    - **Multiples buts du même joueur** : À partir du 2e but d'un même joueur pour son équipe, ajouter après le nom d'équipe : « **, son [deuxième / troisième / ...] de la rencontre,** » (ex. : *« Le troisième but des Remparts Est Richelieu, son troisième de la rencontre, »*).
 4. **Situations spéciales** :
    - **Toutes intégrées directement dans la phrase du buteur** :
-     - `[DN]`, `[SH]`, ou `[IN]` : **« marqué en infériorité numérique par le numéro X, [Nom Prénom], ... »**
-     - `[AN]`, `[PP]`, ou `[SN]` : **« marqué en avantage numérique par le numéro X, [Nom Prénom], ... »**
-     - `[FD]`, `[EN]`, ou `[ENG]` : **« marqué dans un filet désert par le numéro X, [Nom Prénom], ... »**
-     - `[Tir de punition]` ou `[Penalty shot]` : **« marqué sur un tir de punition par le numéro X, [Nom Prénom], ... »**
-     - **Combinaisons** (ex. `[DN]` + `[FD]`) : **« marqué en infériorité numérique dans un filet désert par le numéro X, [Nom Prénom], ... »**
+     - `[DN]`, `[SH]`, ou `[IN]` : **« marqué en désavantage numérique [sans aide] par le numéro X, [Nom Prénom], ... »**
+     - `[AN]`, `[PP]`, ou `[SN]` : **« marqué en avantage numérique [sans aide] par le numéro X, [Nom Prénom], ... »**
+     - `[FD]`, `[EN]`, ou `[ENG]` : **« marqué dans un filet désert [sans aide] par le numéro X, [Nom Prénom], ... »**
+     - `[Tir de punition]` ou `[Penalty shot]` : **« marqué sur un tir de punition [sans aide] par le numéro X, [Nom Prénom], ... »**
+     - **Combinaisons** (ex. `[DN]` + `[FD]`) : **« marqué en désavantage numérique dans un filet désert [sans aide] par le numéro X, [Nom Prénom], ... »**
    - Nettoyer ces balises pour ne pas polluer les noms de joueurs.
-5. **Temps du but** : Ligne distincte (avec retour à la ligne) :
-   - « **Le temps du but : MM:SS de la Xe période.** »
+5. **Temps du but** : Ligne distincte (sans mention de la période, conformément au manuel) :
+   - « **Le temps du but : MM:SS.** »
 
-### B. Annonce d'une pénalité (`buildPenalty`)
+### B. Annonce d'une pénalité (`buildPenalty` / `formatPenalty`)
 1. **Terminologie** : Utiliser impérativement le mot **« Pénalité »** (et non « Punition »).
 2. **Formule épurée** :
    - « Pénalité aux **[Équipe]**, »
@@ -88,24 +88,46 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
 4. **Pénalités multiples combinées (même joueur au même temps de match)** :
    - **Double mineure** (ex: `Mineure 2/4` + `Mineure 4/4` pour contact à la tête) :
      -> **« 4 minutes pour [infraction]. »**
-   - **Majeure + Extrême inconduite** (ex: `Majeure` + `Extrême inconduite` pour mise en échec par derrière) :
+   - **Majeure + Extrême inconduite** (`B+D`) :
      -> **« 5 minutes et extrême inconduite de partie pour [infraction]. »**
-   - **Mineure + Inconduite** (2 + 10) :
+   - **Punition de match** (`E+B`) :
+     -> **« punition de match et 5 minutes pour [infraction]. »**
+   - **Mineure + Inconduite** (2 + 10, `A+C`) :
      -> **« 2 minutes et 10 minutes d'inconduite pour [infraction]. »**
-   - Les deux lignes du sommaire affichent le texte combiné et sont visuellement identifiées par une bordure dorée (`.sa-penalty-linked`).
-5. **Éléments exclus** :
+   - Les lignes combinées affichent le texte fusionné et sont visuellement identifiées par une bordure dorée (`.sa-penalty-linked`).
+5. **Deux punitions pareilles / coïncidentes (Visiteur + Local au même temps)** :
+   - « Pénalité aux **[Équipe visiteuse]**, au numéro **X, [Nom]**, »
+   - « et aux **[Équipe locale]**, au numéro **Y, [Nom]**, »
+   - « **[durée] chacun** pour [infraction]. »
+   - « Le temps de la pénalité : **MM:SS** de la Xe période. »
+6. **Tir de punition décerné (`Code F`)** :
+   - « Un tir de punition est accordé aux **[Équipe adverse]** »
+   - « puisque le numéro **X, [Nom]**, des **[Équipe fautive]** a [geste/infraction]. »
+   - (Optionnel si tireur spécifié) « Le tir sera effectué par le numéro **Y, [Nom]**. »
+   - « Le temps de la pénalité : **MM:SS** de la Xe période. »
+7. **Extrême inconduite à un entraîneur (`E1`-`E5`, `ENT`)** :
+   - Affiche un avertissement clair dans le popover : **« ⚠️ Ne pas annoncer au micro — Extrême inconduite à un entraîneur »** (selon le manuel, ne jamais annoncer une pénalité d'extrême inconduite décernée à un membre du groupe d'entraîneurs).
+8. **Éléments exclus** :
    - **Ne pas mentionner** « mineure », « majeure », ou le code d'arbitrage (ex: `A22`, `A52`, `B40`, `D40`).
-   - **Ignorer** les pastilles de statistiques Spordle comme `1 OAN`, `2 OAN` (Opportunités en Avantage Numérique) et les mentions d'horodatage comme `Début: 07:00`.
-6. **Temps de la pénalité** : « Le temps de la pénalité : **MM:SS** de la Xe période. »
+   - **Ignorer** les pastilles de statistiques Spordle comme `1 OAN`, `2 OAN` et les mentions d'horodatage comme `Début: 07:00`.
+9. **Temps de la pénalité** : « Le temps de la pénalité : **MM:SS** de la Xe période. »
 
 ### C. Annonce d'un changement de gardien de but (`buildGoalieChange` / `formatGoalieChange`)
-1. **Formule officielle** :
-   - « Changement de gardien de but du côté des **[Équipe]**, »
-   - « maintenant devant le filet : le numéro **X, [Prénom Nom]**. »
-   - « Le temps du changement : **MM:SS** de la Xe période. »
+1. **Formule officielle (sans mention du temps)** :
+   - « Changement de gardien de but pour les **[Équipe]**, »
+   - « maintenant devant le filet le numéro **X, [Prénom Nom]**. »
 2. **Gardien retiré (6e attaquant / filet désert)** :
    - « Le gardien de but des **[Équipe]** est retiré de son filet. »
-   - « Le temps du retrait : **MM:SS** de la Xe période. »
+
+### D. Présentation d'avant-match (`formatWelcomeMessage`)
+1. **Salutation, aréna, division, équipes et chandails** :
+   - « **[Bonjour / Bon après-midi / Bonsoir]** mesdames et messieurs et bienvenue [à l'aréna **[Nom de l'aréna]**] à cette rencontre de la division **[Division et classe]**, entre les **[Équipe visiteuse]** en chandail **[couleur]** et les **[Équipe locale]** en chandail **[couleur]**. »
+2. **Gardiens partants** :
+   - « Les gardiens de but partant : pour les **[Équipe visiteuse]**, le numéro **X, [Nom]** et pour les **[Équipe locale]**, le numéro **Y, [Nom]**. »
+3. **Officiels (si présents dans les données du match)** :
+   - « Les officiels pour cette rencontre : l'arbitre en chef **[Nom]**, ses adjoints, les juges de lignes **[Nom 1]** et **[Nom 2]**. »
+4. **Clôture** :
+   - « Bon match mesdames messieurs et bonne chance aux deux équipes. »
 
 ---
 
