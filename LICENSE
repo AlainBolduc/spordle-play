@@ -20,8 +20,7 @@ but d'assister les annonces protocolaires lors de matchs de hockey officiels.
 Sans le consentement écrit préalable et exprès d'Alain Bolduc, il est formellement interdit :
 a) D'utiliser, intégrer, fusionner, incorporer ou redistribuer ce logiciel ou toute partie 
    de son code source, de sa logique ou de ses algorithmes dans un logiciel, service, 
-   application, produit commercial ou plateforme propriétaire (incluant notamment toute 
-   plateforme développée, éditée ou opérée par Spordle Inc., HiSports ou toute entité affiliée).
+   application, produit commercial ou plateforme propriétaire.
 b) De vendre, louer, sous-licencier, commercialiser ou monétiser ce logiciel de quelque 
    manière que ce soit.
 c) De procéder à de l'ingénierie inverse (reverse engineering), de décompiler, désassembler 
@@ -49,8 +48,7 @@ hockey game announcements.
 Without prior explicit written consent from Alain Bolduc, it is strictly prohibited to:
 a) Use, integrate, merge, incorporate, or redistribute this software or any portion 
    of its source code, logic, or algorithms into any commercial software, service, application, 
-   commercial product, or proprietary platform (including, without limitation, any platform 
-   developed, published, or operated by Spordle Inc., HiSports, or affiliated entities).
+   commercial product, or proprietary platform.
 b) Sell, rent, lease, sub-license, commercialize, or monetize this software in any manner.
 c) Reverse-engineer, decompile, disassemble, or attempt to extract source algorithms from 
    compiled or obfuscated versions.

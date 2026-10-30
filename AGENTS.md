@@ -70,16 +70,16 @@ L'extension ajoute un bouton discret (icône mégaphone SVG) sur chaque ligne d'
    - « au numéro **X**, [Nom Prénom], »
    - « **2 minutes** pour [description de l'infraction]. » (ex. : `2 minutes pour coup de bâton`).
 3. **Pénalités purgées par un autre joueur / Pénalités de banc** :
-   - **Pénalité décernée à un joueur et servie par un autre** (ex: `LILY-ROSE BOILEAU (30) - SERVI: MILA BEAUREGARD (15) - A22 - Coup de bâton (Mineure)`) :
+   - **Pénalité décernée à un joueur et servie par un autre** (ex: `LÉA PELLETIER (30) - SERVI: ALICE BÉLANGER (15) - A22 - Coup de bâton (Mineure)`) :
      - « Pénalité aux **[Équipe]**, »
-     - « au numéro **30, Lily-Rose Boileau**, »
+     - « au numéro **30, Léa Pelletier**, »
      - « **2 minutes** pour coup de bâton. »
-     - « La pénalité sera purgée par le numéro **15, Mila Beauregard**. »
+     - « La pénalité sera purgée par le numéro **15, Alice Bélanger**. »
      - « Le temps de la pénalité : **MM:SS** de la Xe période. »
-   - **Pénalité de banc avec purgeur** (ex: `Punition de banc: RAPHAELLE KANASH (24) - A80 - Trop de joueurs sur la patinoire (Mineure)`) :
+   - **Pénalité de banc avec purgeur** (ex: `Punition de banc: JUSTINE DUBÉ (24) - A80 - Trop de joueurs sur la patinoire (Mineure)`) :
      - « Pénalité de banc aux **[Équipe]**, »
      - « **2 minutes** pour trop de joueurs sur la patinoire. »
-     - « La pénalité sera purgée par le numéro **24, Raphaelle Kanash**. »
+     - « La pénalité sera purgée par le numéro **24, Justine Dubé**. »
      - « Le temps de la pénalité : **MM:SS** de la Xe période. »
    - **Pénalité de banc sans purgeur spécifié** :
      - « Pénalité de banc aux **[Équipe]**, »

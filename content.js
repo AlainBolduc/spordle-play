@@ -11,7 +11,7 @@
 
   const clean = (s) => (s || "").replace(/\s+/g, " ").trim();
 
-  // "MAYSON GOSSELIN" -> "Mayson Gosselin" (gère tirets et apostrophes)
+  // "MAXIME GAGNÉ" -> "Maxime Gagné" (gère tirets et apostrophes)
   const titleCase = (s) =>
     clean(s)
       .toLowerCase()
@@ -68,10 +68,10 @@
 
   // Extrait les informations de pénalité : joueur fautif, purgeur, sévérité, infraction
   // Gère :
-  // - "LILY-ROSE BOILEAU (30) - SERVI: MILA BEAUREGARD (15) - A22 - Coup de bâton (Mineure)"
-  // - "Punition de banc: RAPHAELLE KANASH (24) - A80 - Trop de joueurs sur la patinoire (Mineure)"
-  // - "ALEXE ROUSSON (99) - A48 - Contact avec la tête (Mineure 4/4)"
-  // - "SERGE BELIVEAU (E1) - D61 - Abus verbal envers un officiel (Extrême inconduite)"
+  // - "LÉA PELLETIER (30) - SERVI: ALICE BÉLANGER (15) - A22 - Coup de bâton (Mineure)"
+  // - "Punition de banc: JUSTINE DUBÉ (24) - A80 - Trop de joueurs sur la patinoire (Mineure)"
+  // - "MAUDE CLOUTIER (99) - A48 - Contact avec la tête (Mineure 4/4)"
+  // - "MARTIN GIRARD (E1) - D61 - Abus verbal envers un officiel (Extrême inconduite)"
   const parsePenaltyEvent = (details) => {
     const cleaned = cleanPenaltyDetails(details);
     const isBench = /\b(?:banc|bench)\b/i.test(cleaned);
@@ -297,7 +297,7 @@
       .replace(/\[(?:AN|PP|PPG|SN|DN|SH|SHG|IN|FD|EN|ENG|tir\s*de\s*(?:punition|p[eé]nalit[eé])|penalty\s*shot|TP|PS)\]/gi, "")
       .trim();
 
-    // Format observé : "MAYSON GOSSELIN (77)  - PASSES: ARNO ALLAIRE (21)"
+    // Format observé : "MAXIME GAGNÉ (77)  - PASSES: XAVIER POIRIER (21)"
     const [scorerPart, ...rest] = cleanDetails.split(/\b(?:PASSES?|ASSISTS?|AIDES?)\s*:/i);
     const scorer = parsePlayers(scorerPart)[0];
     const assists = parsePlayers(rest.join(" "));

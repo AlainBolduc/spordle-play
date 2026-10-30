@@ -257,6 +257,30 @@
       font-size: 13px;
       color: var(--text-muted);
     }
+
+    /* Boîte d'introduction importante */
+    .intro-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-left: 4px solid #f0883e;
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin-bottom: 36px;
+      font-size: 15px;
+      color: #c9d1d9;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .intro-box strong {
+      color: #ffffff;
+    }
+
+    .intro-warning {
+      color: #f0883e;
+      font-size: 14.5px;
+    }
   </style>
 </head>
 <body>
@@ -268,6 +292,15 @@
       <h1>Installation de Spordle Annonceur</h1>
       <p class="lead">Guide pas à pas pour configurer l'extension sur iPad ou iPhone.</p>
     </header>
+
+    <div class="intro-box">
+      <p>
+        <strong>À noter pour les utilisateurs d'iPad :</strong> L'extension n'est pas disponible sur Google Chrome sur iPad (les navigateurs tiers sur iOS ne supportent pas les extensions). Toutefois, vous pouvez l'utiliser dans <strong>Safari</strong> en installant un module complémentaire gratuit sur votre iPad.
+      </p>
+      <p class="intro-warning">
+        ⚠️ <strong>Important :</strong> Il faut absolument <strong>suivre ce guide d'installation à la lettre</strong>, étape par étape, pour que l'extension fonctionne correctement.
+      </p>
+    </div>
 
     <div class="steps">
 

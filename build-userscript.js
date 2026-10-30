@@ -62,8 +62,8 @@ const LEGAL_BANNER = `/**
  * 
  * LICENCE PROPRIÉTAIRE :
  * Usage bénévole et personnel autorisé pour les matchs de hockey amateur officiels.
- * Toute reproduction, intégration commerciale (notamment par Spordle Inc. ou HiSports),
- * redistribution ou rétro-ingénierie sans autorisation écrite préalable est formellement interdite.
+ * Toute reproduction, intégration commerciale, redistribution ou rétro-ingénierie
+ * sans autorisation écrite préalable est formellement interdite.
  */
 `;
 
