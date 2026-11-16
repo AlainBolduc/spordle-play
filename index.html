@@ -854,6 +854,9 @@
         <button class="tab-btn" id="tab-btn-update" onclick="switchIpadTab('update')">
           <span>🔄</span> Mettre à jour l'extension (Update)
         </button>
+        <button class="tab-btn" id="tab-btn-features" onclick="switchIpadTab('features')">
+          <span>✨</span> Nouvelles fonctionnalités
+        </button>
       </div>
 
 
@@ -1158,6 +1161,82 @@
 
       </div>
 
+
+      <!-- ====================================================== -->
+      <!-- SECTION IPAD C : NOUVELLES FONCTIONNALITÉS EXCLUSIVES   -->
+      <!-- ====================================================== -->
+      <div id="pane-ipad-features" class="tab-pane">
+
+        <div class="intro-box" style="border-left-color: var(--blue);">
+          <p>
+            <strong>Conçu pour simplifier la vie des marqueurs et annonceurs au hockey mineur !</strong><br>
+            En plus de générer les textes exacts à lire au micro, <em>Spordle Annonceur</em> intègre des outils pratiques pensés pour la réalité de la table des officiels à l'aréna.
+          </p>
+        </div>
+
+        <div class="steps">
+
+          <!-- Fonctionnalité 1 : Inversion des côtés -->
+          <div class="step-item">
+            <div class="step-num">⇄</div>
+            <div class="step-content">
+              <h3>Inversion visuelle des côtés (Visiteur / Local)</h3>
+              <p>
+                À l'aréna, les bancs des équipes ou le tableau d'affichage physique sont souvent inversés par rapport à l'ordre par défaut de Spordle Play.
+              </p>
+              <p>
+                Un simple clic ou toucher sur le bouton <strong>⇄ Inverser côtés</strong> (situé immédiatement à la droite de la catégorie du match) permute instantanément les colonnes des deux équipes, tout en préservant l'intégrité de la feuille de match officielle.
+              </p>
+
+              <div class="screenshot-card" style="margin-top: 14px;">
+                <img src="assets/guide/feature-swap-sides.png" alt="Bouton d'inversion des côtés à côté de la catégorie">
+                <div class="screenshot-caption">Le bouton « ⇄ Inverser côtés » apparaît directement à la droite de la catégorie de match.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fonctionnalité 2 : Sélecteur de couleurs d'équipe -->
+          <div class="step-item">
+            <div class="step-num">🎨</div>
+            <div class="step-content">
+              <h3>Palette de couleurs de chandails personnalisée</h3>
+              <p>
+                Touchez la pastille ronde à côté du nom de chaque équipe pour ouvrir la palette officielle de <strong>12 couleurs</strong>.
+              </p>
+              <p>
+                L'interface adapte aussitôt la couleur des boutons d'action au chandail réel porté par l'équipe sur la glace (ex: rouge, bleu foncé, jaune, vert, blanc, noir, etc.). Votre choix est automatiquement mémorisé pour toute la rencontre !
+              </p>
+
+              <div class="screenshot-card" style="max-width: 440px; margin-top: 14px;">
+                <img src="assets/guide/feature-team-colors.png" alt="Palette de 12 couleurs pour les chandails d'équipes">
+                <div class="screenshot-caption">Palette interactive pour sélectionner la couleur officielle du chandail en un clic.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fonctionnalité 3 : Accès rapide aux punitions fréquentes -->
+          <div class="step-item">
+            <div class="step-num">⚡</div>
+            <div class="step-content">
+              <h3>Accès rapide aux pénalités courantes (Quick Access)</h3>
+              <p>
+                Lors de l'ajout d'une punition dans Spordle Play, une grille directe des <strong>6 infractions les plus courantes</strong> (Accrocher, Coup de bâton, Faire trébucher, Mise en échec, Obstruction, Rudesse) s'affiche au-dessus des sélecteurs.
+              </p>
+              <p>
+                Un simple toucher applique instantanément la règle et sa durée sans avoir à chercher dans les menus déroulants.
+              </p>
+
+              <div class="screenshot-card" style="max-width: 460px; margin-top: 14px;">
+                <img src="assets/guide/feature-quick-penalties.png" alt="Grille d'accès rapide des pénalités fréquentes">
+                <div class="screenshot-caption">Grille rapide : touchez l'infraction (ex: A39 Mise en échec) pour la sélectionner en une fraction de seconde.</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
     </main>
 
     <!-- Pied de page -->
@@ -1214,20 +1293,25 @@
     function switchIpadTab(tabName, updateHash = true) {
       const btnInstall = document.getElementById('tab-btn-install');
       const btnUpdate = document.getElementById('tab-btn-update');
+      const btnFeatures = document.getElementById('tab-btn-features');
       const paneInstall = document.getElementById('pane-ipad-install');
       const paneUpdate = document.getElementById('pane-ipad-update');
+      const paneFeatures = document.getElementById('pane-ipad-features');
+
+      [btnInstall, btnUpdate, btnFeatures].forEach(b => b && b.classList.remove('active'));
+      [paneInstall, paneUpdate, paneFeatures].forEach(p => p && p.classList.remove('active'));
 
       if (tabName === 'update') {
-        btnInstall.classList.remove('active');
-        btnUpdate.classList.add('active');
-        paneInstall.classList.remove('active');
-        paneUpdate.classList.add('active');
+        if (btnUpdate) btnUpdate.classList.add('active');
+        if (paneUpdate) paneUpdate.classList.add('active');
         if (updateHash) window.location.hash = 'ipad-update';
+      } else if (tabName === 'features') {
+        if (btnFeatures) btnFeatures.classList.add('active');
+        if (paneFeatures) paneFeatures.classList.add('active');
+        if (updateHash) window.location.hash = 'ipad-features';
       } else {
-        btnUpdate.classList.remove('active');
-        btnInstall.classList.add('active');
-        paneUpdate.classList.remove('active');
-        paneInstall.classList.add('active');
+        if (btnInstall) btnInstall.classList.add('active');
+        if (paneInstall) paneInstall.classList.add('active');
         if (updateHash) window.location.hash = 'ipad';
       }
     }
@@ -1239,6 +1323,15 @@
         navigateTo('chrome', false);
       } else if (hash === 'ipad-update' || hash === 'update') {
         navigateTo('ipad-update', false);
+      } else if (hash === 'ipad-features' || hash === 'features') {
+        navigateTo('ipad', false);
+        switchIpadTab('features', false);
+      } else if (hash === 'ipad' || hash === 'ipad-install') {
+        navigateTo('ipad', false);
+      } else {
+        navigateTo('landing', false);
+      }
+    }
       } else if (hash === 'ipad' || hash === 'ipad-install') {
         navigateTo('ipad', false);
       } else {
