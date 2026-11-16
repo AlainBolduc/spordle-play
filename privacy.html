@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Politique de confidentialité — Spordle Annonceur</title>
+  <meta name="description" content="Politique de confidentialité et protection des données personnelles de l'extension Spordle Annonceur pour Chrome et Safari iOS.">
+  <style>
+    /* Thème sobre et épuré conforme à la charte du projet (Apple Developer / GitHub Dark) */
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --card-hover: #1c2128;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --border-light: #21262d;
+      --blue: #58a6ff;
+      --blue-hover: #79b8ff;
+      --green: #238636;
+      --green-light: #3fb950;
+      --red: #f85149;
+      --gold: #d29922;
+      --badge-bg: #1f242c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 36px 20px 80px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    /* Barre de navigation supérieure */
+    .nav-back-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .btn-back:hover {
+      background: var(--card-bg);
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    /* Sélecteur de langue */
+    .lang-switch {
+      display: inline-flex;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .lang-btn:hover {
+      color: var(--text);
+    }
+
+    .lang-btn.active {
+      background: #21262d;
+      color: var(--blue);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    /* En-tête principal */
+    header.main-header {
+      margin-bottom: 32px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--blue);
+      background: rgba(88, 166, 255, 0.12);
+      border: 1px solid rgba(88, 166, 255, 0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+      color: #ffffff;
+      line-height: 1.25;
+    }
+
+    .lead {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 640px;
+      margin: 0 auto 12px;
+    }
+
+    .last-updated {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Cartes de section */
+    .policy-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      transition: border-color 0.15s ease;
+    }
+
+    .policy-card:hover {
+      border-color: #444c56;
+    }
+
+    .policy-card h2 {
+      font-size: 19px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .policy-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-top: 18px;
+      margin-bottom: 8px;
+    }
+
+    .policy-card p {
+      font-size: 14.5px;
+      color: #c9d1d9;
+      margin-bottom: 12px;
+    }
+
+    .policy-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    .policy-card ul, .policy-card ol {
+      margin-left: 20px;
+      margin-bottom: 14px;
+      color: #c9d1d9;
+      font-size: 14.5px;
+    }
+
+    .policy-card li {
+      margin-bottom: 8px;
+    }
+
+    .policy-card li:last-child {
+      margin-bottom: 0;
+    }
+
+    .policy-card code {
+      background: rgba(110, 118, 129, 0.2);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 13px;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      color: var(--blue-hover);
+    }
+
+    /* Boîtes de mise en valeur (Notes) */
+    .note {
+      margin: 16px 0;
+      padding: 14px 18px;
+      background: #161b22;
+      border-left: 3px solid var(--blue);
+      border-radius: 0 8px 8px 0;
+      font-size: 14px;
+      color: #c9d1d9;
+    }
+
+    .note strong {
+      color: #ffffff;
+    }
+
+    .note-green {
+      border-left-color: var(--green-light);
+      background: rgba(35, 134, 54, 0.12);
+      border: 1px solid rgba(63, 185, 80, 0.25);
+      border-left-width: 4px;
+    }
+
+    .note-warn {
+      border-left-color: var(--gold);
+      background: rgba(210, 153, 34, 0.12);
+      border: 1px solid rgba(210, 153, 34, 0.25);
+      border-left-width: 4px;
+    }
+
+    /* Tableaux comparatifs */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+
+    .data-table th, .data-table td {
+      padding: 10px 14px;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+
+    .data-table th {
+      background: #21262d;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .data-table tr:nth-child(even) {
+      background: rgba(22, 27, 34, 0.6);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-badge.sent {
+      background: rgba(88, 166, 255, 0.15);
+      color: var(--blue);
+      border: 1px solid rgba(88, 166, 255, 0.3);
+    }
+
+    .status-badge.never {
+      background: rgba(248, 81, 73, 0.15);
+      color: var(--red);
+      border: 1px solid rgba(248, 81, 73, 0.3);
+    }
+
+    /* Étapes d'opt-out */
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 14px;
+      background: #21262d;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+    }
+
+    .step-badge {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #0d1117;
+      font-weight: 800;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-text {
+      font-size: 14px;
+      color: #c9d1d9;
+    }
+
+    .step-text strong {
+      color: #ffffff;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    footer a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Masquage des sections selon la langue active */
+    .lang-section {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+
+    <!-- Barre de navigation supérieure -->
+    <div class="nav-back-bar">
+      <a href="index.html" class="btn-back">
+        <span>←</span> <span class="lang-fr">Guide d'installation</span><span class="lang-en" style="display: none;">Installation Guide</span>
+      </a>
+
+      <div class="lang-switch" role="group" aria-label="Langue / Language">
+        <button type="button" class="lang-btn active" id="btn-fr" onclick="switchLang('fr')">Français</button>
+        <button type="button" class="lang-btn" id="btn-en" onclick="switchLang('en')">English</button>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- VERSION FRANÇAISE                                                     -->
+    <!-- ===================================================================== -->
+    <div id="section-fr" class="lang-section lang-fr">
+
+      <header class="main-header">
+        <div class="header-badge">🔒 Sécurité & Vie Privée</div>
+        <h1>Politique de confidentialité</h1>
+        <p class="lead">
+          Transparence absolue sur les autorisations, l'absence de collecte de données nominatives et le respect de la vie privée des mineurs.
+        </p>
+        <div class="last-updated">Dernière mise à jour : 16 novembre 2026 · Version 1.0</div>
+      </header>
+
+      <!-- Engagement fort -->
+      <div class="note note-green">
+        <strong>Engagement absolu pour le hockey mineur :</strong> Spordle Annonceur est un outil bénévole.
+        <strong>Aucun nom d'enfant, d'entraîneur ou d'arbitre, aucun nom d'équipe et aucun numéro de feuille de match n'est jamais collecté ni transmis à des tiers.</strong>
+        Les annonces vocales sont générées à 100% localement dans votre navigateur web.
+      </div>
+
+      <!-- 1. Finalité unique -->
+      <section class="policy-card">
+        <h2>🎯 1. Finalité unique du logiciel (Single Purpose)</h2>
+        <p>
+          Conformément aux exigences de la politique du Chrome Web Store, Spordle Annonceur possède une finalité unique et strictement définie :
+        </p>
+        <div class="note">
+          « <strong>Aider l'annonceur maison lors d'un match de hockey sur Spordle Play en affichant en gros caractères le texte officiel à lire au micro pour chaque événement (but, pénalité, gardien).</strong> »
+        </div>
+        <p>
+          L'intégralité du code et des autorisations accordées à l'extension est exclusivement dédiée à l'accomplissement de cette mission d'assistance bénévole dans l'aréna.
+        </p>
+      </section>
+
+      <!-- 2. Autorisations requises -->
+      <section class="policy-card">
+        <h2>🔑 2. Autorisations accordées et justification</h2>
+        <p>L'extension ne demande que le strict minimum d'autorisations techniques nécessaires à son bon fonctionnement :</p>
+        <ul>
+          <li>
+            <strong>Accès aux domaines Spordle (<code>*://*.spordle.com/*</code>, <code>*://*.spordle.dev/*</code>, <code>*://*.hisports.app/*</code>) :</strong>
+            Requis pour injecter les boutons d'annonce (icône 📢 mégaphone) sur la feuille de match officielle, lire les événements du sommaire affiché et afficher les fenêtres modales avec le texte à lire au micro.
+          </li>
+          <li>
+            <strong>Accès réseau vers Google Analytics (<code>https://www.google-analytics.com/*</code>) :</strong>
+            Requis pour transmettre des mesures télémétriques anonymes d'utilisation via le protocole Google Analytics 4 Measurement Protocol en <code>text/plain</code> (sans cookies tiers).
+          </li>
+        </ul>
+        <div class="note note-warn">
+          <strong>Aucune autorisation invasive :</strong> L'extension n'a aucun accès à vos mots de passe, vos cookies d'authentification, vos jetons de connexion (Bearer tokens), votre caméra, votre micro, vos fichiers locaux ou votre historique de navigation générale.
+        </div>
+      </section>
+
+      <!-- 3. Télémétrie anonyme -->
+      <section class="policy-card">
+        <h2>📊 3. Activité utilisateur et statistiques anonymes</h2>
+        <p>
+          Afin de quantifier le nombre de matchs accompagnés, de savoir quelles fonctionnalités sont utiles (ex. inversion des côtés, mot de bienvenue, boutons d'accès rapide aux pénalités) et de détecter les incompatibilités techniques, des statistiques anonymes sont envoyées à Google Analytics.
+        </p>
+
+        <h3>Données transmises :</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Donnée</th>
+              <th>Exemple</th>
+              <th>Utilité</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Nom de l'événement</strong></td>
+              <td><code>game_start</code>, <code>announcement_view</code>, <code>quick_access_used</code></td>
+              <td>Mesurer l'utilisation des fonctions</td>
+            </tr>
+            <tr>
+              <td><strong>Division sportive</strong></td>
+              <td><code>M13 A</code>, <code>M15 AA</code></td>
+              <td>Comprendre les catégories couvertes (lu dans l'en-tête du match)</td>
+            </tr>
+            <tr>
+              <td><strong>Plateforme & Version</strong></td>
+              <td><code>Chrome</code> / <code>Safari iOS</code>, <code>1.0.37</code></td>
+              <td>Assurer la compatibilité et le suivi des mises à jour</td>
+            </tr>
+            <tr>
+              <td><strong>Identifiant d'appareil aléatoire</strong></td>
+              <td><code>uuid-v4</code> généré localement</td>
+              <td>Distinguer les appareils sans identification personnelle</td>
+            </tr>
+            <tr>
+              <td><strong>Identifiant de match aléatoire</strong></td>
+              <td><code>g.a8f2...</code> généré localement</td>
+              <td>Regrouper les événements d'une même partie sans révéler le match</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Mécanisme de déliaison stricte de la feuille de match :</h3>
+        <p>
+          L'identifiant réel de la feuille de match (le numéro ou l'identifiant dans l'URL <code>/scoresheets/&lt;id&gt;</code>) <strong>n'est JAMAIS transmis à Google Analytics</strong>.
+          À la place, un identifiant aléatoire (<code>game_ref</code>) est généré localement sur votre appareil.
+          La table associant l'identifiant de la feuille de match à ce jeton aléatoire est stockée <strong>exclusivement dans le <code>localStorage</code> de votre navigateur</strong> (limitée aux 50 derniers matchs et purgée automatiquement après 60 jours).
+          Ainsi, il est techniquement impossible pour quiconque de remonter à une partie spécifique ou à une équipe à partir des données statistiques.
+        </p>
+      </section>
+
+      <!-- 4. Données jamais collectées -->
+      <section class="policy-card">
+        <h2>🛡️ 4. Données strictement JAMAIS collectées ni transmises</h2>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Catégorie de données</th>
+              <th>Statut</th>
+              <th>Garantie</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Joueurs mineurs</strong> (noms, numéros, matricules HCR, pénalités)</td>
+              <td><span class="status-badge never">JAMAIS</span></td>
+              <td>Traitement 100% local dans la mémoire vive de l'ordinateur/tablette.</td>
+            </tr>
+            <tr>
+              <td><strong>Officiels & Entraîneurs</strong> (noms, fonctions)</td>
+              <td><span class="status-badge never">JAMAIS</span></td>
+              <td>Aucune information nominative n'est envoyée.</td>
+            </tr>
+            <tr>
+              <td><strong>Équipes & Arénas</strong> (noms complets, organisations)</td>
+              <td><span class="status-badge never">JAMAIS</span></td>
+              <td>Aucun nom d'équipe ou de lieu n'est transmis.</td>
+            </tr>
+            <tr>
+              <td><strong>Identifiant de match Spordle</strong> (ID de feuille de match)</td>
+              <td><span class="status-badge never">JAMAIS</span></td>
+              <td>Remplacé par un jeton aléatoire local non inversible.</td>
+            </tr>
+            <tr>
+              <td><strong>Identifiants de connexion</strong> (jetons Bearer, cookies, sessions)</td>
+              <td><span class="status-badge never">JAMAIS</span></td>
+              <td>Aucun jeton de connexion n'est intercepté ni lu.</td>
+            </tr>
+            <tr>
+              <td><strong>Données personnelles de l'annonceur</strong> (courriel, nom, compte)</td>
+              <td><span class="status-badge never">JAMAIS</span></td>
+              <td>L'extension ne possède aucun compte utilisateur ni formulaire d'inscription.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 5. Désactivation (Opt-out) -->
+      <section class="policy-card">
+        <h2>⚙️ 5. Contrôle utilisateur et désactivation (Opt-out)</h2>
+        <p>
+          Vous pouvez à tout moment désactiver l'envoi des statistiques anonymes directement depuis l'application Spordle Play :
+        </p>
+
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-badge">1</div>
+            <div class="step-text">
+              Sur la feuille de match Spordle Play, faites un <strong>triple-clic</strong> (sur ordinateur) ou un <strong>triple-tap</strong> (sur iPad) sur le numéro du match ou la catégorie en haut de la page.
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-badge">2</div>
+            <div class="step-text">
+              La fenêtre <strong>Options de Spordle Annonceur</strong> apparaît à l'écran.
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-badge">3</div>
+            <div class="step-text">
+              Décochez la case <strong>« 📊 Statistiques d'utilisation anonymes »</strong>.
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-badge">4</div>
+            <div class="step-text">
+              Cliquez ou touchez <strong>« Enregistrer »</strong>.
+            </div>
+          </div>
+        </div>
+
+        <div class="note note-green">
+          <strong>Effet immédiat :</strong> La désactivation transmet un unique signal de retrait (<code>telemetry_opt_out</code>) puis coupe définitivement toute communication réseau vers Google Analytics.
+          Elle <strong>supprime également immédiatement</strong> votre identifiant aléatoire d'appareil (<code>sa_client_id</code>) ainsi que le registre temporaire des matchs (<code>sa_game_refs</code>) stockés dans votre navigateur.
+        </div>
+      </section>
+
+      <!-- 6. Conservation & Tiers -->
+      <section class="policy-card">
+        <h2>⏱️ 6. Conservation des données et prestataires tiers</h2>
+        <p>
+          Les données anonymes sont traitées par le service <strong>Google Analytics 4</strong> (Google LLC) selon des paramètres stricts :
+        </p>
+        <ul>
+          <li><strong>Durée de rétention :</strong> Les données d'événements anonymes sont configurées pour être supprimées automatiquement après <strong>14 mois</strong>.</li>
+          <li><strong>Zéro commercialisation :</strong> Les statistiques ne sont jamais vendues, louées, cédées, ni croisées avec des profils publicitaires ou des courtiers de données.</li>
+          <li><strong>Zéro traçage publicitaire :</strong> Aucun cookie publicitaire tiers n'est utilisé. Les requêtes sont émises via le protocole direct d'évaluation de performance (Measurement Protocol).</li>
+        </ul>
+      </section>
+
+      <!-- 7. Contact -->
+      <section class="policy-card">
+        <h2>📬 7. Contact et transparence du code source</h2>
+        <p>
+          Spordle Annonceur est un projet développé en toute transparence. Le code source est public et auditable à tout moment :
+        </p>
+        <ul>
+          <li><strong>Développeur :</strong> Alain Bolduc</li>
+          <li><strong>Dépôt GitHub public :</strong> <a href="https://github.com/AlainBolduc/spordle-play" target="_blank" rel="noopener noreferrer" style="color: var(--blue);">github.com/AlainBolduc/spordle-play</a></li>
+          <li><strong>Contact :</strong> <code>alainbolduc@users.noreply.github.com</code></li>
+        </ul>
+      </section>
+
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- ENGLISH VERSION                                                       -->
+    <!-- ===================================================================== -->
+    <div id="section-en" class="lang-section lang-en" style="display: none;">
+
+      <header class="main-header">
+        <div class="header-badge">🔒 Privacy & Data Safety</div>
+        <h1>Privacy Policy</h1>
+        <p class="lead">
+          Complete transparency regarding host permissions, the strict absence of personally identifiable information, and youth hockey privacy protection.
+        </p>
+        <div class="last-updated">Last updated: November 16, 2026 · Version 1.0</div>
+      </header>
+
+      <!-- Core Commitment -->
+      <div class="note note-green">
+        <strong>Strict Youth Hockey Protection:</strong> Spordle Annonceur is an unpaid volunteer tool.
+        <strong>No names of children, players, coaches, or referees, no team names, and no scoresheet identifiers are ever collected, stored, or transmitted to any third party.</strong>
+        All public address announcements are generated 100% locally within your web browser.
+      </div>
+
+      <!-- 1. Single Purpose -->
+      <section class="policy-card">
+        <h2>🎯 1. Single Purpose Declaration</h2>
+        <p>
+          In accordance with the Chrome Web Store single-purpose policy, Spordle Annonceur has one clear, narrowly tailored purpose:
+        </p>
+        <div class="note">
+          “<strong>Assist hockey arena announcers by displaying formatted, easy-to-read public address announcements for goals, penalties, and goalie changes directly inside Spordle Play.</strong>”
+        </div>
+        <p>
+          All permissions requested and code executed are strictly limited to supporting this volunteer game-day announcing role in amateur hockey arenas.
+        </p>
+      </section>
+
+      <!-- 2. Host Permissions -->
+      <section class="policy-card">
+        <h2>🔑 2. Requested Permissions and Justification</h2>
+        <p>The extension requests only the minimum technical permissions necessary to operate:</p>
+        <ul>
+          <li>
+            <strong>Access to Spordle domains (<code>*://*.spordle.com/*</code>, <code>*://*.spordle.dev/*</code>, <code>*://*.hisports.app/*</code>):</strong>
+            Required to inject public address megaphone buttons (📢) onto the official game scoresheet, parse summary events displayed on screen, and show announcement modal dialogs.
+          </li>
+          <li>
+            <strong>Network access to Google Analytics (<code>https://www.google-analytics.com/*</code>):</strong>
+            Used exclusively to send anonymous usage telemetry via Google Analytics 4 Measurement Protocol in <code>text/plain</code> (no third-party tracking cookies).
+          </li>
+        </ul>
+        <div class="note note-warn">
+          <strong>No invasive permissions:</strong> The extension has no access to user passwords, session authentication cookies, Bearer tokens, webcams, microphones, local files, or general browsing history.
+        </div>
+      </section>
+
+      <!-- 3. Anonymous Telemetry -->
+      <section class="policy-card">
+        <h2>📊 3. User Activity and Anonymous Statistics</h2>
+        <p>
+          To understand overall adoption, discover which features are most beneficial (such as side swapping, pre-game welcome announcements, or quick penalty selection), and detect platform regressions, anonymous statistics are collected through Google Analytics.
+        </p>
+
+        <h3>Data Transmitted:</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Data Point</th>
+              <th>Example</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Event Name</strong></td>
+              <td><code>game_start</code>, <code>announcement_view</code>, <code>quick_access_used</code></td>
+              <td>Measure feature adoption and workflow usage</td>
+            </tr>
+            <tr>
+              <td><strong>Game Division</strong></td>
+              <td><code>M13 A</code>, <code>M15 AA</code></td>
+              <td>Understand covered categories (read from page header; omitted if absent)</td>
+            </tr>
+            <tr>
+              <td><strong>Platform & Version</strong></td>
+              <td><code>Chrome</code> / <code>Safari iOS</code>, <code>1.0.37</code></td>
+              <td>Ensure cross-platform compatibility and verify updates</td>
+            </tr>
+            <tr>
+              <td><strong>Random Client Identifier</strong></td>
+              <td>Locally generated UUIDv4</td>
+              <td>Distinguish devices without tracking individuals</td>
+            </tr>
+            <tr>
+              <td><strong>Random Game Reference</strong></td>
+              <td>Locally generated <code>g.a8f2...</code></td>
+              <td>Group events belonging to the same game without disclosing the scoresheet</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Scoresheet Non-Linkability Mechanism:</h3>
+        <p>
+          The actual scoresheet ID (the key or URL path <code>/scoresheets/&lt;id&gt;</code>) <strong>is NEVER transmitted to Google Analytics</strong>, either in raw or hashed form.
+          Instead, a random game reference (<code>game_ref</code>) is generated locally on your device.
+          The map connecting the actual scoresheet key to this random reference is stored <strong>strictly inside your browser’s local storage (<code>localStorage</code>)</strong>, limited to 50 recent games and automatically purged after 60 days.
+          It is therefore impossible for anyone to link telemetry data to a specific live game, team, or roster.
+        </p>
+      </section>
+
+      <!-- 4. Data Never Collected -->
+      <section class="policy-card">
+        <h2>🛡️ 4. Data Strictly NEVER Collected or Transmitted</h2>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Data Category</th>
+              <th>Status</th>
+              <th>Guarantee</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Minor Players</strong> (names, jersey numbers, HCR IDs, penalties)</td>
+              <td><span class="status-badge never">NEVER</span></td>
+              <td>Computed 100% locally in browser memory.</td>
+            </tr>
+            <tr>
+              <td><strong>Coaches & On-Ice Officials</strong> (referees, linespersons)</td>
+              <td><span class="status-badge never">NEVER</span></td>
+              <td>No personally identifiable information is ever transmitted.</td>
+            </tr>
+            <tr>
+              <td><strong>Teams & Arenas</strong> (team names, associations, rink names)</td>
+              <td><span class="status-badge never">NEVER</span></td>
+              <td>No team or arena names leave your local device.</td>
+            </tr>
+            <tr>
+              <td><strong>Official Scoresheet Key</strong> (Spordle game ID / URL)</td>
+              <td><span class="status-badge never">NEVER</span></td>
+              <td>Replaced by an unlinked, local random token.</td>
+            </tr>
+            <tr>
+              <td><strong>Authentication Credentials</strong> (Bearer tokens, cookies, session IDs)</td>
+              <td><span class="status-badge never">NEVER</span></td>
+              <td>Authentication credentials are never intercepted or read.</td>
+            </tr>
+            <tr>
+              <td><strong>User Personal Information</strong> (emails, names, accounts)</td>
+              <td><span class="status-badge never">NEVER</span></td>
+              <td>The extension requires no user registration or sign-in.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 5. Opt-Out -->
+      <section class="policy-card">
+        <h2>⚙️ 5. User Control and Opt-Out Instructions</h2>
+        <p>
+          You may disable anonymous statistics collection at any time directly within the Spordle Play application:
+        </p>
+
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-badge">1</div>
+            <div class="step-text">
+              On the Spordle Play game sheet, <strong>triple-click</strong> (on PC/Mac) or <strong>triple-tap</strong> (on iPad) the game number or category header at the top of the page.
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-badge">2</div>
+            <div class="step-text">
+              The <strong>Spordle Annonceur Options</strong> dialog opens.
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-badge">3</div>
+            <div class="step-text">
+              Uncheck the <strong>“📊 Statistiques d'utilisation anonymes”</strong> toggle.
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-badge">4</div>
+            <div class="step-text">
+              Click or tap <strong>“Enregistrer”</strong> (Save).
+            </div>
+          </div>
+        </div>
+
+        <div class="note note-green">
+          <strong>Immediate Effect:</strong> Opting out sends one final opt-out signal (<code>telemetry_opt_out</code>) and permanently stops all network transmissions to Google Analytics.
+          It also <strong>immediately wipes</strong> your random device ID (<code>sa_client_id</code>) and the game reference registry (<code>sa_game_refs</code>) from local storage.
+        </div>
+      </section>
+
+      <!-- 6. Retention & Third Parties -->
+      <section class="policy-card">
+        <h2>⏱️ 6. Data Retention and Service Providers</h2>
+        <p>
+          Anonymous event telemetry is processed by <strong>Google Analytics 4</strong> (Google LLC) under strict governance settings:
+        </p>
+        <ul>
+          <li><strong>Retention Period:</strong> Event data retention is configured to automatically delete after <strong>14 months</strong>.</li>
+          <li><strong>No Sale or Sharing:</strong> Telemetry data is never sold, leased, rented, or shared with advertising brokers.</li>
+          <li><strong>No Cross-Site Tracking:</strong> No third-party ad-tracking cookies are deposited. Requests are transmitted via direct Measurement Protocol calls.</li>
+        </ul>
+      </section>
+
+      <!-- 7. Contact -->
+      <section class="policy-card">
+        <h2>📬 7. Contact & Source Code Transparency</h2>
+        <p>
+          Spordle Annonceur is developed transparently as an open project. The source code is publicly auditable:
+        </p>
+        <ul>
+          <li><strong>Developer:</strong> Alain Bolduc</li>
+          <li><strong>Public GitHub Repository:</strong> <a href="https://github.com/AlainBolduc/spordle-play" target="_blank" rel="noopener noreferrer" style="color: var(--blue);">github.com/AlainBolduc/spordle-play</a></li>
+          <li><strong>Contact:</strong> <code>alainbolduc@users.noreply.github.com</code></li>
+        </ul>
+      </section>
+
+    </div>
+
+    <!-- Pied de page -->
+    <footer>
+      <p style="font-weight: 600;">Spordle Annonceur — © 2026 Alain Bolduc. Tous droits réservés.</p>
+      <p style="margin-top: 6px; font-size: 13px; color: var(--text-muted);">
+        Licence propriétaire — Usage bénévole et personnel autorisé pour les matchs de hockey amateur officiels.
+      </p>
+      <p style="margin-top: 10px; font-size: 13px;">
+        <a href="index.html">← Guide d'installation</a>
+      </p>
+    </footer>
+
+  </div>
+
+  <script>
+    // Bascule dynamique français / anglais avec synchronisation d'URL et persistance
+    function switchLang(lang) {
+      const isEn = lang === 'en';
+      document.querySelectorAll('.lang-fr').forEach(el => {
+        el.style.display = isEn ? 'none' : (el.tagName === 'SPAN' ? 'inline' : 'block');
+      });
+      document.querySelectorAll('.lang-en').forEach(el => {
+        el.style.display = isEn ? (el.tagName === 'SPAN' ? 'inline' : 'block') : 'none';
+      });
+
+      const btnFr = document.getElementById('btn-fr');
+      const btnEn = document.getElementById('btn-en');
+      if (btnFr && btnEn) {
+        btnFr.classList.toggle('active', !isEn);
+        btnEn.classList.toggle('active', isEn);
+      }
+
+      document.documentElement.lang = isEn ? 'en' : 'fr';
+
+      if (history.replaceState) {
+        history.replaceState(null, null, isEn ? '#en' : '#fr');
+      }
+    }
+
+    // Détection initiale par ancre URL ou nom de fichier
+    window.addEventListener('DOMContentLoaded', () => {
+      const hash = (window.location.hash || '').toLowerCase();
+      const path = (window.location.pathname || '').toLowerCase();
+      if (hash === '#en' || path.endsWith('privacy.html')) {
+        switchLang('en');
+      } else {
+        switchLang('fr');
+      }
+    });
+
+    window.addEventListener('hashchange', () => {
+      const hash = (window.location.hash || '').toLowerCase();
+      if (hash === '#en') {
+        switchLang('en');
+      } else if (hash === '#fr') {
+        switchLang('fr');
+      }
+    });
+  </script>
+
+</body>
+</html>

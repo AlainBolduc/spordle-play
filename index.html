@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guide d'installation — Spordle Annonceur</title>
+  <style>
+    /* Mode sombre sobre et épuré type documentation Apple Developer / GitHub Dark */
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --card-hover: #1c2128;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --border-light: #21262d;
+      --blue: #58a6ff;
+      --blue-hover: #79b8ff;
+      --green: #238636;
+      --green-hover: #2ea043;
+      --gold: #d29922;
+      --badge-bg: #1f242c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 36px 20px 80px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrapper {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    /* En-tête principal */
+    header.main-header {
+      margin-bottom: 32px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--blue);
+      background: rgba(88, 166, 255, 0.12);
+      border: 1px solid rgba(88, 166, 255, 0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+      color: #ffffff;
+    }
+
+    .lead {
+      font-size: 17px;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Bouton retour en haut des vues */
+    .nav-back-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .btn-back:hover {
+      background: var(--card-bg);
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .current-device-tag {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* LANDING PAGE : Deux carrés de sélection */
+    .landing-section {
+      margin-top: 10px;
+    }
+
+    .landing-question {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .device-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 22px;
+      margin-bottom: 40px;
+    }
+
+    .device-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 30px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .device-card:hover {
+      border-color: var(--blue);
+      background: var(--card-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+    }
+
+    .device-card:active {
+      transform: translateY(-1px);
+    }
+
+    .card-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 14px;
+      background: rgba(88, 166, 255, 0.12);
+      border: 1px solid rgba(88, 166, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+      font-size: 28px;
+    }
+
+    .device-card.card-ipad .card-icon {
+      background: rgba(210, 153, 34, 0.12);
+      border-color: rgba(210, 153, 34, 0.25);
+    }
+
+    .card-badge {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 3px 9px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+
+    .badge-quick {
+      background: rgba(35, 134, 54, 0.2);
+      color: #3fb950;
+      border: 1px solid rgba(63, 185, 80, 0.3);
+    }
+
+    .badge-ipad {
+      background: rgba(210, 153, 34, 0.2);
+      color: var(--gold);
+      border: 1px solid rgba(210, 153, 34, 0.3);
+    }
+
+    .device-card h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+      line-height: 1.25;
+    }
+
+    .device-card .card-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+
+    .card-features {
+      list-style: none;
+      font-size: 14px;
+      color: #c9d1d9;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .card-features li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-features li span.check {
+      color: #3fb950;
+      font-weight: bold;
+    }
+
+    .card-action-btn {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #21262d;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 14.5px;
+      padding: 10px 16px;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .device-card:hover .card-action-btn {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #0d1117;
+    }
+
+    .device-card.card-ipad:hover .card-action-btn {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #0d1117;
+    }
+
+    /* VUES CONDITIONNELLES (SPA) */
+    .view-content {
+      display: none;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .view-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ONGLET iPad (Première installation VS Mises à jour) */
+    .tabs-nav {
+      display: flex;
+      gap: 8px;
+      background: #161b22;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 5px;
+      margin-bottom: 28px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 11px 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 14.5px;
+      font-weight: 600;
+      border-radius: 7px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .tab-btn.active {
+      background: #21262d;
+      color: #ffffff;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    /* Style général des étapes */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 16px;
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      background: #21262d;
+      border: 1px solid var(--border);
+      color: #ffffff;
+      border-radius: 50%;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-content h2, .step-content h3 {
+      font-size: 19px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.2px;
+      color: #ffffff;
+    }
+
+    .step-content p, .step-content ol, .step-content ul {
+      font-size: 15px;
+      color: #c9d1d9;
+      margin-bottom: 12px;
+    }
+
+    .step-content ol {
+      margin-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .step-content strong {
+      color: #ffffff;
+    }
+
+    /* Code en ligne et blocs copier */
+    code {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 13.5px;
+      background: #21262d;
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 5px;
+      color: #e6edf3;
+    }
+
+    .copy-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin: 10px 0 16px;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 14px;
+    }
+
+    .copy-btn {
+      background: #21262d;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+
+    .copy-btn:hover {
+      background: #30363d;
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .copy-btn.copied {
+      background: var(--green);
+      border-color: var(--green);
+      color: #ffffff;
+    }
+
+    /* Boîte d'accès rapide / QR / Téléchargement */
+    .quick-access {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 18px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+
+    .qr-box {
+      background: #ffffff;
+      padding: 6px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .qr-box img {
+      width: 100px;
+      height: 100px;
+      display: block;
+    }
+
+    .quick-text {
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .quick-text strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 4px;
+      color: #ffffff;
+    }
+
+    .quick-text p {
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .btn-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 15px;
+      background: #21262d;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #ffffff;
+      text-decoration: none;
+      transition: background 0.15s ease;
+    }
+
+    .btn-link:hover {
+      background: #30363d;
+    }
+
+    .btn-link-green {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .btn-link-green:hover {
+      background: var(--green-hover);
+      border-color: var(--green-hover);
+    }
+
+    .btn-link-blue {
+      background: #0071e3;
+      border-color: #0071e3;
+    }
+
+    .btn-link-blue:hover {
+      background: #0077ed;
+    }
+
+    .quick-link {
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    .quick-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Cartes de capture d'écran */
+    .screenshots-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .screenshot-card {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .screenshot-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .screenshot-caption {
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--text-muted);
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+      line-height: 1.4;
+    }
+
+    /* Placeholder intelligent quand une capture d'écran est à fournir */
+    .screenshot-placeholder {
+      background: #161b22;
+      border: 2px dashed #30363d;
+      border-radius: 8px;
+      padding: 28px 20px;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .placeholder-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .placeholder-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .placeholder-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 460px;
+      margin: 0 auto;
+    }
+
+    .placeholder-file {
+      display: inline-block;
+      margin-top: 8px;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 11px;
+      color: #8b949e;
+      background: #0d1117;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border-light);
+    }
+
+    /* Boîtes de notification / avertissement */
+    .intro-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--gold);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      font-size: 15px;
+      color: #c9d1d9;
+    }
+
+    .intro-box strong {
+      color: #ffffff;
+    }
+
+    .note {
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: #161b22;
+      border-left: 3px solid var(--blue);
+      border-radius: 0 6px 6px 0;
+      font-size: 13.5px;
+      color: #c9d1d9;
+    }
+
+    .note-green {
+      border-left-color: #3fb950;
+      background: rgba(35, 134, 54, 0.1);
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      body {
+        padding: 20px 14px 60px;
+      }
+      h1 {
+        font-size: 26px;
+      }
+      .device-cards-grid {
+        grid-template-columns: 1fr;
+      }
+      .quick-access {
+        flex-direction: column;
+        text-align: center;
+      }
+      .qr-box {
+        margin: 0 auto;
+      }
+      .tabs-nav {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+
+    <!-- En-tête principal -->
+    <header class="main-header">
+      <div class="header-badge">📢 Extension Officielle</div>
+      <h1>Spordle Annonceur</h1>
+      <p class="lead">Le texte exact à lire au micro pour chaque but et pénalité sur Spordle Play.</p>
+    </header>
+
+    <!-- ======================================================== -->
+    <!-- VUE 1 : LANDING PAGE (CHOIX DE L'APPAREIL : 2 CARRÉS)    -->
+    <!-- ======================================================== -->
+    <main id="view-landing" class="view-content active">
+      <div class="landing-section">
+        <h2 class="landing-question">Sur quel appareil utilisez-vous Spordle Play ?</h2>
+
+        <div class="device-cards-grid">
+
+          <!-- Carré 1 : Ordinateur (Laptop) + Chrome -->
+          <div class="device-card" id="card-chrome" onclick="navigateTo('chrome')">
+            <div class="card-icon">💻</div>
+            <span class="card-badge badge-quick">Chrome Web Store • 1 clic</span>
+            <h2>Ordinateur (Laptop)</h2>
+            <div class="card-subtitle">Google Chrome (Mac, PC, Linux)</div>
+            <ul class="card-features">
+              <li><span class="check">✓</span> <span>Installation directe en 1 clic</span></li>
+              <li><span class="check">✓</span> <span>Disponible sur le Chrome Web Store officiel</span></li>
+              <li><span class="check">✓</span> <span>Mises à jour automatiques transparentes</span></li>
+            </ul>
+            <div class="card-action-btn">
+              Installer sur Chrome →
+            </div>
+          </div>
+
+          <!-- Carré 2 : iPad / iPhone (Safari) -->
+          <div class="device-card card-ipad" id="card-ipad" onclick="navigateTo('ipad')">
+            <div class="card-icon">📱</div>
+            <span class="card-badge badge-ipad">Safari iOS • Userscripts</span>
+            <h2>iPad ou iPhone</h2>
+            <div class="card-subtitle">Safari avec l'app Userscripts</div>
+            <ul class="card-features">
+              <li><span class="check">✓</span> <span>Guide illustré pas-à-pas (1ère installation)</span></li>
+              <li><span class="check">✓</span> <span>Mises à jour faciles via le bouton Nuage ☁️</span></li>
+              <li><span class="check">✓</span> <span>100% compatible iPad en aréna</span></li>
+            </ul>
+            <div class="card-action-btn">
+              Installer sur iPad / iPhone →
+            </div>
+          </div>
+
+        </div>
+
+        <div class="intro-box" style="border-left-color: var(--blue);">
+          <strong>💡 Vous hésitez ?</strong> Si vous avez un ordinateur portable à l'aréna, l'installation sur <strong>Google Chrome</strong> est la plus rapide (moins d'une minute). Si vous utilisez l'iPad officiel de la ligue ou de votre organisation, choisissez l'option <strong>iPad (Safari)</strong>.
+        </div>
+      </div>
+    </main>
+
+
+    <!-- ======================================================== -->
+    <!-- VUE 2 : LAPTOP + GOOGLE CHROME (SIMPLE & SOMMAIRE)       -->
+    <!-- ======================================================== -->
+    <main id="view-chrome" class="view-content">
+      <div class="nav-back-bar">
+        <button class="btn-back" onclick="navigateTo('landing')">← Choisir un autre appareil</button>
+        <span class="current-device-tag">💻 Ordinateur • Google Chrome</span>
+      </div>
+
+      <div style="margin-bottom: 28px;">
+        <h2 style="font-size: 26px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">
+          Installation sur Ordinateur (Google Chrome)
+        </h2>
+        <p style="color: var(--text-muted); font-size: 16px;">
+          L'extension est officiellement publiée sur le Chrome Web Store. L'installation se fait en un seul clic !
+        </p>
+      </div>
+
+      <!-- Boîte d'action principale Chrome Web Store -->
+      <div class="quick-access" style="background: linear-gradient(135deg, rgba(88, 166, 255, 0.12) 0%, rgba(33, 38, 45, 0.9) 100%); border-color: rgba(88, 166, 255, 0.4); padding: 24px; margin-bottom: 32px;">
+        <div class="card-icon" style="margin-bottom: 0; width: 64px; height: 64px; font-size: 32px; background: rgba(88, 166, 255, 0.2);">
+          🌐
+        </div>
+        <div class="quick-text">
+          <strong style="font-size: 18px; color: #ffffff;">Installer depuis le Chrome Web Store</strong>
+          <p style="margin-top: 4px; font-size: 14.5px; color: #c9d1d9;">
+            Lien officiel vérifié par Google. Cliquez sur le bouton pour ouvrir la boutique Chrome :
+          </p>
+          <div style="margin-top: 12px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <a href="https://chromewebstore.google.com/detail/spordle-annonceur/dhmljbdfhjheekfedcobcnooadlpcibm?utm_source=ext_extensions_menu" target="_blank" class="btn-link btn-link-blue" style="font-size: 15px; padding: 11px 20px; border-radius: 8px;">
+              ⚡ Ajouter à Chrome (Gratuit) ↗
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="steps">
+
+        <!-- Étape 1 -->
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h3>Ouvrir la page officielle sur le Chrome Web Store</h3>
+            <p>
+              Cliquez sur le bouton ci-dessus ou ouvrez ce lien direct :
+            </p>
+            <div style="margin-top: 6px;">
+              <a href="https://chromewebstore.google.com/detail/spordle-annonceur/dhmljbdfhjheekfedcobcnooadlpcibm?utm_source=ext_extensions_menu" target="_blank" class="quick-link" style="word-break: break-all;">
+                chromewebstore.google.com/detail/spordle-annonceur/... ↗
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Étape 2 -->
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h3>Cliquer sur « Ajouter à Chrome »</h3>
+            <p>
+              Sur la page du Chrome Web Store, cliquez sur le bouton bleu <strong>« Ajouter à Chrome »</strong> (<em>Add to Chrome</em>), puis confirmez en cliquant sur <strong>« Ajouter l'extension »</strong>.
+            </p>
+            <div class="note note-green" style="margin-top: 10px;">
+              ✅ <strong>C'est installé !</strong> L'icône mégaphone 📢 de Spordle Annonceur apparaît désormais dans vos extensions Chrome.
+            </div>
+          </div>
+        </div>
+
+        <!-- Étape 3 -->
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h3>Ouvrir Spordle Play</h3>
+            <p>
+              Rendez-vous sur votre feuille de match officielle sur <strong>play.spordle.com</strong> (ou rechargez la page si elle était déjà ouverte).
+            </p>
+            <p>
+              Des icônes mégaphones 📢 apparaissent automatiquement à côté de chaque but et punition dans le sommaire. Un clic dessus affiche le texte officiel complet prêt à être lu au micro !
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Astuce mise à jour sur Chrome -->
+      <div class="intro-box" style="margin-top: 36px; border-left-color: #3fb950;">
+        <strong>🔄 Mises à jour automatiques transparentes :</strong><br>
+        Grâce au Chrome Web Store, vous n'avez absolument rien à faire pour les mises à jour : Google Chrome télécharge et applique automatiquement la dernière version en arrière-plan dès sa publication !
+      </div>
+    </main>
+
+
+    <!-- ======================================================== -->
+    <!-- VUE 3 : IPAD / IPHONE (SAFARI) : 2 SECTIONS VIA ONGLETS  -->
+    <!-- ======================================================== -->
+    <main id="view-ipad" class="view-content">
+      <div class="nav-back-bar">
+        <button class="btn-back" onclick="navigateTo('landing')">← Choisir un autre appareil</button>
+        <span class="current-device-tag">📱 iPad / iPhone • Safari</span>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h2 style="font-size: 26px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">
+          Spordle Annonceur sur iPad & iPhone
+        </h2>
+        <p style="color: var(--text-muted); font-size: 16px;">
+          Choisissez si vous configurez l'iPad pour la toute première fois ou si vous faites une mise à jour.
+        </p>
+      </div>
+
+      <!-- Sélecteur d'onglets pour iPad -->
+      <div class="tabs-nav">
+        <button class="tab-btn active" id="tab-btn-install" onclick="switchIpadTab('install')">
+          <span>🚀</span> Première installation
+        </button>
+        <button class="tab-btn" id="tab-btn-update" onclick="switchIpadTab('update')">
+          <span>🔄</span> Mettre à jour l'extension (Update)
+        </button>
+      </div>
+
+
+      <!-- ====================================================== -->
+      <!-- SECTION IPAD A : PREMIÈRE INSTALLATION (GUIDE COMPLET) -->
+      <!-- ====================================================== -->
+      <div id="pane-ipad-install" class="tab-pane active">
+
+        <div class="intro-box">
+          <p>
+            <strong>À noter pour les utilisateurs d'iPad :</strong> L'extension n'est pas disponible sur Google Chrome sur iPad (les navigateurs tiers sur iOS ne supportent pas les extensions). Toutefois, vous pouvez l'utiliser dans <strong>Safari</strong> en installant l'extension gratuite <strong>Userscripts</strong>.
+          </p>
+          <p style="margin-top: 8px; color: var(--gold); font-size: 14.5px;">
+            ⚠️ <strong>Important :</strong> Suivez ce guide étape par étape pour que l'extension fonctionne parfaitement.
+          </p>
+        </div>
+
+        <div class="steps">
+
+          <!-- Étape 1 -->
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <h3>Installer l'application Userscripts</h3>
+              <p>
+                Téléchargez l'application gratuite <strong>Userscripts</strong> depuis l'App Store. C'est l'extension indispensable pour que Safari puisse exécuter le script sur iPad ou iPhone.
+              </p>
+
+              <div class="quick-access">
+                <div class="qr-box">
+                  <img src="assets/guide/qr-code-appstore.png" alt="Code QR App Store Userscripts">
+                </div>
+                <div class="quick-text">
+                  <strong>Télécharger sur l'App Store</strong>
+                  <p>
+                    Scannez le code QR avec l'appareil photo de l'iPad ou touchez le bouton ci-dessous :
+                  </p>
+                  <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <a href="https://apple.co/4hHYsZJ" target="_blank" class="btn-link btn-link-blue">
+                       Ouvrir dans l'App Store ↗
+                    </a>
+                    <a href="https://apple.co/4hHYsZJ" target="_blank" class="quick-link">
+                      apple.co/4hHYsZJ →
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Étape 2 -->
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <h3>Activer l'extension dans les Réglages</h3>
+              <ol>
+                <li>Ouvrez l'application <strong>Réglages</strong> de l'iPad.</li>
+                <li>Allez dans <strong>Apps</strong> &gt; <strong>Safari</strong> &gt; <strong>Extensions</strong> (ou directement <strong>Userscripts</strong>).</li>
+                <li>Activez <strong>Autoriser l'extension</strong>.</li>
+                <li>Dans la section <em>Autorisations</em>, assurez-vous que les domaines Spordle (<code>play.spordle.com</code>) sont bien configurés sur <strong>Autoriser</strong>.</li>
+              </ol>
+
+              <div class="screenshots-group">
+                <div class="screenshot-card">
+                  <img src="assets/guide/step2-settings-permissions.png" alt="Réglages des autorisations Userscripts">
+                  <div class="screenshot-caption">Réglages &gt; Extensions &gt; Userscripts : Activer l'extension et vérifier les autorisations d'accès.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Étape 3 -->
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <h3>Vérifier le dossier de travail (Optionnel)</h3>
+              <p>
+                Par défaut, l'application utilise déjà le dossier <em>Userscripts</em> sur votre appareil. Si vous souhaitez le vérifier :
+              </p>
+              <ol>
+                <li>Ouvrez l'application <strong>Userscripts</strong> sur votre écran d'accueil.</li>
+                <li>Touchez <strong>Set Userscripts-Directory</strong>.</li>
+                <li>Sélectionnez le dossier <strong>Userscripts</strong> et touchez <strong>Ouvrir</strong> en haut à droite.</li>
+              </ol>
+
+              <div class="screenshots-group">
+                <div class="screenshot-card">
+                  <img src="assets/guide/step3-choose-directory.png" alt="Sélection du dossier dans l'app Userscripts">
+                  <div class="screenshot-caption">Sélectionner le dossier « Userscripts » et toucher « Ouvrir » en haut à droite.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Étape 4 -->
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <h3>Télécharger et enregistrer le script</h3>
+              <p>
+                Scannez le code QR ci-dessous avec l'iPad ou ouvrez directement le lien dans <strong>Safari</strong> :
+              </p>
+
+              <div class="quick-access">
+                <div class="qr-box">
+                  <img src="assets/guide/qr-code.png" alt="Code QR d'installation">
+                </div>
+                <div class="quick-text">
+                  <strong>Lien de téléchargement officiel</strong>
+                  <p>
+                    Touchez directement le bouton ci-dessous dans Safari sur votre iPad :
+                  </p>
+                  <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <a href="spordle-annonceur.user.js" class="btn-link btn-link-green">
+                      ⚡ Télécharger le script (.user.js)
+                    </a>
+                    <a href="https://bit.ly/spordle-annonceur" target="_blank" class="quick-link">
+                      bit.ly/spordle-annonceur →
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <ol style="margin-top: 18px;">
+                <li>
+                  <p style="margin-bottom: 8px;">
+                    Au chargement de la page du script dans Safari, touchez <strong>TÉLÉCHARGER</strong> sur le bandeau en bas :
+                  </p>
+                  <div class="screenshot-card">
+                    <img src="assets/guide/step4-download-bar.png" alt="Toucher Télécharger sur le bandeau Safari">
+                    <div class="screenshot-caption">1. Toucher « Télécharger » sur le bandeau en bas de la page Safari.</div>
+                  </div>
+                </li>
+
+                <li style="margin-top: 16px;">
+                  <p style="margin-bottom: 8px;">
+                    Dans le menu de partage qui s'affiche, choisissez <strong>Enregistrer dans Fichiers</strong> :
+                  </p>
+                  <div class="screenshot-card">
+                    <img src="assets/guide/step4-save-files.png" alt="Menu de partage Enregistrer dans Fichiers">
+                    <div class="screenshot-caption">2. Dans le menu de partage, sélectionner « Enregistrer dans Fichiers ».</div>
+                  </div>
+                </li>
+
+                <li style="margin-top: 16px;">
+                  <p style="margin-bottom: 8px;">
+                    Sélectionnez le dossier <strong>Userscripts</strong> (dans <em>Sur mon iPad</em> ou <em>iCloud Drive</em>) et touchez <strong>Enregistrer</strong> en haut à droite :
+                  </p>
+                  <div class="screenshot-card">
+                    <img src="assets/guide/step4-save-dialog.png" alt="Sélection du dossier Userscripts dans Fichiers">
+                    <div class="screenshot-caption">3. Choisir le dossier « Userscripts » et toucher « Enregistrer ».</div>
+                  </div>
+                </li>
+              </ol>
+
+              <div class="note" style="margin-top: 18px;">
+                ⚠️ <strong>Important :</strong> le fichier doit impérativement se trouver à l'intérieur du dossier <strong>Userscripts</strong> pour que Safari puisse le charger automatiquement.
+              </div>
+            </div>
+          </div>
+
+          <!-- Étape 5 -->
+          <div class="step-item">
+            <div class="step-num">5</div>
+            <div class="step-content">
+              <h3>Vérifier et autoriser sur Spordle</h3>
+              <ol>
+                <li>
+                  <p style="margin-bottom: 8px;">
+                    Ouvrez votre feuille de match sur <strong>play.spordle.com</strong>, puis dans la barre d'adresse de Safari, touchez le bouton <strong>Extensions</strong> (icône puzzle 🧩 ou <strong>aA</strong>) et choisissez <strong>Userscripts</strong> :
+                  </p>
+                  <div class="screenshot-card">
+                    <img src="assets/guide/step5-safari-menu.png" alt="Menu Extensions de Safari">
+                    <div class="screenshot-caption">1. Toucher le bouton d'extensions dans Safari puis sélectionner « Userscripts ».</div>
+                  </div>
+                </li>
+
+                <li style="margin-top: 16px;">
+                  <p style="margin-bottom: 8px;">
+                    Assurez-vous que le commutateur en haut à droite est bien activé et que <strong>Spordle Annonceur</strong> est présent et coché dans la liste :
+                  </p>
+                  <div class="screenshot-card">
+                    <img src="assets/guide/step5-userscripts-toggle.png" alt="Fenêtre Userscripts avec Spordle Annonceur activé">
+                    <div class="screenshot-caption">2. Vérifier que le commutateur est activé et que « Spordle Annonceur » est présent dans la liste.</div>
+                  </div>
+                </li>
+
+                <li style="margin-top: 16px;">
+                  <p style="margin-bottom: 8px;">
+                    Rechargez la page de votre match. Les boutons mégaphones 📢 sont désormais actifs :
+                  </p>
+                  <div class="screenshot-card">
+                    <img src="assets/guide/step5-result-megaphones.png" alt="Feuille Spordle Play avec les icônes mégaphones actives">
+                    <div class="screenshot-caption">3. Résultat : Les icônes mégaphones 📢 apparaissent sur chaque but et punition du sommaire, et le bouton d'inversion des côtés (⇄) s'affiche à côté de la catégorie.</div>
+                  </div>
+                </li>
+              </ol>
+
+              <div class="note note-green" style="margin-top: 18px;">
+                🏒 <strong>C'est prêt !</strong> Les petites icônes mégaphones 📢 apparaissent désormais à côté de chaque but et punition dans le sommaire. Un toucher dessus affiche le texte officiel complet.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+
+      <!-- ====================================================== -->
+      <!-- SECTION IPAD B : MISES À JOUR (UPDATE)                 -->
+      <!-- ====================================================== -->
+      <div id="pane-ipad-update" class="tab-pane">
+
+        <div class="intro-box" style="border-left-color: #3fb950;">
+          <p>
+            <strong>Vous avez déjà configuré Userscripts sur cet iPad ?</strong><br>
+            Lorsqu'une nouvelle version de <em>Spordle Annonceur</em> est publiée (nouveaux textes, améliorations ou correctifs), vous n'avez pas besoin de refaire toute l'installation : la mise à jour s'effectue en 4 touchers d'écran directement dans Safari !
+          </p>
+        </div>
+
+        <div class="steps">
+
+          <!-- Étape Update 1 -->
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <h3>Toucher l'icône Userscripts dans Safari</h3>
+              <p>
+                Dans Safari (sur la page de votre match ou n'importe quel onglet), touchez le bouton d'extensions dans la barre d'outils (icône puzzle 🧩 ou bouton <code>&lt;/&gt;</code>), puis sélectionnez <strong>Userscripts</strong>.
+              </p>
+
+              <div class="screenshot-card">
+                <img src="assets/guide/update-step1-userscripts.png" alt="Toucher l'icône Userscripts dans Safari" onerror="handleMissingScreenshot(this, 'assets/guide/update-step1-userscripts.png', 'Capture d’écran : Menu Safari avec l’icône Userscripts sélectionnée')">
+                <div class="screenshot-caption">1. Dans Safari, toucher le bouton d'extensions puis sélectionner « Userscripts ».</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Étape Update 2 -->
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <h3>Toucher « Spordle Annonceur »</h3>
+              <p>
+                Dans la fenêtre qui apparaît, touchez la ligne <strong>Spordle Annonceur</strong> pour afficher la fiche du script.
+              </p>
+
+              <div class="screenshot-card">
+                <img src="assets/guide/update-step2-script.png" alt="Toucher Spordle Annonceur dans Userscripts" onerror="handleMissingScreenshot(this, 'assets/guide/update-step2-script.png', 'Capture d’écran : Liste Userscripts avec le script Spordle Annonceur')">
+                <div class="screenshot-caption">2. Dans le menu Userscripts, toucher le script « Spordle Annonceur ».</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Étape Update 3 -->
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <h3>Toucher le bouton Nuage (Cloud ☁️)</h3>
+              <p>
+                En haut de la fiche du script, repérez et touchez l'icône en forme de <strong>nuage (Cloud ☁️)</strong> pour interroger le serveur et rechercher les mises à jour.
+              </p>
+
+              <div class="screenshot-card">
+                <img src="assets/guide/update-step3-cloud.png" alt="Toucher le bouton Cloud de mise à jour" onerror="handleMissingScreenshot(this, 'assets/guide/update-step3-cloud.png', 'Capture d’écran : Fiche du script avec focus sur le bouton Nuage (Cloud)')">
+                <div class="screenshot-caption">3. En haut, toucher l'icône du nuage ☁️ pour vérifier la mise à jour.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Étape Update 4 -->
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <h3>Toucher « Update » pour confirmer</h3>
+              <p>
+                L'application détecte la nouvelle version disponible. Touchez simplement le bouton <strong>Update</strong> (Mettre à jour) pour installer la dernière version.
+              </p>
+
+              <div class="screenshot-card">
+                <img src="assets/guide/update-step4-update.png" alt="Toucher Update pour confirmer la mise à jour" onerror="handleMissingScreenshot(this, 'assets/guide/update-step4-update.png', 'Capture d’écran : Fenêtre de confirmation avec le bouton Update')">
+                <div class="screenshot-caption">4. Toucher « Update » pour télécharger et appliquer la mise à jour.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Étape Update 5 -->
+          <div class="step-item">
+            <div class="step-num">5</div>
+            <div class="step-content">
+              <h3>Recharger Spordle Play</h3>
+              <p>
+                Retournez sur votre onglet Spordle Play et touchez le bouton <strong>Actualiser (↻)</strong> de Safari.
+              </p>
+              <div class="note note-green">
+                🎉 <strong>Mise à jour terminée !</strong> La version la plus récente de Spordle Annonceur est immédiatement opérationnelle sur votre match.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- Pied de page -->
+    <footer>
+      <p style="font-weight: 600;">Spordle Annonceur — © 2026 Alain Bolduc. Tous droits réservés.</p>
+      <p style="margin-top: 6px; font-size: 13px; color: var(--text-muted);">
+        Licence propriétaire — Usage bénévole et personnel autorisé pour les matchs de hockey amateur officiels.
+        Toute intégration commerciale ou redistribution sans autorisation écrite est formellement interdite.
+      </p>
+      <p style="margin-top: 10px; font-size: 13px;">
+        <a href="confidentialite.html" style="color: var(--blue); text-decoration: none;">🔒 Politique de confidentialité (Privacy Policy)</a>
+      </p>
+    </footer>
+
+  </div>
+
+  <script>
+    // Navigation SPA simple et fluide
+    function navigateTo(viewName, pushHash = true) {
+      const views = {
+        'landing': document.getElementById('view-landing'),
+        'chrome': document.getElementById('view-chrome'),
+        'ipad': document.getElementById('view-ipad')
+      };
+
+      // Masquer toutes les vues
+      Object.values(views).forEach(v => {
+        if (v) v.classList.remove('active');
+      });
+
+      if (viewName === 'chrome') {
+        views.chrome.classList.add('active');
+        if (pushHash) window.location.hash = 'chrome';
+      } else if (viewName === 'ipad' || viewName === 'ipad-update' || viewName === 'ipad-install') {
+        views.ipad.classList.add('active');
+        if (viewName === 'ipad-update') {
+          switchIpadTab('update', false);
+          if (pushHash) window.location.hash = 'ipad-update';
+        } else {
+          switchIpadTab('install', false);
+          if (pushHash) window.location.hash = 'ipad';
+        }
+      } else {
+        views.landing.classList.add('active');
+        if (pushHash) {
+          history.replaceState(null, null, ' ');
+        }
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Gestion des onglets iPad
+    function switchIpadTab(tabName, updateHash = true) {
+      const btnInstall = document.getElementById('tab-btn-install');
+      const btnUpdate = document.getElementById('tab-btn-update');
+      const paneInstall = document.getElementById('pane-ipad-install');
+      const paneUpdate = document.getElementById('pane-ipad-update');
+
+      if (tabName === 'update') {
+        btnInstall.classList.remove('active');
+        btnUpdate.classList.add('active');
+        paneInstall.classList.remove('active');
+        paneUpdate.classList.add('active');
+        if (updateHash) window.location.hash = 'ipad-update';
+      } else {
+        btnUpdate.classList.remove('active');
+        btnInstall.classList.add('active');
+        paneUpdate.classList.remove('active');
+        paneInstall.classList.add('active');
+        if (updateHash) window.location.hash = 'ipad';
+      }
+    }
+
+    // Lecture du hash dans l'URL pour lien direct
+    function applyHashRoute() {
+      const hash = (window.location.hash || '').replace('#', '').toLowerCase();
+      if (hash === 'chrome' || hash === 'laptop') {
+        navigateTo('chrome', false);
+      } else if (hash === 'ipad-update' || hash === 'update') {
+        navigateTo('ipad-update', false);
+      } else if (hash === 'ipad' || hash === 'ipad-install') {
+        navigateTo('ipad', false);
+      } else {
+        navigateTo('landing', false);
+      }
+    }
+
+    // Copie de l'URL chrome://extensions
+    function copyChromeUrl(btn) {
+      const text = 'chrome://extensions';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showCopied(btn);
+        }).catch(() => fallbackCopy(text, btn));
+      } else {
+        fallbackCopy(text, btn);
+      }
+    }
+
+    function fallbackCopy(text, btn) {
+      const input = document.createElement('input');
+      input.value = text;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      document.body.removeChild(input);
+      showCopied(btn);
+    }
+
+    function showCopied(btn) {
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<span>✓</span> Copié !';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.innerHTML = originalHtml;
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+
+    // Gestion gracieuse des captures d'écran absentes
+    function handleMissingScreenshot(img, expectedPath, description) {
+      const card = img.closest('.screenshot-card');
+      if (!card) return;
+
+      const placeholder = document.createElement('div');
+      placeholder.className = 'screenshot-placeholder';
+      placeholder.innerHTML = `
+        <span class="placeholder-icon">📷</span>
+        <div class="placeholder-title">Capture d'écran à venir</div>
+        <div class="placeholder-desc">${description}</div>
+        <span class="placeholder-file">${expectedPath}</span>
+      `;
+
+      card.parentNode.replaceChild(placeholder, card);
+    }
+
+    window.addEventListener('hashchange', applyHashRoute);
+    window.addEventListener('DOMContentLoaded', applyHashRoute);
+  </script>
+
+</body>
+</html>
