@@ -1,7 +1,7 @@
 
 (() => {
-  window.__SA_POC_ACTIVE_VERSION__ = "1.0.0";
-  window.__SA_POC_IS_HOT__ = false;
+  window.__SA_POC_ACTIVE_VERSION__ = "1.0.1";
+  window.__SA_POC_IS_HOT__ = true;
 
   // Injection CSS
   try {
@@ -17,7 +17,7 @@
     console.error("[Spordle POC] Erreur injection CSS:", err);
   }
 
-  // Badge visuel POC
+  // Badge visuel POC mis à jour
   
 (() => {
   function showPocBadge() {
@@ -29,20 +29,20 @@
       badge.style.bottom = '16px';
       badge.style.right = '16px';
       badge.style.zIndex = '999999';
-      badge.style.padding = '8px 16px';
+      badge.style.padding = '10px 20px';
       badge.style.borderRadius = '24px';
       badge.style.fontFamily = 'system-ui, -apple-system, sans-serif';
-      badge.style.fontSize = '13px';
+      badge.style.fontSize = '14px';
       badge.style.fontWeight = 'bold';
       badge.style.color = '#ffffff';
-      badge.style.boxShadow = '0 4px 14px rgba(0,0,0,0.4)';
+      badge.style.boxShadow = '0 6px 18px rgba(0,0,0,0.5)';
       badge.style.pointerEvents = 'none';
+      badge.style.transition = 'all 0.4s ease';
       document.body.appendChild(badge);
     }
-    const version = window.__SA_POC_ACTIVE_VERSION__ || '1.0.0';
-    const isHot = window.__SA_POC_IS_HOT__ ? '⚡ Autonome' : 'Local';
-    badge.style.background = window.__SA_POC_IS_HOT__ ? '#e11d48' : '#0284c7';
-    badge.innerHTML = '📢 Spordle Annonceur POC <strong>v' + version + '</strong> [' + isHot + ']';
+    const version = window.__SA_POC_ACTIVE_VERSION__ || '1.0.1';
+    badge.style.background = '#10b981'; // Vert éclatant
+    badge.innerHTML = '📢 Spordle Annonceur POC <strong>v' + version + '</strong> [⚡ Autonome] — 🚀 Auto-update actif !';
   }
   if (document.body) showPocBadge();
   else document.addEventListener('DOMContentLoaded', showPocBadge);
