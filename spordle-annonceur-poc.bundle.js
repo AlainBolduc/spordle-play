@@ -17,7 +17,7 @@
     console.error("[Spordle POC] Erreur injection CSS:", err);
   }
 
-  // Badge visuel POC mis à jour
+  // Badge visuel POC
   
 (() => {
   function showPocBadge() {
@@ -40,9 +40,10 @@
       badge.style.transition = 'all 0.4s ease';
       document.body.appendChild(badge);
     }
-    const version = window.__SA_POC_ACTIVE_VERSION__ || '1.0.1';
-    badge.style.background = '#10b981'; // Vert éclatant
-    badge.innerHTML = '📢 Spordle Annonceur POC <strong>v' + version + '</strong> [⚡ Autonome] — 🚀 Auto-update actif !';
+    const ver = '1.0.1';
+    const hot = true;
+    badge.style.background = hot ? '#10b981' : '#0284c7'; // Vert si autonome, bleu si initial
+    badge.innerHTML = '📢 Spordle Annonceur POC <strong>v' + ver + '</strong> [' + (hot ? '⚡ Autonome' : 'Local') + ']' + (hot ? ' — 🚀 Auto-update actif !' : '');
   }
   if (document.body) showPocBadge();
   else document.addEventListener('DOMContentLoaded', showPocBadge);
