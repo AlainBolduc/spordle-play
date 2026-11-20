@@ -1,6 +1,6 @@
 
 (() => {
-  window.__SA_POC_ACTIVE_VERSION__ = "1.0.1";
+  window.__SA_POC_ACTIVE_VERSION__ = "1.0.2";
   window.__SA_POC_IS_HOT__ = true;
 
   // Injection CSS
@@ -13,6 +13,12 @@
       style.textContent = css;
       (document.head || document.documentElement).appendChild(style);
     }
+
+    // Effet visuel v1.0.2 : halos dorés sur les mégaphones
+    const glowStyle = document.createElement("style");
+    glowStyle.id = "sa-poc-v102-glow";
+    glowStyle.textContent = ".sa-announce-btn svg { filter: drop-shadow(0 0 5px #ffc900) !important; }";
+    (document.head || document.documentElement).appendChild(glowStyle);
   } catch (err) {
     console.error("[Spordle POC] Erreur injection CSS:", err);
   }
@@ -29,21 +35,22 @@
       badge.style.bottom = '16px';
       badge.style.right = '16px';
       badge.style.zIndex = '999999';
-      badge.style.padding = '10px 20px';
+      badge.style.padding = '10px 22px';
       badge.style.borderRadius = '24px';
       badge.style.fontFamily = 'system-ui, -apple-system, sans-serif';
       badge.style.fontSize = '14px';
       badge.style.fontWeight = 'bold';
       badge.style.color = '#ffffff';
-      badge.style.boxShadow = '0 6px 18px rgba(0,0,0,0.5)';
+      badge.style.boxShadow = '0 6px 20px rgba(124, 58, 237, 0.5)';
       badge.style.pointerEvents = 'none';
       badge.style.transition = 'all 0.4s ease';
       document.body.appendChild(badge);
     }
-    const ver = '1.0.1';
+    const ver = '1.0.2';
     const hot = true;
-    badge.style.background = hot ? '#10b981' : '#0284c7'; // Vert si autonome, bleu si initial
-    badge.innerHTML = '📢 Spordle Annonceur POC <strong>v' + ver + '</strong> [' + (hot ? '⚡ Autonome' : 'Local') + ']' + (hot ? ' — 🚀 Auto-update actif !' : '');
+    badge.style.background = hot ? 'linear-gradient(135deg, #7c3aed 0%, #ec4899 100%)' : '#0284c7';
+    badge.style.border = hot ? '2px solid #ffc900' : 'none';
+    badge.innerHTML = '🔥 Spordle POC <strong>v' + ver + '</strong> [' + (hot ? '⚡ Autonome' : 'Local') + ']' + (hot ? ' — 🎯 Mise à jour v1.0.2 validée ! ⭐' : '');
   }
   if (document.body) showPocBadge();
   else document.addEventListener('DOMContentLoaded', showPocBadge);
