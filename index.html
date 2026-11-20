@@ -969,7 +969,7 @@
                     Touchez directement le bouton ci-dessous dans Safari sur votre iPad :
                   </p>
                   <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                    <a href="spordle-annonceur.user.js" class="btn-link btn-link-green">
+                    <a href="spordle-annonceur.user.js" download="spordle-annonceur.user.js" onclick="downloadUserScript(event, this)" class="btn-link btn-link-green" id="btn-download-userscript">
                       ⚡ Télécharger le script (.user.js)
                     </a>
                     <a href="https://bit.ly/spordle-annonceur" target="_blank" class="quick-link">
@@ -982,31 +982,30 @@
               <ol style="margin-top: 18px;">
                 <li>
                   <p style="margin-bottom: 8px;">
-                    Au chargement de la page du script dans Safari, touchez <strong>TÉLÉCHARGER</strong> sur le bandeau en bas :
+                    Touchez le bouton vert <strong>⚡ Télécharger le script</strong> ci-dessus. Safari affiche directement la boîte de dialogue système : touchez <strong>Télécharger</strong> :
                   </p>
-                  <div class="screenshot-card">
-                    <img src="assets/guide/step4-download-bar.png" alt="Toucher Télécharger sur le bandeau Safari">
-                    <div class="screenshot-caption">1. Toucher « Télécharger » sur le bandeau en bas de la page Safari.</div>
+                  <div class="note note-green" style="margin: 10px 0 14px 0;">
+                    💡 <strong>Astuce Safari iPad :</strong> Si le fichier s'ouvre sous forme de texte ou si vous préférez le téléchargement manuel, faites un <strong>appui long</strong> sur le bouton vert et choisissez <strong>« Télécharger le fichier lié »</strong> dans le menu contextuel.
                   </div>
                 </li>
 
                 <li style="margin-top: 16px;">
                   <p style="margin-bottom: 8px;">
-                    Dans le menu de partage qui s'affiche, choisissez <strong>Enregistrer dans Fichiers</strong> :
+                    Touchez la petite flèche bleue de téléchargement ⬇️ dans la barre d'adresse de Safari (ou ouvrez l'application <strong>Fichiers</strong> dans le dossier <em>Téléchargements</em>), touchez la loupe ou l'icône de partage sur <code>spordle-annonceur.user.js</code> et choisissez <strong>Enregistrer dans Fichiers</strong> (ou <strong>Déplacer</strong>) :
                   </p>
                   <div class="screenshot-card">
                     <img src="assets/guide/step4-save-files.png" alt="Menu de partage Enregistrer dans Fichiers">
-                    <div class="screenshot-caption">2. Dans le menu de partage, sélectionner « Enregistrer dans Fichiers ».</div>
+                    <div class="screenshot-caption">Sélectionner « Enregistrer dans Fichiers » (ou « Déplacer »).</div>
                   </div>
                 </li>
 
                 <li style="margin-top: 16px;">
                   <p style="margin-bottom: 8px;">
-                    Sélectionnez le dossier <strong>Userscripts</strong> (dans <em>Sur mon iPad</em> ou <em>iCloud Drive</em>) et touchez <strong>Enregistrer</strong> en haut à droite :
+                    Sélectionnez le dossier <strong>Userscripts</strong> (situé dans <em>Sur mon iPad</em> ou <em>iCloud Drive</em>) et touchez <strong>Enregistrer</strong> (ou <strong>Déplacer</strong>) en haut à droite :
                   </p>
                   <div class="screenshot-card">
                     <img src="assets/guide/step4-save-dialog.png" alt="Sélection du dossier Userscripts dans Fichiers">
-                    <div class="screenshot-caption">3. Choisir le dossier « Userscripts » et toucher « Enregistrer ».</div>
+                    <div class="screenshot-caption">Choisir le dossier « Userscripts » et toucher « Enregistrer ».</div>
                   </div>
                 </li>
               </ol>
@@ -1314,6 +1313,56 @@
       } else {
         navigateTo('landing', false);
       }
+    }
+
+    // Téléchargement forcé sur Safari iOS (technique Blob + URL.createObjectURL)
+    // Empêche Safari d'ouvrir le fichier .user.js en texte brut dans l'onglet
+    function downloadUserScript(event, btn) {
+      if (event) event.preventDefault();
+      const originalHtml = btn ? btn.innerHTML : '';
+      if (btn) btn.innerHTML = '<span>⏳</span> Téléchargement...';
+
+      const url = 'spordle-annonceur.user.js';
+      const filename = 'spordle-annonceur.user.js';
+
+      fetch(url)
+        .then((response) => {
+          if (!response.ok) throw new Error('Erreur réseau lors du téléchargement');
+          return response.blob();
+        })
+        .then((blob) => {
+          // Forcer application/octet-stream pour que Safari iOS déclenche le dialogue de téléchargement
+          const forceBlob = new Blob([blob], { type: 'application/octet-stream' });
+          const blobUrl = URL.createObjectURL(forceBlob);
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = filename;
+          link.style.display = 'none';
+
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          setTimeout(() => {
+            URL.revokeObjectURL(blobUrl);
+          }, 10000);
+
+          if (btn) {
+            btn.innerHTML = '<span>✓</span> Téléchargé !';
+            setTimeout(() => { btn.innerHTML = originalHtml; }, 2500);
+          }
+        })
+        .catch((error) => {
+          console.warn('Téléchargement blob échoué, fallback natif:', error);
+          if (btn) btn.innerHTML = originalHtml;
+          // Fallback direct avec attribut download
+          const fallbackLink = document.createElement('a');
+          fallbackLink.href = url;
+          fallbackLink.download = filename;
+          document.body.appendChild(fallbackLink);
+          fallbackLink.click();
+          document.body.removeChild(fallbackLink);
+        });
     }
 
     // Copie de l'URL chrome://extensions
