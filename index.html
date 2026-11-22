@@ -718,7 +718,7 @@
             <div class="card-subtitle">Safari avec l'app Userscripts</div>
             <ul class="card-features">
               <li><span class="check">✓</span> <span>Guide illustré pas-à-pas (1ère installation)</span></li>
-              <li><span class="check">✓</span> <span>Mises à jour faciles via le bouton Nuage ☁️</span></li>
+              <li><span class="check">✓</span> <span>Mises à jour 100 % automatiques et autonomes</span></li>
               <li><span class="check">✓</span> <span>100% compatible iPad en aréna</span></li>
             </ul>
             <div class="card-action-btn">
@@ -851,7 +851,7 @@
           <span>🚀</span> Première installation
         </button>
         <button class="tab-btn" id="tab-btn-update" onclick="switchIpadTab('update')">
-          <span>🔄</span> Mettre à jour l'extension (Update)
+          <span>🔄</span> Mises à jour automatiques
         </button>
         <button class="tab-btn" id="tab-btn-features" onclick="switchIpadTab('features')">
           <span>✨</span> Nouvelles fonctionnalités
@@ -954,9 +954,9 @@
           <div class="step-item">
             <div class="step-num">4</div>
             <div class="step-content">
-              <h3>Télécharger et enregistrer le script</h3>
+              <h3>Télécharger et déplacer le script vers Userscripts</h3>
               <p>
-                Scannez le code QR ci-dessous avec l'iPad ou ouvrez directement le lien dans <strong>Safari</strong> :
+                Le téléchargement enregistre le script dans le dossier <em>Téléchargements</em> de votre iPad. Il suffit ensuite de le déplacer dans le dossier <em>Userscripts</em> pour que Safari puisse le charger automatiquement :
               </p>
 
               <div class="quick-access">
@@ -982,36 +982,38 @@
               <ol style="margin-top: 18px;">
                 <li>
                   <p style="margin-bottom: 8px;">
-                    Touchez le bouton vert <strong>⚡ Télécharger le script</strong> ci-dessus. Safari affiche directement la boîte de dialogue système : touchez <strong>Télécharger</strong> :
+                    <strong>1. Télécharger le fichier :</strong> Touchez le bouton vert <strong>⚡ Télécharger le script</strong> ci-dessus. Safari affiche la boîte de dialogue système : touchez <strong>Télécharger</strong>.
                   </p>
-                  <div class="note note-green" style="margin: 10px 0 14px 0;">
-                    💡 <strong>Astuce Safari iPad :</strong> Si le fichier s'ouvre sous forme de texte ou si vous préférez le téléchargement manuel, faites un <strong>appui long</strong> sur le bouton vert et choisissez <strong>« Télécharger le fichier lié »</strong> dans le menu contextuel.
-                  </div>
                 </li>
 
                 <li style="margin-top: 16px;">
                   <p style="margin-bottom: 8px;">
-                    Touchez la petite flèche bleue de téléchargement ⬇️ dans la barre d'adresse de Safari (ou ouvrez l'application <strong>Fichiers</strong> dans le dossier <em>Téléchargements</em>), touchez la loupe ou l'icône de partage sur <code>spordle-annonceur.user.js</code> et choisissez <strong>Enregistrer dans Fichiers</strong> (ou <strong>Déplacer</strong>) :
+                    <strong>2. Accéder au fichier téléchargé :</strong> Touchez la petite flèche bleue de téléchargement ⬇️ dans la barre d'adresse de Safari, puis touchez la <strong>petite loupe 🔍</strong> à côté de <code>spordle-annonceur.user.js</code> (cela ouvre directement l'application <strong>Fichiers</strong> dans le dossier <em>Téléchargements</em>) :
                   </p>
                   <div class="screenshot-card">
-                    <img src="assets/guide/step4-save-files.png" alt="Menu de partage Enregistrer dans Fichiers">
-                    <div class="screenshot-caption">Sélectionner « Enregistrer dans Fichiers » (ou « Déplacer »).</div>
+                    <img src="assets/guide/step4-save-files.png" alt="Accéder au fichier téléchargé dans Fichiers">
+                    <div class="screenshot-caption">Toucher la loupe 🔍 dans les téléchargements Safari pour repérer le fichier dans l'application Fichiers.</div>
                   </div>
                 </li>
 
                 <li style="margin-top: 16px;">
                   <p style="margin-bottom: 8px;">
-                    Sélectionnez le dossier <strong>Userscripts</strong> (situé dans <em>Sur mon iPad</em> ou <em>iCloud Drive</em>) et touchez <strong>Enregistrer</strong> (ou <strong>Déplacer</strong>) en haut à droite :
+                    <strong>3. Déplacer vers le dossier Userscripts :</strong>
                   </p>
+                  <ul style="margin-left: 20px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px;">
+                    <li>Faites un <strong>appui long</strong> sur le fichier <code>spordle-annonceur.user.js</code> et choisissez <strong>Déplacer</strong> (ou faites-le glisser).</li>
+                    <li>Sélectionnez le dossier <strong>Userscripts</strong> (situé dans <em>Sur mon iPad</em> ou <em>iCloud Drive</em>).</li>
+                    <li>Touchez <strong>Déplacer</strong> (ou <strong>Enregistrer</strong>) en haut à droite.</li>
+                  </ul>
                   <div class="screenshot-card">
                     <img src="assets/guide/step4-save-dialog.png" alt="Sélection du dossier Userscripts dans Fichiers">
-                    <div class="screenshot-caption">Choisir le dossier « Userscripts » et toucher « Enregistrer ».</div>
+                    <div class="screenshot-caption">Choisir le dossier « Userscripts » et toucher « Déplacer » (ou « Enregistrer ») en haut à droite.</div>
                   </div>
                 </li>
               </ol>
 
               <div class="note" style="margin-top: 18px;">
-                ⚠️ <strong>Important :</strong> le fichier doit impérativement se trouver à l'intérieur du dossier <strong>Userscripts</strong> pour que Safari puisse le charger automatiquement.
+                ⚠️ <strong>Important :</strong> Le fichier doit impérativement se trouver à l'intérieur du dossier <strong>Userscripts</strong> pour que Safari puisse le charger automatiquement. Vous n'aurez à faire cette manipulation qu'une seule fois : toutes les futures mises à jour se feront ensuite 100 % automatiquement !
               </div>
             </div>
           </div>
@@ -1069,72 +1071,64 @@
       <div id="pane-ipad-update" class="tab-pane">
 
         <div class="intro-box" style="border-left-color: #3fb950;">
+          <p style="font-size: 16px; margin-bottom: 6px;">
+            🎉 <strong>Bonne nouvelle : Zéro action requise pour les mises à jour !</strong>
+          </p>
           <p>
-            🚀 <strong>Mises à jour automatiques activées :</strong><br>
-            Grâce à notre moteur autonome, <em>Spordle Annonceur</em> se met désormais à jour de façon 100 % transparente en arrière-plan dès que vous ouvrez une feuille de match Spordle Play. Les 3 étapes ci-dessous ne sont utiles que si vous souhaitez forcer manuellement une vérification immédiate dans Userscripts.
+            Grâce à notre moteur autonome (Hot-Loader), <em>Spordle Annonceur</em> se met désormais à jour de façon <strong>100 % automatique et invisible</strong> en arrière-plan dès que vous ouvrez une feuille de match Spordle Play.
+          </p>
+          <p style="margin-top: 8px; color: var(--text-muted); font-size: 14px;">
+            Vous n'avez plus jamais besoin d'ouvrir l'application Userscripts ni de cliquer sur le nuage ☁️ pour mettre à jour l'extension.
           </p>
         </div>
 
         <div class="steps">
 
-          <!-- Étape Update 1 -->
+          <!-- Comment ça fonctionne -->
           <div class="step-item">
             <div class="step-num">1</div>
             <div class="step-content">
-              <h3>Toucher l'icône Userscripts dans Safari</h3>
+              <h3>Mise à jour automatique en arrière-plan</h3>
               <p>
-                Dans Safari (sur la page de votre match ou n'importe quel onglet), touchez le bouton d'extensions dans la barre d'outils (icône puzzle 🧩 ou bouton <code>&lt;/&gt;</code>), puis sélectionnez <strong>Userscripts</strong>.
+                Dès qu'une nouvelle version de Spordle Annonceur est publiée, elle est téléchargée silencieusement lors du chargement de votre feuille de match.
               </p>
-
-              <div class="screenshot-card" style="max-width: 480px; margin-top: 14px;">
-                <img src="assets/guide/update-step1-userscripts.png" alt="Toucher l'icône Userscripts dans Safari">
-                <div class="screenshot-caption">1. Dans Safari, ouvrir l'extension Userscripts depuis la barre d'outils.</div>
-              </div>
+              <p>
+                Une notification discrète s'affiche brièvement au bas de l'écran pour vous avertir :<br>
+                <code style="display: inline-block; margin-top: 6px; padding: 6px 12px; background: rgba(234, 76, 137, 0.15); border: 1px solid rgba(234, 76, 137, 0.3); color: #ff7b72; border-radius: 20px;">
+                  ⚡ Spordle Annonceur mis à jour vers v1.0.X ! Recharger (⌘R) pour activer.
+                </code>
+              </p>
+              <p style="margin-top: 10px;">
+                Un simple rechargement de la page active aussitôt la nouvelle version !
+              </p>
             </div>
           </div>
 
-          <!-- Étape Update 2 -->
+          <!-- Comment vérifier sa version -->
           <div class="step-item">
             <div class="step-num">2</div>
             <div class="step-content">
-              <h3>Toucher le bouton Nuage (Cloud ☁️)</h3>
+              <h3>Comment vérifier le numéro de version installée ?</h3>
               <p>
-                En haut de la popup Userscripts, repérez et touchez l'icône en forme de <strong>nuage (Cloud ☁️)</strong> pour rechercher les mises à jour en ligne.
+                Pour savoir quelle version est actuellement active sur votre iPad :
               </p>
-
-              <div class="screenshot-card" style="max-width: 480px; margin-top: 14px;">
-                <img src="assets/guide/update-step3-cloud.png" alt="Toucher le bouton Cloud de mise à jour">
-                <div class="screenshot-caption">2. Toucher l'icône du nuage ☁️ en haut pour vérifier les mises à jour.</div>
-              </div>
+              <ol>
+                <li>Sur Spordle Play, ouvrez le menu en touchant les <strong>trois petits points (···)</strong> en haut à droite, puis sélectionnez <strong>📢 Options Spordle Annonceur</strong> <em>(ou faites un triple-clic rapide sur l'en-tête de catégorie/pointage)</em>.</li>
+                <li>Le numéro de version s'affiche en bas à gauche de la fenêtre d'options (ex. : <code>v1.0.60 · Userscript</code>).</li>
+              </ol>
             </div>
           </div>
 
-          <!-- Étape Update 3 -->
+          <!-- Fonctionnement hors-ligne -->
           <div class="step-item">
             <div class="step-num">3</div>
             <div class="step-content">
-              <h3>Toucher « Update » pour confirmer</h3>
+              <h3>Fonctionne toujours 100 % hors-ligne</h3>
               <p>
-                L'application détecte la nouvelle version disponible. Touchez simplement le lien bleu <strong>Update</strong> à côté de <em>Spordle Annonceur</em> pour installer la dernière version.
+                Si vous êtes dans un aréna sans connexion Internet ou avec un réseau cellulaire faible, aucun souci : l'extension conserve la dernière version téléchargée dans la mémoire locale de votre iPad et démarre instantanément, même sans Wi-Fi.
               </p>
-
-              <div class="screenshot-card" style="max-width: 480px; margin-top: 14px;">
-                <img src="assets/guide/update-step4-update.png" alt="Toucher Update pour confirmer la mise à jour">
-                <div class="screenshot-caption">3. Toucher « Update » pour télécharger et appliquer la mise à jour instantanément.</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Étape Update 4 -->
-          <div class="step-item">
-            <div class="step-num">4</div>
-            <div class="step-content">
-              <h3>Recharger Spordle Play</h3>
-              <p>
-                Retournez sur votre onglet Spordle Play et touchez le bouton <strong>Actualiser (↻)</strong> de Safari.
-              </p>
-              <div class="note note-green">
-                🎉 <strong>Mise à jour terminée !</strong> La version la plus récente de Spordle Annonceur est immédiatement opérationnelle sur votre match.
+              <div class="note note-green" style="margin-top: 12px;">
+                ✅ <strong>Tranquillité d'esprit :</strong> Une fois installée dans le dossier Userscripts lors de la première installation, vous n'avez plus jamais à manipuler de fichiers !
               </div>
             </div>
           </div>
