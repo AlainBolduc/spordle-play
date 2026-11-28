@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spordle Annonceur
 // @namespace    https://alainbolduc.github.io/spordle-play/
-// @version      1.0.62
+// @version      1.0.65
 // @description  Affiche le texte officiel d'annonce à lire au micro sur Spordle Play
 // @author       Alain Bolduc
 // @copyright    2026, Alain Bolduc. Tous droits réservés.
@@ -9,7 +9,6 @@
 // @match        *://*.spordle.com/*
 // @match        *://*.spordle.dev/*
 // @match        *://*.hisports.app/*
-// @match        https://alainbolduc.github.io/spordle-play/demo.html*
 // @connect      alainbolduc.github.io
 // @connect      www.google-analytics.com
 // @grant        GM.xmlHttpRequest
